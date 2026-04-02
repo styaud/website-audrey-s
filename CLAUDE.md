@@ -9,7 +9,7 @@ See [README.md](README.md) for architecture, file structure, and deployment inst
 
 ## Conventions
 
-- **No frameworks** — vanilla HTML/CSS/JS only. No npm runtime dependencies except `marked`.
+- **No frameworks** — vanilla HTML/CSS/JS only. `marked` (npm) for server-side markdown rendering. Admin editor uses `EasyMDE` (CDN) which bundles `marked` internally.
 - **CSS order** — reset → variables → components → utilities → responsive → page-level. Utilities must come AFTER components so they always win. No `!important`. No ID selectors for styling.
 - **French accents** — all user-facing text must have proper diacritics (é, è, ê, à, ç, ô, î, û). Content is French, code/comments are English.
 - **Privacy** — the contact email must NEVER appear in any tracked file or git history. It lives only in `.dev.vars` (gitignored) and Cloudflare env vars.
