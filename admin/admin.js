@@ -269,6 +269,38 @@ async function updateFile(path, contentBase64, message, sha) {
   return res.json();
 }
 
+async function deleteFile(path, sha, message) {
+  const res = await fetch(repoUrl(path), {
+    method: 'DELETE',
+    headers: apiHeaders(),
+    body: JSON.stringify({ message, sha, branch: GITHUB_BRANCH }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `GitHub API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function listDir(path) {
+  const res = await fetch(repoUrl(path), { headers: apiHeaders() });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+// Collect all image paths referenced anywhere in the content object
+function collectImagePaths(obj) {
+  const paths = new Set();
+  JSON.stringify(obj, (_, value) => {
+    if (typeof value === 'string' && value.startsWith('/' + IMAGES_PATH + '/')) {
+      paths.add(value.slice(1)); // remove leading /
+    }
+    return value;
+  });
+  return paths;
+}
+
 // ============================================================================
 //  CONTENT LOADING
 // ============================================================================
@@ -886,6 +918,18 @@ async function handlePublish() {
 
     // Update SHA for next publish
     contentSha = result.content.sha;
+
+    // 3. Clean up orphaned images
+    setStatus('saving', 'Nettoyage des images...');
+    const referencedPaths = collectImagePaths(content);
+    const remoteFiles = await listDir(IMAGES_PATH);
+    for (const file of remoteFiles) {
+      if (file.type === 'file' && !referencedPaths.has(file.path)) {
+        try {
+          await deleteFile(file.path, file.sha, `admin: remove unused ${file.name}`);
+        } catch (_) { /* non-critical, skip */ }
+      }
+    }
 
     setStatus('connected', 'Publié');
     $statusTime.textContent = `Dernière publication : ${new Date().toLocaleTimeString('fr-CA')}`;
