@@ -198,14 +198,16 @@ export async function onRequestPost(context) {
     });
 
     if (context.env.EMAIL_WORKER) {
-      // Production: send in background so the user gets an instant response
-      context.waitUntil(
-        context.env.EMAIL_WORKER.fetch("https://email-worker/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ from: fromEmail, to: toEmail, raw: mimeMessage }),
-        }).catch((err) => console.error("Email send failed:", err))
-      );
+      // Await handoff to email Worker (confirms it received the request).
+      // The Worker itself sends the email in the background via waitUntil.
+      const res = await context.env.EMAIL_WORKER.fetch("https://email-worker/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from: fromEmail, to: toEmail, raw: mimeMessage }),
+      });
+      if (!res.ok) {
+        throw new Error("Email worker did not accept the request");
+      }
     } else {
       // Local development fallback: log to console
       console.log("=== EMAIL (dev mode — EMAIL_WORKER binding not available) ===");
