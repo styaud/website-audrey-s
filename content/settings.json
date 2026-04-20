@@ -8,9 +8,9 @@
   },
   "popup": {
     "admin_label": "Popup",
-    "enabled": false,
+    "enabled": true,
     "title": "Avis important",
-    "message": "",
+    "message": "Ce site est présentement en construction. \n\nVeuillez revenir plus tard pour voir le contenu du site web mis-à-jour. ",
     "image": "",
     "dismiss_label": "Fermer"
   },
@@ -178,17 +178,35 @@
     "form_referral_label": "Comment avez-vous entendu parler de nous ?",
     "form_referral_placeholder": "Sélectionnez une option",
     "form_subjects": [
-      { "title": "Évaluation psychosociale" },
-      { "title": "Médiation familiale" },
-      { "title": "Consultation" },
-      { "title": "Autre" }
+      {
+        "title": "Évaluation psychosociale"
+      },
+      {
+        "title": "Médiation familiale"
+      },
+      {
+        "title": "Consultation"
+      },
+      {
+        "title": "Autre"
+      }
     ],
     "referral_sources": [
-      { "title": "Recherche internet" },
-      { "title": "Recommandation d'un professionnel" },
-      { "title": "Bouche-à-oreille" },
-      { "title": "Réseaux sociaux" },
-      { "title": "Autre" }
+      {
+        "title": "Recherche internet"
+      },
+      {
+        "title": "Recommandation d'un professionnel"
+      },
+      {
+        "title": "Bouche-à-oreille"
+      },
+      {
+        "title": "Réseaux sociaux"
+      },
+      {
+        "title": "Autre"
+      }
     ]
   },
   "footer": {
