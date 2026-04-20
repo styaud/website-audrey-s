@@ -121,7 +121,7 @@ export async function onRequestPost(context) {
     const name = sanitize(data.name);
     const email = sanitize(data.email);
     const phone = sanitize(data.phone || "");
-    const subject = sanitize(data.subject || "Sans objet");
+    const subject = sanitize(data.subject);
     const message = sanitize(data.message);
     const turnstileToken = sanitize(data["cf-turnstile-response"] || data.turnstileToken || "");
 
@@ -129,6 +129,7 @@ export async function onRequestPost(context) {
     if (!name) return errorResponse("Le champ nom est requis.");
     if (!email) return errorResponse("Le champ email est requis.");
     if (!isValidEmail(email)) return errorResponse("L'adresse email est invalide.");
+    if (!subject) return errorResponse("Le champ sujet est requis.");
     if (!message) return errorResponse("Le champ message est requis.");
 
     // 5. Verify Turnstile token ---------------------------------------------

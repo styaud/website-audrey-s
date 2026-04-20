@@ -274,8 +274,8 @@
             </div>
 
             <div class="form-group">
-              <label for="contact-subject" class="form-label">Sujet <span class="form-optional">(facultatif)</span></label>
-              <select id="contact-subject" name="subject" class="select">
+              <label for="contact-subject" class="form-label">Sujet <span class="form-required">*</span></label>
+              <select id="contact-subject" name="subject" class="select" required>
                 <option value="">Sélectionnez un sujet</option>
                 {{#each contact.form_subjects}}
                 <option value="{{title}}">{{title}}</option>
