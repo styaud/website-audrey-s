@@ -5,6 +5,8 @@ node_modules/
 /index.html
 /sitemap.xml
 /robots.txt
+/politique-de-confidentialite.html
+/mentions-legales.html
 
 # Cloudflare / Wrangler
 .dev.vars

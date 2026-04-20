@@ -259,6 +259,24 @@ const SECTIONS = [
     ],
   },
   {
+    key: 'privacy_page',
+    label: 'Politique de confidentialité',
+    fields: [
+      { key: 'title', label: 'Titre de la page', type: 'text' },
+      { key: 'updated', label: 'Date de mise à jour', type: 'text', plain: true, hint: 'Ex: « Dernière mise à jour : avril 2026 ».' },
+      { key: 'body', label: 'Contenu', type: 'textarea', hint: 'Contenu complet de la page. Supporte le Markdown.' },
+    ],
+  },
+  {
+    key: 'legal_page',
+    label: 'Mentions légales',
+    fields: [
+      { key: 'title', label: 'Titre de la page', type: 'text' },
+      { key: 'updated', label: 'Date de mise à jour', type: 'text', plain: true, hint: 'Ex: « Dernière mise à jour : avril 2026 ».' },
+      { key: 'body', label: 'Contenu', type: 'textarea', hint: 'Contenu complet de la page. Supporte le Markdown.' },
+    ],
+  },
+  {
     key: 'colors',
     label: 'Couleurs du site',
     fields: [

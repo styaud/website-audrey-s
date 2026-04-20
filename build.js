@@ -31,9 +31,21 @@ if (!existsSync(join(ROOT, "template.html"))) {
 const settings = processMarkdown(JSON.parse(read("content/settings.json")));
 settings.turnstile_sitekey = process.env.TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
 const template = read("template.html");
+const legalTemplate = read("template-legal.html");
 
 const write = (f, c) => { writeFileSync(join(ROOT, f), c, "utf-8"); console.log("Generated:", f); };
 write("index.html", render(template, settings));
+
+// Legal pages
+if (settings.privacy_page) {
+  const privacyData = { ...settings, page_title: settings.privacy_page.title, page_updated: settings.privacy_page.updated, page_body: settings.privacy_page.body };
+  write("politique-de-confidentialite.html", render(legalTemplate, privacyData));
+}
+if (settings.legal_page) {
+  const legalData = { ...settings, page_title: settings.legal_page.title, page_updated: settings.legal_page.updated, page_body: settings.legal_page.body };
+  write("mentions-legales.html", render(legalTemplate, legalData));
+}
+
 write("sitemap.xml", generateSitemap());
 write("robots.txt", `User-agent: *\nAllow: /\nDisallow: /admin/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 console.log("Build complete.");

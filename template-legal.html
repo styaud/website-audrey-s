@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{page_title}} — {{header.site_name}}</title>
+  <meta name="robots" content="noindex, nofollow">
+  {{#if seo.favicon}}
+  <link rel="icon" href="{{seo.favicon}}">
+  {{/if}}
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .legal-page { max-width: 720px; margin: 0 auto; padding: var(--space-8) var(--space-6); }
+    .legal-page h1 { font-size: var(--text-3xl); font-weight: 700; margin-bottom: var(--space-2); }
+    .legal-page h2 { font-size: var(--text-xl); font-weight: 600; margin-top: var(--space-8); margin-bottom: var(--space-3); }
+    .legal-page p, .legal-page li { color: var(--color-text-light); line-height: 1.7; margin-bottom: var(--space-3); }
+    .legal-page ul { padding-left: var(--space-6); margin-bottom: var(--space-4); }
+    .legal-page a { color: var(--color-primary); }
+    .legal-back { display: inline-block; margin-bottom: var(--space-6); color: var(--color-primary); font-size: var(--text-sm); }
+    .legal-updated { font-size: var(--text-sm); color: var(--color-text-light); margin-bottom: var(--space-8); }
+  </style>
+
+  {{#if colors.primary}}
+  <style>
+    :root {
+      --color-primary: {{colors.primary}};
+      --color-primary-dark: {{colors.primary_dark}};
+      --color-primary-light: {{colors.primary_light}};
+      --color-accent: {{colors.accent}};
+      --color-accent-dark: {{colors.accent_dark}};
+      --color-text: {{colors.text}};
+      --color-text-light: {{colors.text_light}};
+      --color-bg: {{colors.bg}};
+      --color-bg-light: {{colors.bg_light}};
+      --color-bg-dark: {{colors.bg_dark}};
+      --color-border: {{colors.border}};
+    }
+  </style>
+  {{/if}}
+</head>
+<body>
+  <div class="legal-page">
+    <a href="/" class="legal-back">← Retour au site</a>
+    <h1>{{page_title}}</h1>
+    <p class="legal-updated">{{page_updated}}</p>
+    <div>{{page_body}}</div>
+  </div>
+</body>
+</html>
