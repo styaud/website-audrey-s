@@ -29,6 +29,7 @@ if (!existsSync(join(ROOT, "template.html"))) {
 }
 
 const settings = processMarkdown(JSON.parse(read("content/settings.json")));
+settings.turnstile_sitekey = process.env.TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
 const template = read("template.html");
 
 const write = (f, c) => { writeFileSync(join(ROOT, f), c, "utf-8"); console.log("Generated:", f); };
