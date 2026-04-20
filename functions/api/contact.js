@@ -183,9 +183,14 @@ export async function onRequestPost(context) {
       .join("\n");
 
     // 7. Send email ---------------------------------------------------------
+    const contactEmail = context.env.CONTACT_EMAIL;
+    if (!contactEmail) {
+      return errorResponse("La configuration email du serveur est manquante.", 500);
+    }
+
     const mimeMessage = createMimeMessage({
-      from: "Formulaire de contact <contact@audreyhauteurdenfant.com>",
-      to: context.env.CONTACT_EMAIL || "contact@audreyhauteurdenfant.com",
+      from: `Formulaire de contact <${contactEmail}>`,
+      to: contactEmail,
       subject: `Nouveau message de ${name} - ${subject}`,
       body: formattedBody,
     });
@@ -195,11 +200,7 @@ export async function onRequestPost(context) {
       const res = await context.env.EMAIL_WORKER.fetch("https://email-worker/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: "contact@audreyhauteurdenfant.com",
-          to: context.env.CONTACT_EMAIL || "contact@audreyhauteurdenfant.com",
-          raw: mimeMessage,
-        }),
+        body: JSON.stringify({ from: contactEmail, to: contactEmail, raw: mimeMessage }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
