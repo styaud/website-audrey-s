@@ -4,7 +4,7 @@
 // ============================================================================
 
 // ---- CONFIG ----------------------------------------------------------------
-const GITHUB_REPO = 'po-trottier/website-audrey-s';
+const GITHUB_REPO = 'styaud/website-audrey-s';
 const GITHUB_BRANCH = 'main';
 const CONTENT_PATH = 'content/settings.json';
 const IMAGES_PATH = 'assets/images';
