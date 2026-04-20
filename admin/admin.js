@@ -452,7 +452,7 @@ function getSections() {
 
 function getSectionLabel(sectionDef) {
   const data = content[sectionDef.key];
-  return (data && (data.heading || data.title)) || sectionDef.label;
+  return (data && data.admin_label) || sectionDef.label;
 }
 
 function getDividerForSection(sectionKey) {
@@ -540,10 +540,38 @@ function showSection(sectionKey) {
   const card = document.createElement('div');
   card.className = 'admin-content-card';
 
-  const title = document.createElement('div');
-  title.className = 'admin-content-title';
-  title.textContent = getSectionLabel(sectionDef);
-  card.appendChild(title);
+  // Editable section label
+  const titleRow = document.createElement('div');
+  titleRow.className = 'admin-content-title';
+  titleRow.style.display = 'flex';
+  titleRow.style.alignItems = 'center';
+  titleRow.style.gap = 'var(--space-3)';
+
+  const titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'admin-section-label-input';
+  titleInput.value = getSectionLabel(sectionDef);
+  titleInput.dataset.path = `${sectionDef.key}.admin_label`;
+  titleInput.addEventListener('input', () => {
+    // Live-update sidebar and tabs
+    const sections = getSections();
+    const val = titleInput.value.trim();
+    if (val) setNestedValue(content, `${sectionDef.key}.admin_label`, val);
+    document.querySelectorAll('.admin-sidebar-item').forEach(el => {
+      if (el.dataset.section === sectionKey) el.textContent = val || sectionDef.label;
+    });
+    document.querySelectorAll('.admin-mobile-tab').forEach(el => {
+      if (el.dataset.section === sectionKey) el.textContent = val || sectionDef.label;
+    });
+  });
+
+  const editIcon = document.createElement('span');
+  editIcon.style.cssText = 'color: var(--color-text-light); font-size: var(--text-xs); flex-shrink: 0;';
+  editIcon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+
+  titleRow.appendChild(titleInput);
+  titleRow.appendChild(editIcon);
+  card.appendChild(titleRow);
 
   // Build field grid with sub-groups
   const grid = document.createElement('div');

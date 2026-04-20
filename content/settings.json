@@ -1,11 +1,13 @@
 {
   "seo": {
+    "admin_label": "SEO",
     "title": "Audrey Stypulkowski, T.S. — Travailleuse sociale, Laurentides",
     "description": "Audrey Stypulkowski, travailleuse sociale avec plus de 20 ans d'expérience dans les Laurentides. Évaluation psychosociale, médiation familiale et consultation.",
     "og_image": "/assets/images/og-image.jpg",
     "favicon": "/favicon.svg"
   },
   "popup": {
+    "admin_label": "Popup",
     "enabled": false,
     "title": "Avis important",
     "message": "",
@@ -13,12 +15,14 @@
     "dismiss_label": "Fermer"
   },
   "header": {
+    "admin_label": "En-tête",
     "logo": "",
     "site_name": "Audrey Stypulkowski",
     "cta_text": "Prendre rendez-vous",
     "cta_link": "#contact"
   },
   "nav": {
+    "admin_label": "Navigation",
     "services": "Services",
     "about": "À propos",
     "education": "Mesures légales",
@@ -26,6 +30,7 @@
     "contact": "Contact"
   },
   "hero": {
+    "admin_label": "Bannière",
     "title": "Plus de 20 ans d'expérience au service des familles",
     "subtitle": "Travailleuse sociale membre de l'OTSTCFQ, je vous accompagne avec professionnalisme et bienveillance dans vos démarches psychosociales et juridiques dans la région des Laurentides.",
     "image": "/assets/images/hero.jpg",
@@ -35,6 +40,7 @@
     "cta2_link": "#services"
   },
   "services": {
+    "admin_label": "Services",
     "heading": "Mes services",
     "link_text": "En savoir plus",
     "items": [
@@ -59,6 +65,7 @@
     ]
   },
   "about": {
+    "admin_label": "À propos",
     "title": "À propos",
     "body": "Depuis plus de 20 ans, j'accompagne les individus et les familles dans leurs moments les plus importants et les plus délicats. Mon approche repose sur l'écoute active, le respect et une profonde conviction que chaque personne possède les ressources nécessaires pour surmonter ses défis.\n\nFormée en travail social et accréditée en médiation familiale, je mets mon expertise au service de ceux qui traversent des transitions de vie, des conflits familiaux ou des démarches juridiques. Mon objectif est de vous offrir un espace sécuritaire où vous pouvez exprimer vos préoccupations et trouver des pistes de solution adaptées à votre réalité.\n\nBasée dans les Laurentides, je dessers également les régions avoisinantes. N'hésitez pas à me contacter pour discuter de votre situation en toute confidentialité.",
     "photo": "/assets/images/about.jpg",
@@ -78,6 +85,7 @@
     ]
   },
   "education": {
+    "admin_label": "Mesures légales",
     "heading": "Mesures légales",
     "items": [
       {
@@ -111,6 +119,7 @@
     ]
   },
   "faq": {
+    "admin_label": "FAQ",
     "heading": "Questions fréquentes",
     "items": [
       {
@@ -140,6 +149,7 @@
     ]
   },
   "contact": {
+    "admin_label": "Contact",
     "heading": "Me contacter",
     "subtitle": "N'hésitez pas à communiquer avec moi pour toute question ou pour prendre rendez-vous. Je vous répondrai dans les meilleurs délais.",
     "phone": "+1 514 555-0123",
@@ -173,6 +183,7 @@
     ]
   },
   "footer": {
+    "admin_label": "Pied de page",
     "business_name": "Audrey Stypulkowski, T.S.",
     "credentials": "Membre de l'OTSTCFQ — No. XXXXX",
     "privacy_link": "",
@@ -180,6 +191,7 @@
     "admin_label": "Administration"
   },
   "colors": {
+    "admin_label": "Couleurs",
     "primary": "#2a7d6e",
     "primary_dark": "#1e5c51",
     "primary_light": "#e6f2ef",

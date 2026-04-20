@@ -138,6 +138,30 @@
       margin-bottom: var(--space-4);
     }
 
+    .admin-section-label-input {
+      font-size: inherit;
+      font-weight: inherit;
+      color: inherit;
+      border: 1px solid transparent;
+      border-radius: var(--rounded);
+      padding: var(--space-1) var(--space-2);
+      background: none;
+      width: 100%;
+      transition: border-color var(--transition), background-color var(--transition);
+    }
+
+    .admin-section-label-input:hover {
+      border-color: var(--color-border);
+      background: var(--color-bg-light);
+    }
+
+    .admin-section-label-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      background: var(--color-white);
+      box-shadow: var(--ring-primary);
+    }
+
     /* -- Field grid -- */
     .admin-field-grid {
       display: grid;
