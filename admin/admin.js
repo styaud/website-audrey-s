@@ -699,7 +699,7 @@ function createListEditor(sectionKey, listDef, items) {
   container.dataset.listKey = `${sectionKey}.${listDef.key}`;
 
   const heading = document.createElement('div');
-  heading.className = 'flex items-center justify-between mb-3';
+  heading.className = 'admin-subgroup-header flex items-center justify-between mb-4';
   heading.innerHTML = `
     <span class="admin-label" style="margin-bottom:0;font-size:var(--text-base);">
       ${esc(listDef.key === 'items' ? 'Éléments' : listDef.key === 'values' ? 'Valeurs' : listDef.key === 'form_subjects' ? 'Sujets du formulaire' : 'Éléments')}
@@ -782,19 +782,17 @@ function createListItem(sectionKey, listDef, item, index, totalCount) {
   const isCompact = listDef.fields.length === 1 && !imageField;
   if (isCompact) el.classList.add('admin-list-item--compact');
 
+  el.draggable = true;
   el.innerHTML = `
+    <div class="admin-drag-handle" title="Glisser pour réordonner">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>
+    </div>
     ${thumbHtml}
     <div class="admin-list-item-body">
       <div class="admin-list-item-title">${esc(title)}</div>
       ${!isCompact && desc ? `<div class="admin-list-item-desc">${esc(desc)}</div>` : ''}
     </div>
     <div class="admin-actions">
-      <button type="button" class="admin-btn-icon" title="Monter" data-action="move-up" ${index === 0 ? 'disabled' : ''}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
-      </button>
-      <button type="button" class="admin-btn-icon" title="Descendre" data-action="move-down" ${index >= totalCount - 1 ? 'disabled' : ''}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
       <button type="button" class="admin-btn-icon" title="Modifier" data-action="edit">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
@@ -809,18 +807,42 @@ function createListItem(sectionKey, listDef, item, index, totalCount) {
     openListItemEditor(el, sectionKey, listDef, index);
   });
 
-  el.querySelector('[data-action="move-up"]').addEventListener('click', () => {
-    if (index === 0) return;
-    const arr = getNestedValue(content, `${sectionKey}.${listDef.key}`) || [];
-    [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
-    const container = el.closest('[data-list-key]');
-    refreshList(container, sectionKey, listDef);
+  // Drag and drop reorder
+  el.addEventListener('dragstart', (e) => {
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
   });
 
-  el.querySelector('[data-action="move-down"]').addEventListener('click', () => {
+  el.addEventListener('dragend', () => {
+    el.classList.remove('dragging');
+    el.closest('.admin-list-items')?.querySelectorAll('.admin-list-item').forEach(item => {
+      item.classList.remove('drag-over');
+    });
+  });
+
+  el.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const dragging = el.closest('.admin-list-items')?.querySelector('.dragging');
+    if (dragging && dragging !== el) {
+      el.classList.add('drag-over');
+    }
+  });
+
+  el.addEventListener('dragleave', () => {
+    el.classList.remove('drag-over');
+  });
+
+  el.addEventListener('drop', (e) => {
+    e.preventDefault();
+    el.classList.remove('drag-over');
+    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    const toIndex = index;
+    if (fromIndex === toIndex) return;
     const arr = getNestedValue(content, `${sectionKey}.${listDef.key}`) || [];
-    if (index >= arr.length - 1) return;
-    [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
+    const [moved] = arr.splice(fromIndex, 1);
+    arr.splice(toIndex, 0, moved);
     const container = el.closest('[data-list-key]');
     refreshList(container, sectionKey, listDef);
   });
