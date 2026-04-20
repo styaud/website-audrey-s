@@ -102,11 +102,10 @@
 
       <!-- Navigation -->
       <nav class="nav-menu text-white">
-        <a href="#services" class="nav-link">Services</a>
-        <a href="#about" class="nav-link">À propos</a>
-        <a href="#education" class="nav-link">Mesures légales</a>
-        <a href="#faq" class="nav-link">FAQ</a>
-        <a href="#contact" class="nav-link">Contact</a>
+        <a href="#services" class="nav-link">{{nav.services}}</a>
+        <a href="#about" class="nav-link">{{nav.about}}</a>
+        <a href="#education" class="nav-link">{{nav.education}}</a>
+        <a href="#faq" class="nav-link">{{nav.faq}}</a>
         <a href="{{header.cta_link}}" class="btn btn-primary">{{header.cta_text}}</a>
       </nav>
     </div>
@@ -149,7 +148,7 @@
             <p class="text-light leading-relaxed">{{description}}</p>
             {{#if link}}
             <a href="{{link}}" class="inline-flex items-center mt-4 text-primary font-medium">
-              En savoir plus
+              {{services.link_text}}
               <svg class="ml-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </a>
             {{/if}}
@@ -251,7 +250,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
         <!-- Contact form -->
         <div>
-          <form id="contact-form" novalidate>
+          <form id="contact-form" novalidate
+                data-sending="{{contact.form_sending}}"
+                data-success="{{contact.form_success}}"
+                data-error="{{contact.form_error}}"
+                data-network-error="{{contact.form_network_error}}"
+          >
             <!-- Honeypot -->
             <div class="form-group hidden">
               <label for="bot_field" class="form-label">Ne pas remplir</label>
@@ -259,24 +263,24 @@
             </div>
 
             <div class="form-group">
-              <label for="contact-name" class="form-label">Nom complet <span class="form-required">*</span></label>
-              <input type="text" id="contact-name" name="name" class="input" required autocomplete="name" placeholder="Votre nom">
+              <label for="contact-name" class="form-label">{{contact.form_name_label}} <span class="form-required">*</span></label>
+              <input type="text" id="contact-name" name="name" class="input" required autocomplete="name" placeholder="{{contact.form_name_placeholder}}">
             </div>
 
             <div class="form-group">
-              <label for="contact-email" class="form-label">Courriel <span class="form-required">*</span></label>
-              <input type="email" id="contact-email" name="email" class="input" required autocomplete="email" placeholder="votre@courriel.com">
+              <label for="contact-email" class="form-label">{{contact.form_email_label}} <span class="form-required">*</span></label>
+              <input type="email" id="contact-email" name="email" class="input" required autocomplete="email" placeholder="{{contact.form_email_placeholder}}">
             </div>
 
             <div class="form-group">
-              <label for="contact-phone" class="form-label">Téléphone <span class="form-optional">(facultatif)</span></label>
-              <input type="tel" id="contact-phone" name="phone" class="input" autocomplete="tel" placeholder="(514) 555-0123">
+              <label for="contact-phone" class="form-label">{{contact.form_phone_label}} <span class="form-optional">(facultatif)</span></label>
+              <input type="tel" id="contact-phone" name="phone" class="input" autocomplete="tel" placeholder="{{contact.form_phone_placeholder}}">
             </div>
 
             <div class="form-group">
-              <label for="contact-subject" class="form-label">Sujet <span class="form-required">*</span></label>
+              <label for="contact-subject" class="form-label">{{contact.form_subject_label}} <span class="form-required">*</span></label>
               <select id="contact-subject" name="subject" class="select" required>
-                <option value="">Sélectionnez un sujet</option>
+                <option value="">{{contact.form_subject_placeholder}}</option>
                 {{#each contact.form_subjects}}
                 <option value="{{title}}">{{title}}</option>
                 {{/each}}
@@ -284,14 +288,14 @@
             </div>
 
             <div class="form-group">
-              <label for="contact-message" class="form-label">Message <span class="form-required">*</span></label>
-              <textarea id="contact-message" name="message" class="textarea" required rows="5" placeholder="Décrivez brièvement votre situation..."></textarea>
+              <label for="contact-message" class="form-label">{{contact.form_message_label}} <span class="form-required">*</span></label>
+              <textarea id="contact-message" name="message" class="textarea" required rows="5" placeholder="{{contact.form_message_placeholder}}"></textarea>
             </div>
 
             <!-- Turnstile -->
             <div class="cf-turnstile mb-4" data-sitekey="{{turnstile_sitekey}}"></div>
 
-            <button type="submit" class="btn btn-primary w-full">Envoyer le message</button>
+            <button type="submit" class="btn btn-primary w-full">{{contact.form_submit}}</button>
 
             <div id="form-status" class="mt-4 hidden"></div>
           </form>
@@ -300,12 +304,12 @@
         <!-- Contact info -->
         <div class="flex flex-col gap-8">
           <div>
-            <h3 class="text-xl font-semibold mb-6">Nous joindre</h3>
+            <h3 class="text-xl font-semibold mb-6">{{contact.info_heading}}</h3>
 
             <div class="flex items-start gap-4 mb-6">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary" style="flex-shrink: 0; margin-top: 2px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               <div>
-                <p class="font-medium">Téléphone</p>
+                <p class="font-medium">{{contact.phone_label}}</p>
                 <a href="tel:{{contact.phone}}" class="text-primary">{{contact.phone}}</a>
               </div>
             </div>
@@ -313,15 +317,15 @@
             <div class="flex items-start gap-4 mb-6">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary" style="flex-shrink: 0; margin-top: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               <div>
-                <p class="font-medium">Adresse</p>
+                <p class="font-medium">{{contact.address_label}}</p>
                 <p class="text-light">{{contact.address}}</p>
               </div>
             </div>
           </div>
 
           <div class="bg-white rounded-xl shadow p-6">
-            <h3 class="text-lg font-semibold mb-4 text-primary">Première consultation</h3>
-            <p class="text-light leading-relaxed">N'hésitez pas à nous contacter pour une première consultation. Nous prendrons le temps d'évaluer votre situation et de vous orienter vers les services les mieux adaptés à vos besoins.</p>
+            <h3 class="text-lg font-semibold mb-4 text-primary">{{contact.consultation_heading}}</h3>
+            <p class="text-light leading-relaxed">{{contact.consultation_text}}</p>
           </div>
         </div>
       </div>
@@ -341,16 +345,17 @@
 
       <!-- Footer nav -->
       <nav class="flex flex-wrap justify-center gap-6">
-        <a href="#services" class="text-sm transition" style="color: rgba(255,255,255,0.7);">Services</a>
-        <a href="#about" class="text-sm transition" style="color: rgba(255,255,255,0.7);">À propos</a>
-        <a href="#education" class="text-sm transition" style="color: rgba(255,255,255,0.7);">Mesures légales</a>
-        <a href="#faq" class="text-sm transition" style="color: rgba(255,255,255,0.7);">FAQ</a>
-        <a href="#contact" class="text-sm transition" style="color: rgba(255,255,255,0.7);">Contact</a>
+        <a href="#services" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.services}}</a>
+        <a href="#about" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.about}}</a>
+        <a href="#education" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.education}}</a>
+        <a href="#faq" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.faq}}</a>
+        <a href="#contact" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.contact}}</a>
+        <a href="/admin/" class="text-sm transition" style="color: rgba(255,255,255,0.4);">{{footer.admin_label}}</a>
       </nav>
 
       <!-- Copyright -->
       <div class="text-center md:text-left">
-        <p class="text-sm" style="color: rgba(255,255,255,0.6);">{{currentYear}} {{footer.business_name}}. Tous droits réservés.</p>
+        <p class="text-sm" style="color: rgba(255,255,255,0.6);">{{currentYear}} {{footer.business_name}}. {{footer.copyright}}</p>
       </div>
     </div>
   </footer>
@@ -360,7 +365,7 @@
     <div class="modal" style="text-align: center;">
       <div id="form-modal-icon" class="form-modal-icon"></div>
       <p id="form-modal-message" class="text-light mb-6 leading-relaxed text-center"></p>
-      <button id="form-modal-close" class="btn btn-primary w-full">Fermer</button>
+      <button id="form-modal-close" class="btn btn-primary w-full">{{contact.form_close}}</button>
     </div>
   </div>
 

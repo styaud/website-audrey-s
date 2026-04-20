@@ -18,6 +18,13 @@
     "cta_text": "Prendre rendez-vous",
     "cta_link": "#contact"
   },
+  "nav": {
+    "services": "Services",
+    "about": "À propos",
+    "education": "Mesures légales",
+    "faq": "FAQ",
+    "contact": "Contact"
+  },
   "hero": {
     "title": "Plus de 20 ans d'expérience au service des familles",
     "subtitle": "Travailleuse sociale membre de l'OTSTCFQ, je vous accompagne avec professionnalisme et bienveillance dans vos démarches psychosociales et juridiques dans la région des Laurentides.",
@@ -29,6 +36,7 @@
   },
   "services": {
     "heading": "Mes services",
+    "link_text": "En savoir plus",
     "items": [
       {
         "title": "Évaluation psychosociale",
@@ -136,6 +144,27 @@
     "subtitle": "N'hésitez pas à communiquer avec moi pour toute question ou pour prendre rendez-vous. Je vous répondrai dans les meilleurs délais.",
     "phone": "+1 514 555-0123",
     "address": "Laurentides, Québec",
+    "info_heading": "Nous joindre",
+    "phone_label": "Téléphone",
+    "address_label": "Adresse",
+    "consultation_heading": "Première consultation",
+    "consultation_text": "N'hésitez pas à nous contacter pour une première consultation. Nous prendrons le temps d'évaluer votre situation et de vous orienter vers les services les mieux adaptés à vos besoins.",
+    "form_name_label": "Nom complet",
+    "form_name_placeholder": "Votre nom",
+    "form_email_label": "Courriel",
+    "form_email_placeholder": "votre@courriel.com",
+    "form_phone_label": "Téléphone",
+    "form_phone_placeholder": "(514) 555-0123",
+    "form_subject_label": "Sujet",
+    "form_subject_placeholder": "Sélectionnez un sujet",
+    "form_message_label": "Message",
+    "form_message_placeholder": "Décrivez brièvement votre situation...",
+    "form_submit": "Envoyer le message",
+    "form_sending": "Envoi en cours...",
+    "form_success": "Votre message a bien été envoyé. Nous vous répondrons dans les plus brefs délais.",
+    "form_error": "Une erreur est survenue. Veuillez réessayer.",
+    "form_network_error": "Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.",
+    "form_close": "Fermer",
     "form_subjects": [
       { "title": "Évaluation psychosociale" },
       { "title": "Médiation familiale" },
@@ -146,7 +175,9 @@
   "footer": {
     "business_name": "Audrey Stypulkowski, T.S.",
     "credentials": "Membre de l'OTSTCFQ — No. XXXXX",
-    "privacy_link": ""
+    "privacy_link": "",
+    "copyright": "Tous droits réservés.",
+    "admin_label": "Administration"
   },
   "colors": {
     "primary": "#2a7d6e",

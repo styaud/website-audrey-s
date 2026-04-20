@@ -226,6 +226,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (contactForm) {
     const submitBtn = contactForm.querySelector('button[type="submit"]');
     const submitBtnOriginalText = submitBtn ? submitBtn.textContent : '';
+    const msgs = {
+      sending: contactForm.dataset.sending || 'Envoi en cours...',
+      success: contactForm.dataset.success || 'Message envoyé.',
+      error: contactForm.dataset.error || 'Une erreur est survenue.',
+      network: contactForm.dataset.networkError || 'Erreur de connexion.',
+    };
     const formModal = document.getElementById('form-modal');
     const formModalIcon = document.getElementById('form-modal-icon');
     const formModalMessage = document.getElementById('form-modal-message');
@@ -261,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Honeypot check — silently pretend success
       if (data.bot_field) {
-        showFormModal(true, 'Votre message a bien été envoyé. Merci !');
+        showFormModal(true, msgs.success);
         contactForm.reset();
         return;
       }
@@ -278,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Show loading state
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Envoi en cours...';
+        submitBtn.textContent = msgs.sending;
       }
 
       try {
@@ -291,16 +297,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          showFormModal(true, 'Votre message a bien été envoyé. Nous vous répondrons dans les plus brefs délais.');
+          showFormModal(true, msgs.success);
           contactForm.reset();
           if (typeof turnstile !== 'undefined' && typeof turnstile.reset === 'function') {
             turnstile.reset();
           }
         } else {
-          showFormModal(false, result.error || 'Une erreur est survenue. Veuillez réessayer.');
+          showFormModal(false, result.error || msgs.error);
         }
       } catch {
-        showFormModal(false, 'Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.');
+        showFormModal(false, msgs.network);
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
