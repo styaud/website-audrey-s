@@ -590,7 +590,7 @@ function showSection(sectionKey) {
     }
 
     const fieldEl = createField(sectionDef.key, field, sectionData[field.key]);
-    const isFullWidth = field.type === 'textarea' || field.type === 'image';
+    const isFullWidth = field.type === 'textarea' || field.type === 'image' || field.key === 'heading' || field.key === 'title';
     if (isFullWidth) fieldEl.classList.add('admin-field-full');
     grid.appendChild(fieldEl);
   });
