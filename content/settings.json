@@ -32,8 +32,8 @@
   "hero": {
     "admin_label": "Bannière",
     "title": "Plus de 20 ans d'expérience au service des familles",
-    "subtitle": "Travailleuse sociale membre de l'OTSTCFQ, je vous accompagne avec professionnalisme et bienveillance dans vos démarches psychosociales et juridiques dans la région des Laurentides.",
-    "image": "/assets/images/hero.jpg",
+    "subtitle": "Infirmière clinicienne membre de l'OIIQ, je vous accompagne",
+    "image": "/assets/images/logo-audrey-arri-re-plan-transparent.webp",
     "cta_text": "Prendre rendez-vous",
     "cta_link": "#contact",
     "cta2_text": "Mes services",
@@ -234,7 +234,7 @@
   },
   "colors": {
     "admin_label": "Couleurs",
-    "primary": "#2a7d6e",
+    "primary": "#7d2a7e",
     "primary_dark": "#1e5c51",
     "primary_light": "#e6f2ef",
     "accent": "#c4654a",
