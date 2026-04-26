@@ -179,16 +179,31 @@
     "form_referral_placeholder": "Sélectionnez une option",
     "form_subjects": [
       {
-        "title": "Évaluation psychosociale"
+        "title": "Saine gestion des émotions"
       },
       {
-        "title": "Médiation familiale"
+        "title": "Soutien dans le rôle et les habiletés parentales (coaching parental et famille élargie)"
       },
       {
-        "title": "Consultation"
+        "title": "Dynamique familiale et relation parent-enfant"
       },
       {
-        "title": "Autre"
+        "title": "Soutien dans les routines (sommeil, transitions, devoirs…)"
+      },
+      {
+        "title": "Cadre, règles, limites et respect des consignes"
+      },
+      {
+        "title": "Recommandations pour la maison et l’école"
+      },
+      {
+        "title": "Bien-être familial"
+      },
+      {
+        "title": "Accompagnement du deuil"
+      },
+      {
+        "title": "Accompagnement du deuil"
       }
     ],
     "referral_sources": [
