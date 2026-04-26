@@ -157,7 +157,7 @@
     "form_email_label": "Courriel",
     "form_email_placeholder": "votre@courriel.com",
     "form_phone_label": "Téléphone",
-    "form_phone_placeholder": "(514) 690-1285",
+    "form_phone_placeholder": "",
     "form_subject_label": "Sujet",
     "form_subject_placeholder": "Sélectionnez un sujet",
     "form_message_label": "Message",
