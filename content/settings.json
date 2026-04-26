@@ -31,7 +31,7 @@
   },
   "hero": {
     "admin_label": "Bannière",
-    "title": "Observer, soutenir , guider plus de 20 ans d'expérience au service des familles",
+    "title": "Observer, soutenir , guider \nPlus de 20 ans d'expérience au service des familles",
     "subtitle": "Infirmière clinicienne membre de l'OIIQ, je vous accompagne",
     "image": "/assets/images/logo-audrey-arri-re-plan-transparent.webp",
     "cta_text": "Prendre rendez-vous",
@@ -67,7 +67,7 @@
   "about": {
     "admin_label": "À propos",
     "title": "À propos",
-    "body": "Depuis plus de 20 ans, j'accompagne les individus et les familles dans leurs moments les plus importants et les plus délicats. Mon approche repose sur l'écoute active, le respect et une profonde conviction que chaque personne possède les ressources nécessaires pour surmonter ses défis.\n\nFormée en travail social et accréditée en médiation familiale, je mets mon expertise au service de ceux qui traversent des transitions de vie, des conflits familiaux ou des démarches juridiques. Mon objectif est de vous offrir un espace sécuritaire où vous pouvez exprimer vos préoccupations et trouver des pistes de solution adaptées à votre réalité.\n\nBasée dans les Laurentides, je dessers également les régions avoisinantes. N'hésitez pas à me contacter pour discuter de votre situation en toute confidentialité.",
+    "body": "",
     "photo": "/assets/images/about.jpg",
     "values": [
       {
