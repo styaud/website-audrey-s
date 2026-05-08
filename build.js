@@ -7,6 +7,30 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
 const SITE_URL = "https://audreyhauteurdenfant.com";
 const read = (f) => readFileSync(join(ROOT, f), "utf-8");
 
+function loadLocalEnv() {
+  const envPath = join(ROOT, ".dev.vars");
+  if (!existsSync(envPath)) return;
+
+  for (const line of readFileSync(envPath, "utf-8").split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    const separator = trimmed.indexOf("=");
+    if (separator <= 0) continue;
+
+    const key = trimmed.slice(0, separator).trim();
+    let value = trimmed.slice(separator + 1);
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    if (/^[A-Z_][A-Z0-9_]*$/.test(key) && process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+}
+
+loadLocalEnv();
+
 function generateSitemap() {
   const today = new Date().toISOString().split("T")[0];
   return `<?xml version="1.0" encoding="UTF-8"?>

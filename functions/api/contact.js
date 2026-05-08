@@ -5,8 +5,9 @@
  *
  * Environment bindings expected:
  *   TURNSTILE_SECRET  – Cloudflare Turnstile secret key
- *   CONTACT_EMAIL     – Destination email address
- *   SEND_EMAIL        – Cloudflare Email Routing send_email binding
+ *   CONTACT_EMAIL     – Verified sender email address
+ *   CONTACT_DESTINATION – Recipient email address
+ *   EMAIL_WORKER      – Service binding to workers/email-sender in production
  */
 
 // ---------------------------------------------------------------------------

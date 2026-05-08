@@ -1,14 +1,18 @@
 // ============================================================================
 //  ADMIN.JS — Custom CMS for Audrey Stypulkowski
-//  Vanilla JS. Uses GitHub OAuth for auth, GitHub API for content management.
+//  Vanilla JS. Uses server-side GitHub OAuth for auth and content management.
 // ============================================================================
 
 // ---- CONFIG ----------------------------------------------------------------
-const GITHUB_REPO = 'styaud/website-audrey-s';
-const GITHUB_BRANCH = 'main';
-const CONTENT_PATH = 'content/settings.json';
 const IMAGES_PATH = 'assets/images';
-const GITHUB_API = 'https://api.github.com';
+const API = {
+  session: '/api/admin/session',
+  logout: '/api/auth/logout',
+  content: '/api/admin/content',
+  images: '/api/admin/images',
+  image: '/api/admin/image',
+  preview: '/api/preview',
+};
 
 const COLOR_CSS_MAP = {
   primary: '--color-primary',
@@ -55,8 +59,9 @@ function bindLiveColorTheming(card) {
 
 let content = {};          // Current content state (mirrors settings.json)
 let contentSha = '';       // SHA of current settings.json (needed for updates)
-let pendingImages = [];    // { path, base64, file } — images to upload on publish
-let githubToken = '';      // PAT stored in sessionStorage for the session
+let pendingImages = [];    // { path, base64, name } - images to upload on publish
+let csrfToken = '';        // CSRF token returned by the authenticated session endpoint
+let adminLogin = '';       // Authenticated GitHub login
 
 // ---- DOM REFS --------------------------------------------------------------
 const $loginScreen  = document.getElementById('login-screen');
@@ -66,6 +71,7 @@ const $loginError   = document.getElementById('login-error');
 const $sections     = document.getElementById('sections-container');
 const $btnPreview   = document.getElementById('btn-preview');
 const $btnPublish   = document.getElementById('btn-publish');
+const $btnLogout    = document.getElementById('btn-logout');
 const $statusDot    = document.getElementById('status-dot');
 const $statusText   = document.getElementById('status-text');
 const $statusTime   = document.getElementById('status-time');
@@ -303,18 +309,19 @@ const SECTIONS = [
 
 // Check for an existing session on page load
 (function init() {
-  const saved = sessionStorage.getItem('github_token');
-  if (saved) {
-    githubToken = saved;
-    loadContent().then(ok => {
-      if (ok) showEditor();
-      else sessionStorage.removeItem('github_token');
-    });
-  }
+  const error = new URLSearchParams(window.location.search).get('error');
+  if (error) showLoginError('Accès refusé : votre compte GitHub doit avoir accès en écriture au dépôt.');
+
+  loadSession().then(async authenticated => {
+    if (!authenticated) return;
+    const ok = await loadContent();
+    if (ok) showEditor();
+  });
 
   $loginBtn.addEventListener('click', handleLogin);
   $btnPreview.addEventListener('click', handlePreview);
   $btnPublish.addEventListener('click', handlePublish);
+  if ($btnLogout) $btnLogout.addEventListener('click', handleLogout);
 })();
 
 // Actions popover (mobile)
@@ -323,6 +330,7 @@ const SECTIONS = [
   const popover = document.getElementById('actions-popover');
   const previewMobile = document.getElementById('btn-preview-mobile');
   const publishMobile = document.getElementById('btn-publish-mobile');
+  const logoutMobile = document.getElementById('btn-logout-mobile');
   if (!toggle || !popover) return;
 
   toggle.addEventListener('click', () => popover.classList.toggle('hidden'));
@@ -333,6 +341,7 @@ const SECTIONS = [
   });
   if (previewMobile) previewMobile.addEventListener('click', () => { popover.classList.add('hidden'); handlePreview(); });
   if (publishMobile) publishMobile.addEventListener('click', () => { popover.classList.add('hidden'); handlePublish(); });
+  if (logoutMobile) logoutMobile.addEventListener('click', () => { popover.classList.add('hidden'); handleLogout(); });
 })();
 
 async function handleLogin() {
@@ -340,25 +349,17 @@ async function handleLogin() {
   $loginBtn.disabled = true;
   $loginBtn.innerHTML = '<span class="spinner"></span> Redirection...';
   window.location.href = '/api/auth/github';
-  return;
+}
 
-  // --- Legacy PAT login (kept for local dev fallback) ---
-  const token = prompt('Dev mode: entrez un GitHub PAT');
-  if (!token) return;
-
-  githubToken = token;
-  const ok = await loadContent();
-
-  if (ok) {
-    sessionStorage.setItem('github_token', token);
-    showEditor();
-  } else {
-    githubToken = '';
-    showLoginError('Token invalide ou dépôt inaccessible.');
+async function handleLogout() {
+  try {
+    await apiJson(API.logout, { method: 'POST', csrf: true });
+  } catch (_) {
+    // Continue with local logout even if the session already expired.
   }
-
-  $loginBtn.disabled = false;
-  $loginBtn.textContent = 'Connexion';
+  csrfToken = '';
+  adminLogin = '';
+  window.location.href = '/admin/';
 }
 
 function showLoginError(msg) {
@@ -375,65 +376,69 @@ function showEditor() {
 }
 
 // ============================================================================
-//  GITHUB API HELPERS
+//  ADMIN API HELPERS
 // ============================================================================
 
-function apiHeaders() {
-  return {
-    Authorization: `Bearer ${githubToken}`,
-    Accept: 'application/vnd.github.v3+json',
-    'Content-Type': 'application/json',
-  };
+function apiHeaders(includeCsrf = false) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (includeCsrf) headers['X-CSRF-Token'] = csrfToken;
+  return headers;
 }
 
-function repoUrl(path) {
-  return `${GITHUB_API}/repos/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`;
-}
-
-async function getFile(path) {
-  const res = await fetch(repoUrl(path), { headers: apiHeaders() });
-  if (!res.ok) return null;
+async function apiJson(url, options = {}) {
+  const res = await fetch(url, {
+    method: options.method || 'GET',
+    credentials: 'same-origin',
+    headers: apiHeaders(options.csrf),
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.message || `Erreur API ${res.status}`);
+  }
   return res.json();
 }
 
-async function updateFile(path, contentBase64, message, sha) {
-  const body = {
-    message,
-    content: contentBase64,
-    branch: GITHUB_BRANCH,
-  };
-  if (sha) body.sha = sha;
+async function loadSession() {
+  try {
+    const session = await apiJson(API.session);
+    if (!session.authenticated) return false;
+    csrfToken = session.csrfToken;
+    adminLogin = session.login || '';
+    return true;
+  } catch (e) {
+    console.error('loadSession error:', e);
+    return false;
+  }
+}
 
-  const res = await fetch(repoUrl(path), {
+async function updateContent() {
+  return apiJson(API.content, {
     method: 'PUT',
-    headers: apiHeaders(),
-    body: JSON.stringify(body),
+    csrf: true,
+    body: { content, sha: contentSha },
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub API error ${res.status}`);
-  }
-  return res.json();
 }
 
-async function deleteFile(path, sha, message) {
-  const res = await fetch(repoUrl(path), {
+async function uploadImage(img) {
+  return apiJson(API.image, {
+    method: 'PUT',
+    csrf: true,
+    body: { name: img.name, contentBase64: img.base64 },
+  });
+}
+
+async function deleteImage(file) {
+  return apiJson(API.image, {
     method: 'DELETE',
-    headers: apiHeaders(),
-    body: JSON.stringify({ message, sha, branch: GITHUB_BRANCH }),
+    csrf: true,
+    body: { name: file.name, sha: file.sha },
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub API error ${res.status}`);
-  }
-  return res.json();
 }
 
-async function listDir(path) {
-  const res = await fetch(repoUrl(path), { headers: apiHeaders() });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return Array.isArray(data) ? data : [];
+async function listImages() {
+  const data = await apiJson(API.images);
+  return data.files || [];
 }
 
 // Collect all image paths referenced anywhere in the content object
@@ -455,16 +460,10 @@ function collectImagePaths(obj) {
 async function loadContent() {
   try {
     setStatus('saving', 'Chargement...');
-    const file = await getFile(CONTENT_PATH);
-    if (!file) {
-      setStatus('error', 'Fichier introuvable');
-      return false;
-    }
-    contentSha = file.sha;
-    const bytes = Uint8Array.from(atob(file.content.replace(/\n/g, '')), c => c.charCodeAt(0));
-    const raw = new TextDecoder().decode(bytes);
-    content = JSON.parse(raw);
-    setStatus('connected', 'Connecté');
+    const data = await apiJson(API.content);
+    contentSha = data.sha;
+    content = data.content;
+    setStatus('connected', adminLogin ? `Connecté : ${adminLogin}` : 'Connecté');
     return true;
   } catch (e) {
     console.error('loadContent error:', e);
@@ -698,7 +697,7 @@ function createField(sectionKey, fieldDef, value) {
           <label class="admin-upload-btn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Choisir
-            <input type="file" accept="image/*" class="admin-file-input" data-path="${dataPath}" data-thumb="${id}-thumb">
+            <input type="file" accept="image/*,.ico" class="admin-file-input" data-path="${dataPath}" data-thumb="${id}-thumb">
           </label>
           <p class="admin-hint">${esc(value || 'Aucune image')}</p>
         </div>
@@ -927,7 +926,7 @@ function createEditForm(sectionKey, listDef, item, index) {
             <label class="admin-upload-btn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               Choisir
-              <input type="file" accept="image/*" class="admin-file-input" data-path="${fPath}" data-thumb="${thumbId}">
+              <input type="file" accept="image/*,.ico" class="admin-file-input" data-path="${fPath}" data-thumb="${thumbId}">
             </label>
             <p class="admin-hint">${esc(item[field.key] || 'Aucune image')}</p>
           </div>
@@ -1028,12 +1027,13 @@ function handleImageSelect(e) {
   const dataPath = e.target.dataset.path;
   const thumbId = e.target.dataset.thumb;
   const isSvg = file.type === 'image/svg+xml';
+  const isIco = file.type === 'image/x-icon' || file.type === 'image/vnd.microsoft.icon' || /\.ico$/i.test(file.name);
 
-  const process = isSvg ? readFileAsBase64(file) : compressToWebP(file);
+  const process = (isSvg || isIco) ? readFileAsBase64(file) : compressToWebP(file);
 
   process.then(({ base64Data, previewUrl }) => {
     const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9.-]/g, '-').toLowerCase();
-    const ext = isSvg ? 'svg' : 'webp';
+    const ext = isSvg ? 'svg' : (isIco ? 'ico' : 'webp');
     const safeName = `${baseName}.${ext}`;
     const imgPath = `/${IMAGES_PATH}/${safeName}`;
 
@@ -1061,7 +1061,7 @@ function handleImageSelect(e) {
     }
 
     const hint = e.target.closest('.admin-image-field')?.querySelector('.admin-hint');
-    if (hint) hint.textContent = `${safeName} (WebP)`;
+    if (hint) hint.textContent = safeName;
   });
 }
 
@@ -1141,24 +1141,33 @@ function collectContent() {
 //  PREVIEW
 // ============================================================================
 
-function handlePreview() {
+async function handlePreview() {
   collectContent();
 
-  // Form POST opens result directly in a new tab — no popup blocker,
-  // no blob URLs, no document.write. The server renders the page and
-  // serves it from the same origin so all paths resolve correctly.
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = '/api/preview';
-  form.target = '_blank';
-  const input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = 'json';
-  input.value = JSON.stringify(content);
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-  form.remove();
+  // The preview request is authenticated and protected with the session CSRF token.
+  const previewWindow = window.open('about:blank', '_blank');
+  if (!previewWindow) {
+    showToast('Impossible d’ouvrir l’aperçu. Autorisez les fenêtres pop-up.', 'error');
+    return;
+  }
+  previewWindow.opener = null;
+
+  try {
+    const res = await fetch(API.preview, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: apiHeaders(true),
+      body: JSON.stringify(content),
+    });
+    if (!res.ok) throw new Error(`Erreur de prévisualisation ${res.status}`);
+    const html = await res.text();
+    const blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    previewWindow.location.href = blobUrl;
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+  } catch (e) {
+    previewWindow.close();
+    showToast(e.message, 'error');
+  }
 }
 
 // ============================================================================
@@ -1204,49 +1213,25 @@ async function handlePublish() {
     // 1. Upload any pending images
     for (const img of pendingImages) {
       setStatus('saving', `Envoi de ${img.name}...`);
-      // Check if image already exists (get its SHA)
-      let existingSha = null;
-      try {
-        const existing = await getFile(img.path);
-        if (existing) existingSha = existing.sha;
-      } catch (_) { /* file doesn't exist yet */ }
-
-      await updateFile(
-        img.path,
-        img.base64,
-        `admin: upload ${img.name}`,
-        existingSha
-      );
+      await uploadImage(img);
     }
     pendingImages = [];
 
     // 2. Update settings.json
     setStatus('saving', 'Mise à jour du contenu...');
-    // Re-fetch SHA in case it changed (e.g. from image uploads that triggered a rebuild)
-    const currentFile = await getFile(CONTENT_PATH);
-    if (currentFile) contentSha = currentFile.sha;
-
-    const jsonStr = JSON.stringify(content, null, 2) + '\n';
-    const base64Content = btoa(unescape(encodeURIComponent(jsonStr)));
-
-    const result = await updateFile(
-      CONTENT_PATH,
-      base64Content,
-      'admin: update content',
-      contentSha
-    );
+    const result = await updateContent();
 
     // Update SHA for next publish
-    contentSha = result.content.sha;
+    contentSha = result.sha;
 
     // 3. Clean up orphaned images
     setStatus('saving', 'Nettoyage des images...');
     const referencedPaths = collectImagePaths(content);
-    const remoteFiles = await listDir(IMAGES_PATH);
+    const remoteFiles = await listImages();
     for (const file of remoteFiles) {
       if (file.type === 'file' && !referencedPaths.has(file.path)) {
         try {
-          await deleteFile(file.path, file.sha, `admin: remove unused ${file.name}`);
+          await deleteImage(file);
         } catch (_) { /* non-critical, skip */ }
       }
     }
