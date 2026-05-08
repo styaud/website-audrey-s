@@ -554,6 +554,18 @@
       color: var(--color-text);
     }
 
+    .btn-outline-muted {
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      font-weight: 500;
+    }
+
+    .btn-outline-muted:hover {
+      background: var(--color-bg-light);
+      border-color: var(--color-text-light);
+    }
+
     .btn-danger {
       background: none;
       color: var(--color-error);
@@ -712,6 +724,19 @@
       background-color: var(--color-bg-light);
     }
 
+    .admin-popover-item.outline {
+      margin: var(--space-2);
+      width: calc(100% - var(--space-4));
+      border: 1px solid var(--color-border);
+      border-radius: var(--rounded);
+      justify-content: center;
+      background: var(--color-white);
+    }
+
+    .admin-popover-item.outline:hover {
+      border-color: var(--color-text-light);
+    }
+
     /* -- Responsive admin (mobile sidebar -> tabs) -- */
     @media (max-width: 1024px) {
       .admin-sidebar {
@@ -840,7 +865,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             Publier
           </button>
-          <button id="btn-logout" class="btn btn-sm btn-ghost" type="button" style="gap: var(--space-2);">
+          <button id="btn-logout" class="btn btn-sm btn-outline-muted" type="button" style="gap: var(--space-2);">
             Déconnexion
           </button>
         </div>
@@ -855,7 +880,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
               Publier
             </button>
-            <button id="btn-logout-mobile" class="admin-popover-item" type="button">
+            <button id="btn-logout-mobile" class="admin-popover-item outline" type="button">
               Déconnexion
             </button>
           </div>
