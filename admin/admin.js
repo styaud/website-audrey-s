@@ -310,7 +310,7 @@ const SECTIONS = [
 // Check for an existing session on page load
 (function init() {
   const error = new URLSearchParams(window.location.search).get('error');
-  if (error) showLoginError('Accès refusé : votre compte GitHub doit avoir accès en écriture au dépôt.');
+  if (error) showLoginError(loginErrorMessage(error));
 
   loadSession().then(async authenticated => {
     if (!authenticated) return;
@@ -343,6 +343,18 @@ const SECTIONS = [
   if (publishMobile) publishMobile.addEventListener('click', () => { popover.classList.add('hidden'); handlePublish(); });
   if (logoutMobile) logoutMobile.addEventListener('click', () => { popover.classList.add('hidden'); handleLogout(); });
 })();
+
+function loginErrorMessage(error) {
+  const messages = {
+    repo_permission: 'Accès refusé : votre compte GitHub doit avoir accès en écriture au dépôt.',
+    oauth_state: 'Connexion GitHub expirée. Veuillez réessayer.',
+    oauth_config: 'Configuration GitHub OAuth manquante.',
+    oauth_token: 'GitHub n’a pas pu terminer la connexion. Veuillez réessayer.',
+    session_config: 'Configuration de session admin manquante. Vérifiez ADMIN_SESSION_SECRET dans Cloudflare.',
+    oauth_failed: 'Connexion GitHub réussie, mais la session admin n’a pas pu être créée.',
+  };
+  return messages[error] || 'Connexion admin impossible. Veuillez réessayer.';
+}
 
 async function handleLogin() {
   // Redirect to GitHub OAuth via our Cloudflare Function

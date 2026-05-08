@@ -9,6 +9,10 @@ import {
   verifyRepoWriteAccess,
 } from "../../../lib/admin-auth.mjs";
 
+function isMissingSessionSecret(error) {
+  return error instanceof Error && error.message.includes("ADMIN_SESSION_SECRET");
+}
+
 function adminError(request, code) {
   const headers = addSetCookies(new Headers({ Location: `/admin/?error=${encodeURIComponent(code)}` }), [
     ...clearOauthCookies(request),
@@ -93,6 +97,7 @@ export async function onRequestGet(context) {
     return adminSuccess(context.request, sessionCookie);
   } catch (e) {
     console.error("GitHub OAuth callback failed:", e);
+    if (isMissingSessionSecret(e)) return adminError(context.request, "session_config");
     return adminError(context.request, "oauth_failed");
   }
 }

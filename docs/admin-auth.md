@@ -78,3 +78,20 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
 Never commit `.dev.vars`; it is gitignored and contains local secrets.
+
+## Troubleshooting
+
+If `po-trottier` or `styaud` can push to the repository but OAuth still fails:
+
+- Confirm the browser returned to `/admin/?error=...`; the error code matters.
+- `session_config` means Cloudflare is missing a valid `ADMIN_SESSION_SECRET` or it is too short.
+- `repo_permission` means GitHub did not report write/admin permission for the OAuth token.
+- `oauth_state` usually means the callback cookies expired or the OAuth flow was restarted midway.
+- `oauth_token` or `oauth_failed` means GitHub token exchange or session creation failed.
+
+You can confirm GitHub's permission view locally with:
+
+```bash
+gh api repos/styaud/website-audrey-s --jq '{permissions:.permissions, private:.private, visibility:.visibility}'
+gh api repos/styaud/website-audrey-s/collaborators/po-trottier/permission --jq '{permission, role_name}'
+```
