@@ -350,8 +350,11 @@ function loginErrorMessage(error) {
     oauth_state: 'Connexion GitHub expirée. Veuillez réessayer.',
     oauth_config: 'Configuration GitHub OAuth manquante.',
     oauth_token: 'GitHub n’a pas pu terminer la connexion. Veuillez réessayer.',
+    github_user: 'Connexion GitHub réussie, mais le profil GitHub n’a pas pu être lu.',
+    repo_check: 'Connexion GitHub réussie, mais la permission du dépôt n’a pas pu être vérifiée.',
     session_config: 'Configuration de session admin manquante. Vérifiez ADMIN_SESSION_SECRET dans Cloudflare.',
     oauth_failed: 'Connexion GitHub réussie, mais la session admin n’a pas pu être créée.',
+    session_create: 'Connexion GitHub réussie, mais la session admin n’a pas pu être chiffrée.',
   };
   return messages[error] || 'Connexion admin impossible. Veuillez réessayer.';
 }

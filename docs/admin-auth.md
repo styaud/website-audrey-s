@@ -86,6 +86,9 @@ If `po-trottier` or `styaud` can push to the repository but OAuth still fails:
 - Confirm the browser returned to `/admin/?error=...`; the error code matters.
 - `session_config` means Cloudflare is missing a valid `ADMIN_SESSION_SECRET` or it is too short.
 - `repo_permission` means GitHub did not report write/admin permission for the OAuth token.
+- `repo_check` means GitHub user lookup succeeded, but the repository permission check failed or timed out.
+- `github_user` means GitHub issued an OAuth token, but `GET /user` failed.
+- `session_create` means permission passed, but the encrypted admin session cookie could not be created.
 - `oauth_state` usually means the callback cookies expired or the OAuth flow was restarted midway.
 - `oauth_token` or `oauth_failed` means GitHub token exchange or session creation failed.
 

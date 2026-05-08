@@ -13,6 +13,10 @@ function isMissingSessionSecret(error) {
   return error instanceof Error && error.message.includes("ADMIN_SESSION_SECRET");
 }
 
+function logCallbackError(step, error) {
+  console.error(`GitHub OAuth callback failed during ${step}:`, error);
+}
+
 function adminError(request, code) {
   const headers = addSetCookies(new Headers({ Location: `/admin/?error=${encodeURIComponent(code)}` }), [
     ...clearOauthCookies(request),
@@ -84,11 +88,31 @@ export async function onRequestGet(context) {
 
   const accessToken = tokenData.access_token;
 
+  let user;
   try {
-    const user = await getGithubUser(accessToken);
-    const permission = await verifyRepoWriteAccess(accessToken);
-    if (!permission.ok) return adminError(context.request, "repo_permission");
+    user = await getGithubUser(accessToken);
+  } catch (e) {
+    logCallbackError("user lookup", e);
+    return adminError(context.request, "github_user");
+  }
 
+  let permission;
+  try {
+    permission = await verifyRepoWriteAccess(accessToken, user.login);
+  } catch (e) {
+    logCallbackError("permission lookup", e);
+    return adminError(context.request, "repo_check");
+  }
+  if (!permission.ok) {
+    console.error("GitHub repository permission denied:", {
+      login: user.login,
+      status: permission.status,
+      error: permission.error,
+    });
+    return adminError(context.request, permission.status === 403 ? "repo_permission" : "repo_check");
+  }
+
+  try {
     const sessionCookie = await createSessionCookie(
       context.env,
       context.request,
@@ -96,8 +120,8 @@ export async function onRequestGet(context) {
     );
     return adminSuccess(context.request, sessionCookie);
   } catch (e) {
-    console.error("GitHub OAuth callback failed:", e);
+    logCallbackError("session creation", e);
     if (isMissingSessionSecret(e)) return adminError(context.request, "session_config");
-    return adminError(context.request, "oauth_failed");
+    return adminError(context.request, "session_create");
   }
 }
