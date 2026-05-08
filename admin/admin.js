@@ -1166,6 +1166,9 @@ async function handlePreview() {
     return;
   }
   previewWindow.opener = null;
+  previewWindow.document.open();
+  previewWindow.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Aperçu</title></head><body>Chargement de l’aperçu...</body></html>');
+  previewWindow.document.close();
 
   try {
     const res = await fetch(API.preview, {
@@ -1174,11 +1177,11 @@ async function handlePreview() {
       headers: apiHeaders(true),
       body: JSON.stringify(content),
     });
-    if (!res.ok) throw new Error(`Erreur de prévisualisation ${res.status}`);
     const html = await res.text();
-    const blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-    previewWindow.location.href = blobUrl;
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+    if (!res.ok) throw new Error(`Erreur de prévisualisation ${res.status}`);
+    previewWindow.document.open();
+    previewWindow.document.write(html);
+    previewWindow.document.close();
   } catch (e) {
     previewWindow.close();
     showToast(e.message, 'error');
