@@ -44,6 +44,8 @@ All mutating admin endpoints and preview require:
 
 Permission checks are cached briefly in the sealed session for non-mutating requests. Mutating requests check GitHub permissions live and fail closed on denial, timeout, rate limit, or malformed GitHub response.
 
+The admin editor loads EasyMDE from a pinned CDN URL with Subresource Integrity. Do not change it back to a floating version such as `@2`, and do not add unpinned scripts to `/admin/`; third-party admin JavaScript can act as the signed-in admin.
+
 ## Upload Policy
 
 Admin uploads are restricted to `assets/images/<safe-name>`.

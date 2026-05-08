@@ -39,6 +39,7 @@ Edit source files such as `content/settings.json`, `template.html`, `template-le
 - Admin browser code must call same-origin typed APIs under `/api/admin/*`; it must not call `api.github.com` directly.
 - Mutating admin APIs, logout, and preview must require same-origin requests, JSON content type, and `X-CSRF-Token`.
 - Permission checks must fail closed on GitHub denial, timeout, rate limit, or malformed responses.
+- Do not add floating or unpinned third-party scripts to `/admin/`. Any third-party admin script can act as the signed-in admin, so external admin scripts must be version-pinned and protected with Subresource Integrity.
 
 ## Upload Rules
 

@@ -28,6 +28,7 @@ There is no automated test suite in this repo. Use `npm run build`, syntax check
 - Do not expose GitHub access tokens to browser JavaScript. Tokens must stay inside the sealed `HttpOnly` admin session cookie.
 - Browser admin code must use same-origin `/api/admin/*`, `/api/auth/logout`, and `/api/preview` endpoints.
 - Mutating admin requests, logout, and preview must keep same-origin, JSON content-type, and CSRF checks.
+- Do not add floating or unpinned third-party scripts to `/admin/`. Any third-party admin script can act as the signed-in admin, so external admin scripts must be version-pinned and protected with Subresource Integrity.
 - Update [docs/admin-auth.md](docs/admin-auth.md) whenever admin auth, upload validation, session handling, or CSRF behavior changes.
 
 ## Environment Rules
