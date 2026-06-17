@@ -47,19 +47,19 @@
       {
         "title": "Saine gestion des émotions",
         "description": "",
-        "image": "/assets/images/service-1.jpg",
+        "image": "/assets/images/deux-personnes-comparant-logique-amour-illustration-plate-isolee-balancoire-74855-15560-1-.webp",
         "link": "#contact"
       },
       {
         "title": "Soutien dans le rôle et les habiletés parentales (coaching parental et famille élargie)",
         "description": "",
-        "image": "/assets/images/service-2.jpg",
+        "image": "/assets/images/natik-1123-home-5574909-1920.webp",
         "link": "#contact"
       },
       {
         "title": "Dynamique familiale et relation parent-enfant",
         "description": "",
-        "image": "/assets/images/service-3.jpg",
+        "image": "/assets/images/natik-1123-home-5574909-1920.webp",
         "link": "#contact"
       },
       {
@@ -75,22 +75,26 @@
       {
         "title": "Recommandations pour la maison et l’école",
         "description": "",
-        "link": ""
+        "link": "",
+        "image": "/assets/images/enfant-ecole--1.webp"
       },
       {
         "title": "Bien-être familial",
         "description": "",
-        "link": ""
+        "link": "",
+        "image": "/assets/images/bien-etre-familial.webp"
       },
       {
         "title": "Adoption",
         "description": "",
-        "link": ""
+        "link": "",
+        "image": "/assets/images/adoption-1.webp"
       },
       {
         "title": "Accompagnement du deuil",
         "description": "",
-        "link": ""
+        "link": "",
+        "image": "/assets/images/plume-deuil.webp"
       }
     ]
   },
