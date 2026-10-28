@@ -45,21 +45,27 @@
     "link_text": "En savoir plus",
     "items": [
       {
-        "title": "Saine gestion des émotions",
-        "description": "",
-        "image": "/assets/images/gestion-des--motions--1.webp",
-        "link": "#contact"
-      },
-      {
         "title": "Soutien dans le rôle et les habiletés parentales (coaching parental et famille élargie)",
         "description": "",
         "image": "/assets/images/natik-1123-home-5574909-1920.webp",
         "link": "#contact"
       },
       {
-        "title": "Dynamique familiale et relation parent-enfant",
+        "title": "Adoption",
         "description": "",
-        "image": "/assets/images/relation-parent-enfant.webp",
+        "link": "",
+        "image": "/assets/images/adoption-1.webp"
+      },
+      {
+        "title": "Cadre, règles, limites et respect des consignes",
+        "description": "",
+        "link": "",
+        "image": "/assets/images/cadre-et-regles.webp"
+      },
+      {
+        "title": "Saine gestion des émotions",
+        "description": "",
+        "image": "/assets/images/gestion-des--motions--1.webp",
         "link": "#contact"
       },
       {
@@ -69,34 +75,22 @@
         "image": "/assets/images/routine-famille.webp"
       },
       {
-        "title": "Cadre, règles, limites et respect des consignes",
-        "description": "",
-        "link": "",
-        "image": "/assets/images/cadre-et-regles.webp"
-      },
-      {
         "title": "Recommandations pour la maison et l’école",
         "description": "",
         "link": "",
         "image": "/assets/images/enfant-ecole--1.webp"
       },
       {
-        "title": "Conférences",
-        "description": "",
-        "link": "",
-        "image": "/assets/images/conf-rence.webp"
-      },
-      {
-        "title": "Adoption",
-        "description": "",
-        "link": "",
-        "image": "/assets/images/adoption-1.webp"
-      },
-      {
         "title": "Accompagnement du deuil",
         "description": "",
         "link": "",
         "image": "/assets/images/plume-deuil.webp"
+      },
+      {
+        "title": "Conférences",
+        "description": "",
+        "link": "",
+        "image": "/assets/images/conf-rence.webp"
       }
     ]
   },
