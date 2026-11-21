@@ -35,7 +35,7 @@
     "subtitle": "*Je vous accompagne dans votre parentalité*",
     "image": "/assets/images/relation-parent-enfant.webp",
     "cta_text": "Prendre rendez-vous",
-    "cta_link": "https://www.gorendezvous.com/audreystypulkowskiinfirmireenparentalit",
+    "cta_link": "<div data-professionalpagename=\"audreystypulkowskiinfirmireenparentalit\" data-bookingwidgeturlparams=\"companyId=142995\" data-language=\"fr\" data-label=\"Prendre un rendez-vous\" data-url=\"https://www.gorendezvous.com/\" class=\"gorendezvous-button\" data-buttoncolor=\"GOrendezvous\" data-width=\"undefined\" data-height=\"undefined\"><a href=\"https://www.gorendezvous.com/audreystypulkowskiinfirmireenparentalit?companyId=142995\" target=\"GOrendezvous\">Prendre un rendez-vous</a></div> <script>!function (d, s) { var js, sid = \"gorendezvous-bookingwidget-script\"; var sEl = d.getElementById(sid); if(sEl) { sEl.parentNode.removeChild(sEl); } js = d.createElement(s); js.id = sid; js.src = \"https://www.gorendezvous.com/Scripts/gorendezvous.bookingWidgetV2.min.js?v=\" + (Math.floor(new Date().getTime()/(1000*60*30))*(1000*60*30)).toString(); d.body.appendChild(js); } (document, \"script\");</script>",
     "cta2_text": "Mes services",
     "cta2_link": "#services"
   },
