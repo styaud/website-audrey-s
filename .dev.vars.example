@@ -5,9 +5,6 @@
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
 ADMIN_SESSION_SECRET=
-# TEMPORARY local admin login (localhost only). Revert the commit "TEMP: local admin login" to remove.
-# A GitHub token with write access to the repo, for example the output of `gh auth token`.
-ADMIN_DEV_GITHUB_TOKEN=
 
 # Cloudflare Turnstile (https://dash.cloudflare.com/turnstile)
 # Public site key used by build.js; the default below is Cloudflare's local test key.
