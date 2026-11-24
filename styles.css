@@ -1110,12 +1110,13 @@ dialog:not([open]) {
   position: absolute;
   inset: 0;
   z-index: 1;
-  /* Darker on the copy side for text contrast, lighter behind the portrait */
+  /* Phones and tablets: lighter at the top behind the portrait, darker behind
+     the copy below it. Desktop: darker on the copy side, at the left. */
   background: linear-gradient(
-    100deg,
-    color-mix(in srgb, var(--color-bg-dark) 94%, transparent) 0%,
-    color-mix(in srgb, var(--color-bg-dark) 78%, transparent) 45%,
-    color-mix(in srgb, var(--color-primary) 45%, transparent) 100%
+    180deg,
+    color-mix(in srgb, var(--color-primary) 45%, transparent) 0%,
+    color-mix(in srgb, var(--color-bg-dark) 78%, transparent) 40%,
+    color-mix(in srgb, var(--color-bg-dark) 94%, transparent) 100%
   );
   pointer-events: none;
 }
@@ -1129,8 +1130,11 @@ dialog:not([open]) {
   align-items: center;
 }
 
+/* Phones and tablets: portrait on top, copy centered under it */
 .hero-copy {
   max-width: 42rem;
+  margin-inline: auto;
+  text-align: center;
 }
 
 /* Small label above the title, with an orange dot from the logo */
@@ -1169,6 +1173,7 @@ dialog:not([open]) {
 
 .hero-subtitle {
   max-width: 36rem;
+  margin-inline: auto;
   margin-top: var(--space-5);
   font-size: var(--text-xl);
   line-height: 1.55;
@@ -1177,6 +1182,7 @@ dialog:not([open]) {
 
 .hero-actions {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: var(--space-4);
   margin-top: var(--space-8);
@@ -1200,6 +1206,7 @@ dialog:not([open]) {
 
 .hero-badges {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: var(--space-3) var(--space-6);
   margin-top: var(--space-8);
@@ -1221,14 +1228,17 @@ dialog:not([open]) {
 }
 
 /* Arch portrait, like the house in the logo, with an offset outline behind it.
-   The margin keeps room for the outline, so the outline ends at the edge of the column. */
+   Phones and tablets: the photo is centered on the text, and the bottom margin
+   keeps room for the outline. Desktop: a right margin also keeps room for the
+   outline, so the outline ends at the edge of the column. */
 .hero-portrait {
   --arch: 50% 50% var(--rounded-xl) var(--rounded-xl) / 37.5% 37.5% var(--rounded-xl) var(--rounded-xl);
   --outline-offset: 1.25rem;
   position: relative;
+  order: -1;
   justify-self: center;
-  width: clamp(15rem, 70vw, 22rem);
-  margin: 0 var(--outline-offset) var(--outline-offset) 0;
+  width: clamp(12rem, 55vw, 18rem);
+  margin: 0 0 var(--outline-offset);
 }
 
 .hero-portrait::before {
@@ -1251,13 +1261,18 @@ dialog:not([open]) {
   box-shadow: var(--shadow-lg);
 }
 
+/* Phones and tablets: centered on the bottom edge of the photo, at its natural
+   width, so it does not cover the face. Desktop: at the lower left of the photo. */
 .hero-portrait-card {
   position: absolute;
-  left: -1rem;
-  bottom: var(--space-8);
+  left: 50%;
+  bottom: calc(-1 * var(--space-5));
+  translate: -50% 0;
   display: grid;
   gap: 0.125rem;
-  max-width: calc(100% + 1rem);
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  text-align: center;
   padding: var(--space-3) var(--space-5);
   border-radius: var(--rounded-xl);
   background-color: var(--color-white);
@@ -1278,9 +1293,29 @@ dialog:not([open]) {
 }
 
 @media (min-width: 1024px) {
+  .hero::before {
+    background: linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--color-bg-dark) 94%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg-dark) 78%, transparent) 45%,
+      color-mix(in srgb, var(--color-primary) 45%, transparent) 100%
+    );
+  }
+
   .hero-grid {
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
     gap: var(--space-16);
+  }
+
+  .hero-copy,
+  .hero-subtitle {
+    margin-inline: 0;
+    text-align: start;
+  }
+
+  .hero-actions,
+  .hero-badges {
+    justify-content: flex-start;
   }
 
   /* The text column sets the row height. The arch takes the same height
@@ -1288,6 +1323,8 @@ dialog:not([open]) {
      outline offset. So the top of the photo lines up with the label, and the
      bottom of the outline lines up with the badges. */
   .hero-portrait {
+    order: 0;
+    margin-right: var(--outline-offset);
     justify-self: end;
     align-self: stretch;
     contain: size;
@@ -1302,6 +1339,11 @@ dialog:not([open]) {
 
   .hero-portrait-card {
     left: -2.5rem;
+    bottom: var(--space-8);
+    translate: none;
+    width: auto;
+    max-width: calc(100% + 1rem);
+    text-align: start;
   }
 
   /* Room under the content for the scroll cue */
