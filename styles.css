@@ -263,7 +263,9 @@ main > .section:nth-child(even of .section) :is(.card, #subject-listbox) {
    The shapes are masks, so they take the palette colors from the admin.
    Each band sets --texture-* variables, and one ::before rule reads them.
    (Chromium does not style ::before after :nth-child(… of …), but the
-   variables inherit.) */
+   variables inherit.)
+   The scroll animations move the whole ::before with translate and scale,
+   so the compositor runs them without a repaint. The band clips the overflow. */
 .section,
 .highlights-band,
 .site-footer {
@@ -273,6 +275,7 @@ main > .section:nth-child(even of .section) :is(.card, #subject-listbox) {
 
 .section,
 .highlights-band {
+  overflow: clip;
   --texture-color: var(--color-primary);
   --texture-opacity: 0.09;
   /* The leaf tile, cut by a radial fade so the middle of the band stays clean */
@@ -280,6 +283,12 @@ main > .section:nth-child(even of .section) :is(.card, #subject-listbox) {
   --texture-size: 480px, 100% 100%;
   --texture-repeat: repeat, no-repeat;
   --texture-position: 0 0, center;
+  /* The layer is larger than the band by the drift distance (60px, 180px),
+     so it covers the band at each step of the drift. At rest it sits at the
+     middle of the drift, where the radial fade is on the band center. */
+  --texture-inset: 0 0 -180px -60px;
+  --texture-translate: 30px -90px;
+  --texture-scale: 1;
   --texture-animation: leaves-drift;
   --grain-opacity: 0.16;
 }
@@ -294,9 +303,14 @@ main > .section:nth-child(even of .section) {
   --texture-color: var(--color-white);
   --texture-opacity: 0.1;
   --texture-image: url("/assets/patterns/rings.svg");
-  --texture-size: 900px;
+  /* Drawn at the largest size and scaled down, so the rings stay sharp.
+     The ring center is on the top right corner, which is the scale origin. */
+  --texture-size: 1160px;
   --texture-repeat: no-repeat;
-  --texture-position: right -450px top -450px;
+  --texture-position: right -580px top -580px;
+  --texture-inset: 0;
+  --texture-translate: 0;
+  --texture-scale: 0.776;
   --texture-animation: rings-grow;
   --grain-opacity: 0.3;
 }
@@ -305,7 +319,10 @@ main > .section:nth-child(even of .section) {
 .highlights-band::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: var(--texture-inset);
+  translate: var(--texture-translate);
+  scale: var(--texture-scale);
+  transform-origin: top right;
   z-index: -1;
   pointer-events: none;
   background-color: var(--texture-color);
@@ -2499,32 +2516,14 @@ main > .section:nth-child(even of .section) .form-aside {
     }
 
     @keyframes leaves-drift {
-      from {
-        -webkit-mask-position: 0 0, center;
-        mask-position: 0 0, center;
-      }
-
-      to {
-        -webkit-mask-position: 60px -180px, center;
-        mask-position: 60px -180px, center;
-      }
+      from { translate: 0 0; }
+      to { translate: 60px -180px; }
     }
 
-    /* The ring center stays on the corner: the offset is half the size */
+    /* 760px to 1160px, as a scale of the 1160px drawing */
     @keyframes rings-grow {
-      from {
-        -webkit-mask-size: 760px;
-        -webkit-mask-position: right -380px top -380px;
-        mask-size: 760px;
-        mask-position: right -380px top -380px;
-      }
-
-      to {
-        -webkit-mask-size: 1160px;
-        -webkit-mask-position: right -580px top -580px;
-        mask-size: 1160px;
-        mask-position: right -580px top -580px;
-      }
+      from { scale: 0.655; }
+      to { scale: 1; }
     }
 
     @keyframes hero-drift {
