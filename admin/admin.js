@@ -243,6 +243,8 @@ const SECTIONS = [
     fields: [
       { key: 'heading', label: 'Titre de la section', type: 'text' },
       { key: 'intro', label: 'Introduction', type: 'textarea' },
+      { key: 'filter_all_label', label: 'Filtre : bouton « toutes »', type: 'text', plain: true, hint: 'Les filtres apparaissent quand les ressources ont au moins deux thèmes.' },
+      { key: 'filter_label', label: 'Filtre : description pour les lecteurs d’écran', type: 'text', plain: true },
       anchorField('ressources'),
       NAV_LABEL_FIELD,
     ],
@@ -250,6 +252,7 @@ const SECTIONS = [
       key: 'items', label: 'Ressources',
       fields: [
         { key: 'title', label: 'Titre', type: 'text' },
+        { key: 'category', label: 'Thème', type: 'text', plain: true, hint: 'Exemples : Adoption, Parentalité, Écoute, Deuil. Le thème choisit l’icône et crée un filtre.' },
         { key: 'description', label: 'Description', type: 'textarea' },
         { key: 'url', label: 'Lien', type: 'text', plain: true, hint: 'Le lien ouvre un nouvel onglet.' },
         { key: 'image', label: 'Image', type: 'image' },

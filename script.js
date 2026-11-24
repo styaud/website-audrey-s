@@ -400,6 +400,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('main > section[id]').forEach((section) => spy.observe(section));
   }
 
+  // Resources: the chips show only the cards of one category.
+  // Without JS the chips stay hidden and all the cards show.
+  const resourceFilters = document.querySelector('.resource-filters');
+  if (resourceFilters) {
+    const resourceCards = document.querySelectorAll('.resource-card');
+    resourceFilters.hidden = false;
+    resourceFilters.addEventListener('click', (event) => {
+      const chip = event.target.closest('[data-filter]');
+      if (!chip) return;
+      resourceFilters.querySelectorAll('[data-filter]').forEach((other) => other.setAttribute('aria-pressed', String(other === chip)));
+      resourceCards.forEach((card) => { card.hidden = Boolean(chip.dataset.filter) && card.dataset.category !== chip.dataset.filter; });
+    });
+  }
+
   // FAQ: only one answer is open at a time. Height changes are animated.
   // Without JS, the native <details> elements still open and close.
   const faqItems = [...document.querySelectorAll('.faq-item')];

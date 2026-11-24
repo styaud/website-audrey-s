@@ -59,7 +59,7 @@ All content lives in `content/settings.json` with these sections:
 | `faq` | Visibility, heading, questions and answers |
 | `contact` | Visibility, heading, subtitle, phone, address, and the three contact options (phone, online booking URL and label, form link) with titles and texts |
 | `form` | Visibility, heading, subtitle, privacy note (Markdown), three steps, field labels, placeholders, optional-field mark, validation and server error messages, subject picker texts (`{n}` is the count, `{sujet}` the subject name), subject options, referral sources |
-| `resources` | Visibility, heading, introduction, item titles, descriptions, URLs, images, alt text |
+| `resources` | Visibility, heading, introduction, filter labels, item titles, themes, descriptions, URLs, images, alt text |
 | `footer` | Business name, credentials, copyright, legal links and labels, admin link label, screen reader name of the footer navigation |
 | `privacy_page`, `legal_page` | Page title, update date, Markdown body |
 | `colors` | Palette taken from the logo: primary teal, button orange, text, background, and border colors. `bg_dark` (deep teal) is the footer color |
@@ -83,7 +83,9 @@ The anchors do not update links typed in content, such as the `/#ecrivez-moi` li
 
 `highlights.items` replaces `about.values`. `resources` replaces `education`, and resource links open in a new tab.
 The Resources section includes seven free French resources from official health organizations, public services, and family support organizations.
-They cover early childhood, adoption, adolescence, grief, and psychosocial support in Québec. Resource cards need no image.
+They cover early childhood, adoption, adolescence, grief, and psychosocial support in Québec.
+Each card shows its theme, the domain of its URL, and an icon that the theme selects (Adoption, Parentalité, Écoute, Deuil, else a generic icon). An optional image replaces the icon.
+When the cards use two or more themes, filter chips show above the list. Without JavaScript, the chips stay hidden and all cards show.
 Form fields, subject options, and referral sources now belong to `form`, not `contact`.
 The header button, primary hero button, and contact booking button use `contact.booking_url`.
 These links open in a new tab with `rel="noopener noreferrer"`. The site no longer embeds the booking widget.

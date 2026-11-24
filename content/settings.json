@@ -287,9 +287,12 @@
     "nav_label": "Ressources",
     "heading": "Ressources",
     "intro": "Ces ressources gratuites en français proposent des repères et du soutien pour les parents et les familles du Québec.",
+    "filter_label": "Filtrer les ressources par thème",
+    "filter_all_label": "Toutes",
     "items": [
       {
         "title": "Mieux vivre avec notre enfant — INSPQ",
+        "category": "Parentalité",
         "description": "Un guide pour comprendre le développement, le sommeil et les besoins de votre enfant, de la grossesse à deux ans.",
         "url": "https://www.inspq.qc.ca/mieux-vivre",
         "image": "",
@@ -297,6 +300,7 @@
       },
       {
         "title": "Adoption internationale — Gouvernement du Québec",
+        "category": "Adoption",
         "description": "Les informations officielles du Québec sur la préparation, les démarches, les règles en vigueur et les services après l’adoption internationale.",
         "url": "https://www.quebec.ca/famille-et-soutien-aux-personnes/grossesse-parentalite/adoption/adoption-internationale",
         "image": "",
@@ -304,6 +308,7 @@
       },
       {
         "title": "Adoption et santé internationale — CHU Sainte-Justine",
+        "category": "Adoption",
         "description": "Une présentation de la clinique, des ressources pour préparer l’adoption et des informations sur le suivi des enfants adoptés à l’international.",
         "url": "https://www.chusj.org/fr/soins-services/S/Sante-internationale",
         "image": "",
@@ -311,6 +316,7 @@
       },
       {
         "title": "Tel-jeunes Parents",
+        "category": "Parentalité",
         "description": "Des conseils sur la communication, les émotions et l’école, avec un soutien gratuit et confidentiel pour les parents d’adolescents.",
         "url": "https://www.teljeunes.com/fr/parents",
         "image": "",
@@ -318,6 +324,7 @@
       },
       {
         "title": "Tel-jeunes — Pour les adolescents",
+        "category": "Écoute",
         "description": "Un espace à faire connaître à votre adolescent pour poser ses questions sur les émotions, la famille et les relations en toute confidentialité.",
         "url": "https://www.teljeunes.com",
         "image": "",
@@ -325,6 +332,7 @@
       },
       {
         "title": "Ressources en deuil — Fondation Monbourquette",
+        "category": "Deuil",
         "description": "Un répertoire gratuit pour trouver des organismes et des ressources de soutien au deuil dans votre région du Québec.",
         "url": "https://www.fondationmonbourquette.com/repertoire-provincial",
         "image": "",
@@ -332,6 +340,7 @@
       },
       {
         "title": "Info-Social 811",
+        "category": "Écoute",
         "description": "Un service téléphonique gratuit et confidentiel pour obtenir du soutien psychosocial lors de difficultés familiales, d’inquiétudes ou d’un deuil.",
         "url": "https://www.quebec.ca/sante/trouver-une-ressource/info-social-811",
         "image": "",

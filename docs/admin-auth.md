@@ -52,7 +52,8 @@ The sidebar groups content under "Page principale", "Pages secondaires", "Annonc
 Each section from `highlights` through `resources` stores its own `nav_label` beside `anchor` under "Adresse de la section".
 An empty or missing label hides the header and footer link. A disabled section also has no link.
 The header form stores the legal pages' return link text in `header.back_label`.
-The Resources form controls visibility, introduction, and resource cards. Each card has a title, description, URL, and optional image.
+The Resources form controls visibility, introduction, filter labels, and resource cards. Each card has a title, a theme, a description, a URL, and an optional image.
+The theme selects the card icon and creates a filter chip. The site derives the domain from the URL.
 Resource links open in a new tab. Use free French resources from official organizations and check each URL before publication.
 
 ### Preview And Content Security Policy
