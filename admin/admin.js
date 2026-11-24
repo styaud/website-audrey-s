@@ -1478,8 +1478,8 @@ function initMarkdownEditor(container, compact, plain = false) {
     autoDownloadFontAwesome: false,
     forceSync: true,
     status: false,
-    minHeight: compact ? '50px' : '120px',
-    maxHeight: compact ? '50px' : undefined,
+    // Editors grow with their text. One-line fields start at one line.
+    minHeight: compact ? '2.5rem' : '12rem',
     toolbar,
     shortcuts: plain ? Object.fromEntries(Object.values(buttons).map(([action]) => [action, null])) : undefined,
     promptTexts: { link: 'Adresse du lien :', image: 'Adresse de l’image :' },
@@ -1495,6 +1495,8 @@ function initMarkdownEditor(container, compact, plain = false) {
   const input = editor.codemirror.getInputField();
   input.setAttribute('aria-label', container.querySelector('.admin-label').textContent);
   if (compact) container.querySelector('.EasyMDEContainer').classList.add('compact');
+  // The editor box has a resize handle. CodeMirror measures its size again after a resize.
+  new ResizeObserver(() => editor.codemirror.refresh()).observe(editor.codemirror.getWrapperElement());
   return editor;
 }
 

@@ -816,12 +816,15 @@
     }
 
     /* -- EasyMDE overrides to match admin theme -- */
+    /* Vertical resize handle at the bottom right. A dragged height replaces
+       the automatic height, and the text scrolls inside. */
     .EasyMDEContainer .CodeMirror {
       border-color: var(--color-border);
       border-radius: 0 0 var(--rounded-lg) var(--rounded-lg);
       font-family: var(--font-sans);
       font-size: var(--text-sm);
-      min-height: 120px;
+      min-height: 12rem;
+      resize: vertical;
     }
 
     .EasyMDEContainer .CodeMirror-focused {
@@ -847,21 +850,9 @@
       font-size: var(--text-sm);
     }
 
-    /* Compact mode: single-line title fields */
+    /* One-line fields (titles): start at one line, grow with extra lines */
     .EasyMDEContainer.compact .CodeMirror {
-      min-height: 50px;
-      max-height: 50px;
-    }
-
-    .EasyMDEContainer.compact .CodeMirror-scroll {
-      min-height: 50px;
-      max-height: 50px;
-      overflow: hidden;
-    }
-
-    .EasyMDEContainer.compact .CodeMirror-hscrollbar,
-    .EasyMDEContainer.compact .CodeMirror-vscrollbar {
-      display: none;
+      min-height: 2.5rem;
     }
 
     /* -- Actions popover (mobile only) -- */
