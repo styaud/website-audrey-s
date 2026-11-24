@@ -255,6 +255,87 @@ main > .section:nth-child(even of .section) :is(.card, #subject-listbox) {
   color: var(--color-text);
 }
 
+/* --- Section textures ---
+   Three quiet layers under the content, never over it:
+   - Light sections: leaves like the logo tree, only near the edges.
+   - Teal sections: rings like a tree trunk or a ripple, from one corner.
+   - All bands: a fine paper grain.
+   The shapes are masks, so they take the palette colors from the admin.
+   Each band sets --texture-* variables, and one ::before rule reads them.
+   (Chromium does not style ::before after :nth-child(… of …), but the
+   variables inherit.) */
+.section,
+.highlights-band,
+.site-footer {
+  position: relative;
+  isolation: isolate;
+}
+
+.section,
+.highlights-band {
+  --texture-color: var(--color-primary);
+  --texture-opacity: 0.09;
+  /* The leaf tile, cut by a radial fade so the middle of the band stays clean */
+  --texture-image: url("/assets/patterns/leaves.svg"), radial-gradient(ellipse at center, transparent 40%, #000 95%);
+  --texture-size: 480px, 100% 100%;
+  --texture-repeat: repeat, no-repeat;
+  --texture-position: 0 0, center;
+  --texture-animation: leaves-drift;
+  --grain-opacity: 0.16;
+}
+
+.highlights-band {
+  --texture-color: var(--color-white);
+  --texture-opacity: 0.14;
+  --grain-opacity: 0.3;
+}
+
+main > .section:nth-child(even of .section) {
+  --texture-color: var(--color-white);
+  --texture-opacity: 0.1;
+  --texture-image: url("/assets/patterns/rings.svg");
+  --texture-size: 900px;
+  --texture-repeat: no-repeat;
+  --texture-position: right -450px top -450px;
+  --texture-animation: rings-grow;
+  --grain-opacity: 0.3;
+}
+
+.section::before,
+.highlights-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--texture-color);
+  opacity: var(--texture-opacity);
+  -webkit-mask-image: var(--texture-image);
+  -webkit-mask-size: var(--texture-size);
+  -webkit-mask-repeat: var(--texture-repeat);
+  -webkit-mask-position: var(--texture-position);
+  -webkit-mask-composite: source-in;
+  mask-image: var(--texture-image);
+  mask-size: var(--texture-size);
+  mask-repeat: var(--texture-repeat);
+  mask-position: var(--texture-position);
+  mask-composite: intersect;
+}
+
+.section::after,
+.highlights-band::after,
+.site-footer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("/assets/patterns/grain.svg");
+  background-size: 200px;
+  opacity: var(--grain-opacity, 0.3);
+  mix-blend-mode: multiply;
+}
+
 /* --- Section headings --- */
 .section-title {
   font-size: var(--text-3xl);
@@ -2263,6 +2344,43 @@ main > .section:nth-child(even of .section) .form-aside {
       to {
         background-color: var(--color-accent);
         scale: 1;
+      }
+    }
+
+    /* Section textures move while the band crosses the screen:
+       the leaves drift up slowly, the rings grow like a ripple. */
+    .section::before,
+    .highlights-band::before {
+      animation: var(--texture-animation) linear both;
+      animation-timeline: view();
+    }
+
+    @keyframes leaves-drift {
+      from {
+        -webkit-mask-position: 0 0, center;
+        mask-position: 0 0, center;
+      }
+
+      to {
+        -webkit-mask-position: 60px -180px, center;
+        mask-position: 60px -180px, center;
+      }
+    }
+
+    /* The ring center stays on the corner: the offset is half the size */
+    @keyframes rings-grow {
+      from {
+        -webkit-mask-size: 760px;
+        -webkit-mask-position: right -380px top -380px;
+        mask-size: 760px;
+        mask-position: right -380px top -380px;
+      }
+
+      to {
+        -webkit-mask-size: 1160px;
+        -webkit-mask-position: right -580px top -580px;
+        mask-size: 1160px;
+        mask-position: right -580px top -580px;
       }
     }
 

@@ -71,6 +71,7 @@ Each toggleable section uses `enabled`. The header, hero, and footer always appe
 The main sections follow the table order from `hero` through `footer`.
 The enabled sections alternate between a light tone (cream) and a teal tone, so two light sections never touch.
 `styles.css` sets the tones by position with `:nth-child(… of .section)`, so hiding a section in the admin moves the tones automatically.
+Each tone also has a quiet texture under the content: leaves from the logo tree near the edges of light sections, rings from one corner of teal sections, and a fine paper grain on every band. The shapes are CSS masks in `assets/patterns/`, so they take the palette colors. When the visitor did not ask for reduced motion and the browser supports scroll-driven animations, the leaves drift and the rings grow while the section crosses the screen.
 Header and footer navigation includes only enabled sections with a non-empty `nav_label`.
 Each section from `highlights` through `resources` stores this label beside its `anchor` under "Adresse de la section".
 An empty or missing label hides the link. The hero has no menu label.
@@ -248,6 +249,7 @@ The contact form has three layers:
 │   ├── index.html          # Admin panel (login + editor UI)
 │   └── admin.js            # Admin UI logic (same-origin admin API calls)
 ├── assets/
+│   ├── patterns/           # Section texture masks (leaves, rings, grain); not in the image library
 │   └── images/             # Site images and icons
 │       ├── favicon.ico
 │       ├── favicon-192.png

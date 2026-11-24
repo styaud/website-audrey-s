@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
+  <!-- Leaves like the logo tree, used as a CSS mask: only the shape matters -->
+  <defs>
+    <path id="l" d="M0-20C11-12 11 12 0 20C-11 12-11-12 0-20Z"/>
+  </defs>
+  <use href="#l" transform="translate(52 64) rotate(-35)"/>
+  <use href="#l" transform="translate(196 34) rotate(20) scale(.7)"/>
+  <use href="#l" transform="translate(330 92) rotate(65) scale(1.15)"/>
+  <use href="#l" transform="translate(438 30) rotate(-10) scale(.6)"/>
+  <use href="#l" transform="translate(120 190) rotate(80) scale(.85)"/>
+  <use href="#l" transform="translate(262 232) rotate(-55)"/>
+  <use href="#l" transform="translate(410 210) rotate(30) scale(.75)"/>
+  <use href="#l" transform="translate(40 330) rotate(15) scale(1.1)"/>
+  <use href="#l" transform="translate(176 380) rotate(-70) scale(.65)"/>
+  <use href="#l" transform="translate(320 360) rotate(40) scale(.9)"/>
+  <use href="#l" transform="translate(452 430) rotate(-25) scale(.8)"/>
+  <circle cx="250" cy="130" r="3"/>
+  <circle cx="90" cy="270" r="2.5"/>
+  <circle cx="380" cy="290" r="3"/>
+  <circle cx="230" cy="450" r="2.5"/>
+</svg>
