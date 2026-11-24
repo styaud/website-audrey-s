@@ -1436,12 +1436,12 @@ dialog:not([open]) {
 
 /* --- Services vertical timeline ---
    Each row puts the image on one side of the rail and the text on the other.
-   Mobile: rail at left, small thumbnail beside the text. */
+   Mobile: rail at left, wide image above the title and the text. */
 .services-timeline {
   --rail-x: 0.9rem;
   position: relative;
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-10);
 }
 
 /* Rail: extends past the first and last rows, and fades in and out at its ends */
@@ -1464,7 +1464,7 @@ dialog:not([open]) {
 .timeline-item {
   position: relative;
   display: grid;
-  grid-template-columns: 96px 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
   align-items: center;
   padding-left: calc(var(--rail-x) * 2 + var(--space-4));
@@ -1487,9 +1487,9 @@ dialog:not([open]) {
 
 .timeline-media {
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 2 / 1;
   object-fit: cover;
-  border-radius: var(--rounded-lg);
+  border-radius: var(--rounded-xl);
   box-shadow: var(--shadow-md);
 }
 
@@ -1527,11 +1527,6 @@ dialog:not([open]) {
 
   .timeline-item::before {
     left: calc(50% - 6px);
-  }
-
-  .timeline-media {
-    aspect-ratio: 2 / 1;
-    border-radius: var(--rounded-xl);
   }
 
   .timeline-title {
