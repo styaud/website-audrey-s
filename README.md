@@ -59,7 +59,7 @@ All content lives in `content/settings.json` with these sections:
 | `faq` | Visibility, heading, questions and answers |
 | `contact` | Visibility, heading, subtitle, phone, address, and the three contact options (phone, online booking URL and label, form link) with titles and texts |
 | `form` | Visibility, heading, subtitle, privacy note (Markdown), three steps, field labels, placeholders, optional-field mark, validation and server error messages, subject picker texts (`{n}` is the count, `{sujet}` the subject name), subject options, referral sources |
-| `resources` | Visibility, heading, introduction, filter labels, item titles, themes, descriptions, URLs, images, alt text |
+| `resources` | Visibility, heading, introduction, filter labels, themes (name, icon, color), item titles, item themes, descriptions, URLs, images, alt text |
 | `footer` | Business name, credentials, copyright, legal links and labels, admin link label, screen reader name of the footer navigation |
 | `privacy_page`, `legal_page` | Page title, update date, Markdown body |
 | `colors` | Palette taken from the logo: primary teal, button orange, text, background, and border colors. `bg_dark` (deep teal) is the footer color |
@@ -84,8 +84,10 @@ The anchors do not update links typed in content, such as the `/#ecrivez-moi` li
 `highlights.items` replaces `about.values`. `resources` replaces `education`, and resource links open in a new tab.
 The Resources section includes seven free French resources from official health organizations, public services, and family support organizations.
 They cover early childhood, adoption, adolescence, grief, and psychosocial support in Québec.
-Each card shows its theme, the domain of its URL, and an icon that the theme selects (Adoption, Parentalité, Écoute, Deuil, else a generic icon). An optional image replaces the icon.
-When the cards use two or more themes, filter chips show above the list. Without JavaScript, the chips stay hidden and all cards show.
+Each card shows its theme, the domain of its URL, and the theme icon. The admin edits the themes in `resources.categories`: a name, an icon, and a color (`""` for the primary color, `accent` for the button color).
+The icon is the name of any icon in the Lucide pack. `build.js` copies the pack from the `lucide-static` npm package to `assets/icons/` (gitignored, with its ISC `LICENSE`) and writes `assets/icons/index.json` for the admin search. The admin icon picker searches the names and the English Lucide tags. The renderer accepts only lowercase names joined by hyphens, because the icon path goes into a CSS `url()`. Other values show the `link` icon. Icons are CSS masks, so they take the theme color.
+A card with no theme, or a theme that is not in the list, shows no theme tag and the `link` icon. An optional card image replaces the icon.
+When two or more themes have cards, filter chips show above the list in the theme order. Without JavaScript, the chips stay hidden and all cards show.
 Form fields, subject options, and referral sources now belong to `form`, not `contact`.
 The header button, primary hero button, and contact booking button use `contact.booking_url`.
 These links open in a new tab with `rel="noopener noreferrer"`. The site no longer embeds the booking widget.

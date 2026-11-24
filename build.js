@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, cpSync, rmSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { render, prepareContent } from "./lib/render.mjs";
@@ -73,4 +73,21 @@ if (settings.legal_page) {
 write("sitemap.xml", generateSitemap());
 write("robots.txt", `User-agent: *\nAllow: /\nDisallow: /admin/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 write("_redirects", settings.seo.favicon && settings.seo.favicon !== "/favicon.ico" ? `/favicon.ico ${settings.seo.favicon.replace(/\s/g, encodeURIComponent)} 302\n` : "");
+
+// Theme icons: the full Lucide pack from the lucide-static package, plus a search index for the admin.
+// index.json is [[name, "tag tag …"], …] for every icon file, with an empty string for icons without tags.
+const lucide = join(ROOT, "node_modules", "lucide-static");
+rmSync(join(ROOT, "assets", "icons"), { recursive: true, force: true });
+cpSync(join(lucide, "icons"), join(ROOT, "assets", "icons"), { recursive: true });
+cpSync(join(lucide, "LICENSE"), join(ROOT, "assets", "icons", "LICENSE"));
+const tags = JSON.parse(readFileSync(join(lucide, "tags.json"), "utf-8"));
+const iconNames = Object.keys(JSON.parse(readFileSync(join(lucide, "icon-nodes.json"), "utf-8"))).sort();
+write("assets/icons/index.json", JSON.stringify(iconNames.map((name) => [name, (tags[name] || []).join(" ")])));
+
+// Lucide can rename or remove an icon between versions. A theme icon without a file shows no icon, so stop the build.
+const missingIcons = (settings.resources?.categories || []).map((category) => category.icon).filter((name) => name && !existsSync(join(ROOT, "assets", "icons", `${name}.svg`)));
+if (missingIcons.length) {
+  console.error(`Error: theme icons not in lucide-static: ${missingIcons.join(", ")}. Choose another icon in the admin.`);
+  process.exit(1);
+}
 console.log("Build complete.");

@@ -3,7 +3,7 @@
 //  Vanilla JS. Uses server-side GitHub OAuth for auth and content management.
 // ============================================================================
 
-import { responsiveTargetWidths, responsiveWidthsForPath } from '../lib/images.mjs?v=2026-11-24';
+import { resourceIconPath, responsiveTargetWidths, responsiveWidthsForPath } from '../lib/images.mjs?v=2026-11-24';
 import { collectImagePaths, groupImageGalleryItems, normalizeLocalImagePath } from './image-gallery.js?v=2026-11-24';
 
 // ---- CONFIG ----------------------------------------------------------------
@@ -243,22 +243,32 @@ const SECTIONS = [
     fields: [
       { key: 'heading', label: 'Titre de la section', type: 'text' },
       { key: 'intro', label: 'Introduction', type: 'textarea' },
-      { key: 'filter_all_label', label: 'Filtre : bouton « toutes »', type: 'text', plain: true, hint: 'Les filtres apparaissent quand les ressources ont au moins deux thèmes.' },
+      { key: 'filter_all_label', label: 'Filtre : bouton « toutes »', type: 'text', plain: true, hint: 'Les filtres apparaissent quand au moins deux thèmes ont des ressources.' },
       { key: 'filter_label', label: 'Filtre : description pour les lecteurs d’écran', type: 'text', plain: true },
       anchorField('ressources'),
       NAV_LABEL_FIELD,
     ],
-    list: {
-      key: 'items', label: 'Ressources',
-      fields: [
-        { key: 'title', label: 'Titre', type: 'text' },
-        { key: 'category', label: 'Thème', type: 'text', plain: true, hint: 'Exemples : Adoption, Parentalité, Écoute, Deuil. Le thème choisit l’icône et crée un filtre.' },
-        { key: 'description', label: 'Description', type: 'textarea' },
-        { key: 'url', label: 'Lien', type: 'text', plain: true, hint: 'Le lien ouvre un nouvel onglet.' },
-        { key: 'image', label: 'Image', type: 'image' },
-        { key: 'image_alt', label: 'Description de l’image', type: 'text', plain: true, hint: ALT_HINT },
-      ],
-    },
+    lists: [
+      {
+        key: 'categories', label: 'Thèmes',
+        fields: [
+          { key: 'title', label: 'Nom du thème', type: 'text', plain: true, hint: 'Le nom s’affiche sur les cartes et sur le filtre. Après un renommage, choisissez de nouveau ce thème dans les ressources.' },
+          { key: 'icon', label: 'Icône', type: 'icon', hint: 'L’icône prend la couleur du thème.' },
+          { key: 'color', label: 'Couleur', type: 'select', options: [{ value: '', label: 'Couleur principale' }, { value: 'accent', label: 'Couleur des boutons' }] },
+        ],
+      },
+      {
+        key: 'items', label: 'Ressources',
+        fields: [
+          { key: 'title', label: 'Titre', type: 'text' },
+          { key: 'category', label: 'Thème', type: 'select', optionsFrom: 'resources.categories', emptyLabel: 'Aucun thème', hint: 'Le thème choisit l’icône et la couleur de la carte. Ajoutez les thèmes dans la liste « Thèmes ».' },
+          { key: 'description', label: 'Description', type: 'textarea' },
+          { key: 'url', label: 'Lien', type: 'text', plain: true, hint: 'Le lien ouvre un nouvel onglet.' },
+          { key: 'image', label: 'Image', type: 'image', hint: 'Facultatif. L’image remplace l’icône du thème.' },
+          { key: 'image_alt', label: 'Description de l’image', type: 'text', plain: true, hint: ALT_HINT },
+        ],
+      },
+    ],
   },
   {
     key: 'footer', label: 'Pied de page',
@@ -833,6 +843,31 @@ function createField(sectionKey, fieldDef, value) {
     text.addEventListener('blur', () => {
       if (!/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(text.value)) text.value = picker.value;
     });
+  } else if (fieldDef.type === 'icon') {
+    // Search the full Lucide pack. The hidden input holds the value for collectContent.
+    const current = resourceIconPath(value).slice('/assets/icons/'.length, -'.svg'.length);
+    group.innerHTML = `<fieldset class="admin-icon-field">
+        <legend class="admin-label">${esc(fieldDef.label)}</legend>${hintHtml(fieldDef)}
+        <input id="${id}" type="hidden" data-path="${dataPath}" value="${esc(current)}">
+        <div class="admin-icon-current">
+          <img src="${esc(resourceIconPath(current))}" alt="">
+          <span>Icône choisie : <strong>${esc(current)}</strong></span>
+        </div>
+        <input type="search" class="input" placeholder="Rechercher en anglais : heart, home, baby…" aria-label="Rechercher une icône" autocomplete="off">
+        <p class="admin-hint admin-icon-count" aria-live="polite">Chargement des icônes…</p>
+        <div class="admin-icon-grid" role="radiogroup" aria-label="Icônes"></div>
+        <button type="button" class="btn btn-sm btn-ghost admin-icon-more" hidden>Afficher plus d’icônes</button>
+      </fieldset>`;
+    bindIconPicker(group, id);
+  } else if (fieldDef.type === 'select') {
+    // Options come from the field, or from the titles of another list (optionsFrom)
+    const options = fieldDef.options ? [...fieldDef.options] : [
+      { value: '', label: fieldDef.emptyLabel || '' },
+      ...(getNestedValue(content, fieldDef.optionsFrom) || []).map(option => ({ value: option.title, label: option.title })).filter(option => option.value),
+    ];
+    // Keep a value that no option matches (a renamed or removed theme), so it is not lost without notice
+    if (value && !options.some(option => option.value === value)) options.push({ value, label: `${value} (introuvable)` });
+    group.innerHTML = `${label}<select id="${id}" class="input" data-path="${dataPath}">${options.map(option => `<option value="${esc(option.value)}"${option.value === (value || '') ? ' selected' : ''}>${esc(option.label)}</option>`).join('')}</select>`;
   } else if (fieldDef.type !== 'textarea' && !fieldDef.markdown) {
     group.innerHTML = `${label}<input id="${id}" type="text" class="input" data-path="${dataPath}" value="${esc(value || '')}">`;
   } else {
@@ -857,6 +892,76 @@ function createField(sectionKey, fieldDef, value) {
     });
   }
   return group;
+}
+
+// The icon index lists the full Lucide pack: [[name, "english tags"], …]. build.js writes it.
+let iconIndexRequest = null;
+function loadIconIndex() {
+  iconIndexRequest ||= fetch('/assets/icons/index.json').then(response => {
+    if (!response.ok) throw new Error(String(response.status));
+    return response.json();
+  }).catch(error => {
+    iconIndexRequest = null;
+    throw error;
+  });
+  return iconIndexRequest;
+}
+
+const ICON_PAGE_SIZE = 60;
+
+// Every word of the search must be in the icon name or its tags. Name matches come first.
+function searchIcons(index, query) {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return index.map(([name]) => name);
+  const matches = index.filter(([name, tags]) => words.every(word => name.includes(word) || tags.includes(word)));
+  const inName = ([name]) => words.every(word => name.includes(word));
+  return [...matches.filter(inName), ...matches.filter(match => !inName(match))].map(([name]) => name);
+}
+
+function bindIconPicker(group, id) {
+  const hidden = group.querySelector('input[type="hidden"]');
+  const search = group.querySelector('input[type="search"]');
+  const count = group.querySelector('.admin-icon-count');
+  const grid = group.querySelector('.admin-icon-grid');
+  const more = group.querySelector('.admin-icon-more');
+  let results = [];
+  let shown = 0;
+
+  const showPage = () => {
+    grid.insertAdjacentHTML('beforeend', results.slice(shown, shown + ICON_PAGE_SIZE).map(name => `
+      <label class="admin-icon-option" title="${esc(name)}">
+        <input type="radio" name="${id}-choice" value="${esc(name)}" aria-label="${esc(name)}"${name === hidden.value ? ' checked' : ''}>
+        <img src="${esc(resourceIconPath(name))}" alt="" loading="lazy">
+      </label>`).join(''));
+    shown = Math.min(shown + ICON_PAGE_SIZE, results.length);
+    more.hidden = shown >= results.length;
+  };
+
+  const update = async () => {
+    try {
+      results = searchIcons(await loadIconIndex(), search.value);
+    } catch {
+      count.textContent = 'Les icônes ne peuvent pas être chargées. Rechargez la page.';
+      return;
+    }
+    grid.innerHTML = '';
+    shown = 0;
+    count.textContent = results.length ? `${results.length} icône${results.length > 1 ? 's' : ''}` : 'Aucune icône. Essayez un autre mot en anglais.';
+    showPage();
+  };
+
+  // Typing a search does not change the content, so it must not mark the page as modified
+  search.addEventListener('input', event => {
+    event.stopPropagation();
+    update();
+  });
+  more.addEventListener('click', showPage);
+  grid.addEventListener('change', event => {
+    hidden.value = event.target.value;
+    group.querySelector('.admin-icon-current img').src = resourceIconPath(hidden.value);
+    group.querySelector('.admin-icon-current strong').textContent = hidden.value;
+  });
+  update();
 }
 
 function resolveImageSrc(path) {
@@ -946,6 +1051,10 @@ function createListItem(sectionKey, listDef, item, index, totalCount) {
   const descField = listDef.fields.find(f => f.key === 'description' || f.key === 'answer');
 
   let thumbHtml = '';
+  const iconField = listDef.fields.find(f => f.type === 'icon');
+  if (iconField) {
+    thumbHtml = `<img src="${esc(resourceIconPath(item[iconField.key]))}" alt="" class="admin-thumbnail admin-thumbnail--icon">`;
+  }
   if (imageField && item[imageField.key]) {
     const alt = item[`${imageField.key}_alt`] || item[imageField.key].split('/').pop();
     thumbHtml = `<img src="${esc(resolveImageSrc(item[imageField.key]))}" alt="${esc(alt)}" class="admin-thumbnail">`;

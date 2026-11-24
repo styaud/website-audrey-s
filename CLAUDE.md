@@ -17,7 +17,7 @@ For behavior changes, run the renderer checks, `npm run build`, JavaScript synta
 - **CSS order** - reset -> variables -> components -> utilities -> responsive -> page-level. Utilities must come after components so they win. No `!important`. No ID selectors for styling.
 - **French accents** - user-facing French text must keep proper diacritics such as é, è, ê, à, ç, ô, î, and û. Content is French; code and comments are English.
 - **Privacy** - the contact email must never appear in tracked files or git history. It lives only in `.dev.vars` and Cloudflare secrets.
-- **Generated files** - `index.html`, `politique-de-confidentialite.html`, `mentions-legales.html`, `sitemap.xml`, `robots.txt`, and `_redirects` are gitignored build output. Never edit them directly.
+- **Generated files** - `index.html`, `politique-de-confidentialite.html`, `mentions-legales.html`, `sitemap.xml`, `robots.txt`, `_redirects`, and `assets/icons/` (copied from the `lucide-static` package) are gitignored build output. Never edit them directly.
 - **Markdown** - rendering logic lives in `lib/render.mjs` only and is shared by `build.js` and `functions/api/preview.js`. Do not duplicate markdown rendering.
 
 ## Admin Access Rules

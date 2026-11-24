@@ -289,6 +289,12 @@
     "intro": "Ces ressources gratuites en français proposent des repères et du soutien pour les parents et les familles du Québec.",
     "filter_label": "Filtrer les ressources par thème",
     "filter_all_label": "Toutes",
+    "categories": [
+      { "title": "Parentalité", "icon": "sprout", "color": "" },
+      { "title": "Adoption", "icon": "house-heart", "color": "accent" },
+      { "title": "Écoute", "icon": "message-circle-heart", "color": "" },
+      { "title": "Deuil", "icon": "feather", "color": "" }
+    ],
     "items": [
       {
         "title": "Mieux vivre avec notre enfant — INSPQ",

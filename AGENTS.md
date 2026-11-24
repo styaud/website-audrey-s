@@ -27,6 +27,7 @@ Do not edit these directly:
 - `sitemap.xml`
 - `robots.txt`
 - `_redirects`
+- `assets/icons/` (copied from the `lucide-static` package)
 
 Edit source files such as `content/settings.json`, `template.html`, `template-legal.html`, `styles.css`, `build.js`, and files under `lib/`, `admin/`, or `functions/`.
 

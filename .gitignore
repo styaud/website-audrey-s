@@ -8,6 +8,7 @@ node_modules/
 /politique-de-confidentialite.html
 /mentions-legales.html
 /_redirects
+/assets/icons/
 
 # Cloudflare / Wrangler
 .dev.vars

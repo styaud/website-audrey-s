@@ -421,6 +421,90 @@
       background: var(--color-bg-light);
     }
 
+    /* -- Icon picker: search the Lucide pack, one radio button for each result -- */
+    .admin-icon-field {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      min-width: 0;
+    }
+
+    .admin-icon-current {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin: var(--space-2) 0 var(--space-3);
+    }
+
+    .admin-icon-current img {
+      width: 3rem;
+      height: 3rem;
+      padding: 0.75rem;
+      border: 2px solid var(--color-primary);
+      border-radius: var(--rounded-lg);
+      background: var(--color-primary-light);
+    }
+
+    .admin-icon-count {
+      margin-top: var(--space-2);
+    }
+
+    .admin-icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr));
+      gap: var(--space-2);
+      margin: var(--space-2) 0;
+      max-height: 22rem;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    /* .btn sets display, which would show the hidden button */
+    .admin-icon-more[hidden] {
+      display: none;
+    }
+
+    .admin-icon-option {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1;
+      border: 1px solid var(--color-border);
+      border-radius: var(--rounded-lg);
+      background: var(--color-bg);
+      cursor: pointer;
+    }
+
+    .admin-icon-option:hover {
+      border-color: var(--color-primary);
+    }
+
+    .admin-icon-option:has(:checked) {
+      border: 2px solid var(--color-primary);
+      background: var(--color-primary-light);
+    }
+
+    .admin-icon-option:has(:focus-visible) {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    .admin-icon-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .admin-icon-option img {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .admin-thumbnail--icon {
+      object-fit: contain;
+      padding: 1.5rem;
+    }
+
     .admin-image-field {
       display: flex;
       align-items: center;

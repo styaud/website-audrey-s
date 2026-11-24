@@ -2016,7 +2016,8 @@ main > .section:nth-child(even of .section) .form-aside {
   background-color: color-mix(in srgb, var(--icon-color) 12%, transparent);
 }
 
-/* The icon files are masks, so they take the palette color */
+/* The icon files are masks, so they take the palette color.
+   Each theme sets --icon on the element (see lib/render.mjs). */
 .resource-icon::before {
   content: "";
   width: 1.5rem;
@@ -2026,13 +2027,7 @@ main > .section:nth-child(even of .section) .form-aside {
   mask: var(--icon) center / contain no-repeat;
 }
 
-.resource-icon[data-icon="adoption"] { --icon: url("/assets/icons/adoption.svg"); }
-.resource-icon[data-icon="famille"] { --icon: url("/assets/icons/famille.svg"); }
-.resource-icon[data-icon="ecoute"] { --icon: url("/assets/icons/ecoute.svg"); }
-.resource-icon[data-icon="deuil"] { --icon: url("/assets/icons/deuil.svg"); }
-.resource-icon[data-icon="lien"] { --icon: url("/assets/icons/lien.svg"); }
-
-.resource-card:has([data-icon="adoption"]) {
+.resource-card--accent {
   --icon-color: var(--color-accent);
 }
 

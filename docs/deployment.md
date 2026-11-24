@@ -12,6 +12,7 @@ This site is a static Cloudflare Pages project with Pages Functions for admin au
 - `sitemap.xml`
 - `robots.txt`
 - `_redirects`
+- `assets/icons/`: the full Lucide icon pack, copied from the `lucide-static` npm package, with its `LICENSE` and an `index.json` search index (`[[name, "tags"], …]`) for the admin icon picker. Update the pack with `npm update lucide-static`.
 
 These files are generated output, are gitignored, and must not be edited directly. Edit `content/settings.json`, `template.html`, `template-legal.html`, `styles.css`, or shared rendering code instead.
 

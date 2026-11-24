@@ -425,10 +425,10 @@
           {{/if}}
         </div>
 
-        {{#if resources.categories}}
+        {{#if resources.filters}}
         <div class="resource-filters reveal-on-scroll" role="group" aria-label="{{resources.filter_label}}" hidden>
           <button type="button" class="resource-filter" data-filter="" aria-pressed="true">{{resources.filter_all_label}}</button>
-          {{#each resources.categories}}
+          {{#each resources.filters}}
           <button type="button" class="resource-filter" data-filter="{{slug}}" aria-pressed="false">{{label}}</button>
           {{/each}}
         </div>
@@ -436,9 +436,9 @@
 
         <div class="resources-grid reveal-stagger">
           {{#each resources.items}}
-          <article class="resource-card card reveal-on-scroll" data-category="{{category_slug}}">
+          <article class="resource-card card reveal-on-scroll{{#if accent}} resource-card--accent{{/if}}" data-category="{{category_slug}}">
             {{#if show_icon}}
-            <span class="resource-icon" data-icon="{{icon}}" aria-hidden="true"></span>
+            <span class="resource-icon" style="--icon: url('{{icon}}')" aria-hidden="true"></span>
             {{/if}}
             {{#if image}}
             <img class="resource-thumb" src="{{image}}"{{#if image_srcset}} srcset="{{image_srcset}}" sizes="{{image_sizes}}"{{/if}} alt="{{image_alt}}" loading="lazy" decoding="async">
