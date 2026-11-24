@@ -3,6 +3,9 @@
 //  Vanilla JS. Uses server-side GitHub OAuth for auth and content management.
 // ============================================================================
 
+import { responsiveTargetWidths, responsiveWidthsForPath } from '../lib/images.mjs?v=2026-11-24';
+import { collectImagePaths, groupImageGalleryItems, normalizeLocalImagePath } from './image-gallery.js?v=2026-11-24';
+
 // ---- CONFIG ----------------------------------------------------------------
 const IMAGES_PATH = 'assets/images';
 const API = {
@@ -94,6 +97,10 @@ const anchorField = (example, extra = '') => ({
   key: 'anchor', label: 'Ancre dans l’adresse', type: 'text', plain: true, group: 'Adresse de la section',
   hint: `Exemple : ${example}. Le site garde les lettres minuscules sans accents, les chiffres et les traits d’union. Une ancre vide ou déjà utilisée reprend la valeur par défaut.${extra}`,
 });
+const NAV_LABEL_FIELD = {
+  key: 'nav_label', label: 'Libellé dans le menu', type: 'text', plain: true, group: 'Adresse de la section',
+  hint: 'Le lien apparaît dans l’en-tête et le pied de page. Laissez vide pour masquer le lien.',
+};
 const SECTIONS = [
   { divider: true, label: 'Page principale' },
   {
@@ -119,6 +126,7 @@ const SECTIONS = [
     fields: [
       { key: 'label', label: 'Nom de la bande', type: 'text', plain: true, group: 'Lecteurs d’écran', hint: 'Texte lu par les lecteurs d’écran. La bande n’a pas de titre visible.' },
       anchorField('points-forts'),
+      NAV_LABEL_FIELD,
     ],
     list: {
       key: 'items', label: 'Points forts',
@@ -133,6 +141,7 @@ const SECTIONS = [
     fields: [
       { key: 'heading', label: 'Titre de la section', type: 'text' },
       anchorField('services'),
+      NAV_LABEL_FIELD,
     ],
     list: {
       key: 'items', label: 'Services',
@@ -152,11 +161,12 @@ const SECTIONS = [
       { key: 'photo', label: 'Photo', type: 'image', hint: 'Cette photo est distincte du portrait de la bannière.' },
       { key: 'photo_alt', label: 'Description de la photo', type: 'text', plain: true, hint: ALT_HINT },
       anchorField('a-propos'),
+      NAV_LABEL_FIELD,
     ],
   },
   {
     key: 'faq', label: 'Questions fréquentes', toggleable: true,
-    fields: [{ key: 'heading', label: 'Titre de la section', type: 'text' }, anchorField('faq')],
+    fields: [{ key: 'heading', label: 'Titre de la section', type: 'text' }, anchorField('faq'), NAV_LABEL_FIELD],
     list: {
       key: 'items', label: 'Questions et réponses',
       fields: [
@@ -182,6 +192,7 @@ const SECTIONS = [
       { key: 'form_text', label: 'Texte', type: 'text', plain: true, group: 'Option 3 — Formulaire', hint: 'Cette option est masquée quand la section Formulaire est masquée.' },
       { key: 'form_link_label', label: 'Texte du bouton', type: 'text', group: 'Option 3 — Formulaire' },
       anchorField('contact'),
+      NAV_LABEL_FIELD,
     ],
   },
   {
@@ -219,6 +230,7 @@ const SECTIONS = [
       { key: 'form_subject_none', label: 'Aucun sujet choisi', type: 'text', plain: true, group: 'Choix des sujets', hint: 'Texte lu par les lecteurs d’écran.' },
       { key: 'form_subject_remove', label: 'Bouton pour retirer un sujet', type: 'text', plain: true, group: 'Choix des sujets', hint: 'Texte lu par les lecteurs d’écran. {sujet} devient le nom du sujet.' },
       anchorField('ecrivez-moi', ' Si vous la changez, mettez aussi à jour les liens « /#ecrivez-moi » des pages légales.'),
+      NAV_LABEL_FIELD,
     ],
     lists: [
       { key: 'steps', label: 'Étapes (comment ça se passe)', fields: [{ key: 'title', label: 'Titre', type: 'text', plain: true }, { key: 'text', label: 'Texte', type: 'text', plain: true }] },
@@ -232,6 +244,7 @@ const SECTIONS = [
       { key: 'heading', label: 'Titre de la section', type: 'text' },
       { key: 'intro', label: 'Introduction', type: 'textarea' },
       anchorField('ressources'),
+      NAV_LABEL_FIELD,
     ],
     list: {
       key: 'items', label: 'Ressources',
@@ -275,6 +288,17 @@ const SECTIONS = [
       { key: 'body', label: 'Contenu', type: 'textarea', hint: 'Le texte accepte le format Markdown.' },
     ],
   },
+  { divider: true, label: 'Annonce' },
+  {
+    key: 'popup', label: 'Fenêtre contextuelle', toggleable: true,
+    fields: [
+      { key: 'title', label: 'Titre', type: 'text' },
+      { key: 'message', label: 'Message', type: 'textarea' },
+      { key: 'image', label: 'Image', type: 'image' },
+      { key: 'image_alt', label: 'Description de l’image', type: 'text', plain: true, hint: ALT_HINT },
+      { key: 'dismiss_label', label: 'Texte du bouton de fermeture', type: 'text' },
+    ],
+  },
   { divider: true, label: 'Configuration' },
   {
     key: 'header', label: 'En-tête',
@@ -285,28 +309,7 @@ const SECTIONS = [
       { key: 'cta_text', label: 'Texte du bouton', type: 'text', hint: 'Le bouton mène à la section Contact, où le visiteur choisit comment vous joindre. Si la section Contact est masquée, il mène au formulaire.' },
       { key: 'menu_label', label: 'Bouton du menu (mobile)', type: 'text', plain: true, hint: 'Texte lu par les lecteurs d’écran.' },
       { key: 'nav_label', label: 'Nom de la navigation', type: 'text', plain: true, hint: 'Texte lu par les lecteurs d’écran.' },
-    ],
-  },
-  {
-    key: 'nav', label: 'Navigation',
-    fields: [
-      { key: 'services', label: 'Services', type: 'text', plain: true, hint: 'Les liens apparaissent dans l’en-tête et le pied de page. Un libellé vide masque le lien.' },
-      { key: 'about', label: 'À propos', type: 'text', plain: true },
-      { key: 'faq', label: 'Questions fréquentes', type: 'text', plain: true },
-      { key: 'contact', label: 'Contact', type: 'text', plain: true },
-      { key: 'form', label: 'Formulaire', type: 'text', plain: true },
-      { key: 'resources', label: 'Ressources', type: 'text', plain: true },
       { key: 'back_label', label: 'Retour au site', type: 'text', plain: true, hint: 'Lien en haut de la politique de confidentialité et des mentions légales.' },
-    ],
-  },
-  {
-    key: 'popup', label: 'Fenêtre contextuelle', toggleable: true,
-    fields: [
-      { key: 'title', label: 'Titre', type: 'text' },
-      { key: 'message', label: 'Message', type: 'textarea' },
-      { key: 'image', label: 'Image', type: 'image' },
-      { key: 'image_alt', label: 'Description de l’image', type: 'text', plain: true, hint: ALT_HINT },
-      { key: 'dismiss_label', label: 'Texte du bouton de fermeture', type: 'text' },
     ],
   },
   {
@@ -522,24 +525,6 @@ async function listImages() {
   return data.files || [];
 }
 
-function normalizeLocalImagePath(value) {
-  const path = String(value || '').trim().replace(/^https?:\/\/[^/]+\//i, '').split(/[?#]/)[0].replace(/^\/+/, '');
-  return path.startsWith(`${IMAGES_PATH}/`) ? path : '';
-}
-
-function collectImagePaths(source) {
-  const paths = new Set();
-  JSON.stringify(source, (_, value) => {
-    if (typeof value === 'string') {
-      for (const match of value.match(/\/?assets\/images\/[^\s"'<>),]+/gi) || []) {
-        paths.add(normalizeLocalImagePath(match));
-      }
-    }
-    return value;
-  });
-  return paths;
-}
-
 function imageAltForPath(path, source = content) {
   if (!source || typeof source !== 'object') return '';
   for (const [key, value] of Object.entries(source)) {
@@ -600,7 +585,7 @@ function getSectionLabel(sectionDef) {
 function updateSectionNavigation() {
   document.querySelectorAll('.admin-sidebar-item, .admin-mobile-tab').forEach(button => {
     const section = getSections().find(item => item.key === button.dataset.section);
-    const label = section ? getSectionLabel(section) : 'Images';
+    const label = section ? getSectionLabel(section) : 'Bibliothèque d’images';
     button.textContent = label;
     button.classList.toggle('active', button.dataset.section === activeSection);
     if (button.dataset.section === activeSection) button.setAttribute('aria-current', 'page');
@@ -661,12 +646,17 @@ function renderSections() {
     mobileTabs.appendChild(tab);
   });
 
+  const mediaGroup = document.createElement('div');
+  mediaGroup.className = 'admin-sidebar-group';
+  mediaGroup.textContent = 'Médias';
+  sidebar.appendChild(mediaGroup);
+
   for (const [target, className] of [[sidebar, 'admin-sidebar-item'], [mobileTabs, 'admin-mobile-tab']]) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = className;
     button.dataset.section = 'images';
-    button.textContent = 'Images';
+    button.textContent = 'Bibliothèque d’images';
     button.addEventListener('click', () => showSection('images'));
     target.appendChild(button);
   }
@@ -1097,7 +1087,7 @@ async function handleImageSelect(event) {
   try {
     const upload = await prepareImageUpload(file, input.dataset.imagePath);
     if (!group.isConnected) return;
-    pendingImages.push(upload);
+    pendingImages.push(...upload.uploads);
     const pathInput = group.querySelector('[data-path]');
     pathInput.value = `/${upload.path}`;
     updateImageThumbnail(group, pathInput.value);
@@ -1128,12 +1118,18 @@ async function prepareImageUpload(file, fieldPath = '') {
     const image = await loadImageFile(file);
     if (image.width !== 180 || image.height !== 180) throw new Error('L’icône Apple doit mesurer 180 × 180 pixels.');
   }
-  const result = preserve ? await readFileAsBase64(file) : await compressToWebP(file);
-  if (result.base64Data.length * 3 / 4 > 5 * 1024 * 1024) throw new Error('L’image préparée dépasse la limite de 5 Mo.');
   const base = file.name.replace(/\.[^.]+$/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 75).toLowerCase() || 'image';
-  const name = `${base}-${crypto.randomUUID().slice(0, 8)}.${preserve ? extension : 'webp'}`;
-  return { name, path: `${IMAGES_PATH}/${name}`, base64: result.base64Data, previewUrl: result.previewUrl };
+    .replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^[-_]+|[-_]+$/g, '').slice(0, 75).toLowerCase() || 'image';
+  const uniqueBase = `${base}-${crypto.randomUUID().slice(0, 8)}`;
+  const variants = preserve
+    ? [{ ...await readFileAsBase64(file), width: 0 }]
+    : await compressToWebPVariants(file, responsiveWidthsForPath(fieldPath));
+  const uploads = variants.map(result => {
+    if (result.base64Data.length * 3 / 4 > 5 * 1024 * 1024) throw new Error('L’image préparée dépasse la limite de 5 Mo.');
+    const name = preserve ? `${uniqueBase}.${extension}` : `${uniqueBase}-${result.width}w.webp`;
+    return { name, path: `${IMAGES_PATH}/${name}`, base64: result.base64Data, previewUrl: result.previewUrl };
+  });
+  return { path: uploads[uploads.length - 1].path, uploads };
 }
 
 function loadImageFile(file) {
@@ -1146,19 +1142,23 @@ function loadImageFile(file) {
   });
 }
 
-// Raster images use the existing 1920-pixel limit and WebP quality.
-async function compressToWebP(file, maxDim = 1920, quality = 0.82) {
+async function compressToWebPVariants(file, requestedWidths, quality = 0.82) {
   const image = await loadImageFile(file);
-  const ratio = Math.min(1, maxDim / image.width, maxDim / image.height);
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  const variants = [];
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(image.width * ratio));
-  canvas.height = Math.max(1, Math.round(image.height * ratio));
   const context = canvas.getContext('2d');
   if (!context) throw new Error('Le navigateur ne peut pas préparer cette image.');
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
-  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
-  if (!blob || blob.type !== 'image/webp') throw new Error('Le navigateur ne peut pas convertir cette image en WebP.');
-  return readFileAsBase64(blob);
+  for (const width of responsiveTargetWidths(sourceWidth, requestedWidths)) {
+    canvas.width = width;
+    canvas.height = Math.max(1, Math.round(sourceHeight * width / sourceWidth));
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+    if (!blob || blob.type !== 'image/webp') throw new Error('Le navigateur ne peut pas convertir cette image en WebP.');
+    variants.push({ ...await readFileAsBase64(blob), width });
+  }
+  return variants;
 }
 
 function readFileAsBase64(file) {
@@ -1180,18 +1180,30 @@ function renderImagesView() {
         <input class="admin-file-input" type="file" multiple accept=".webp,.jpg,.jpeg,.png,.svg,.ico" aria-label="Ajouter des images à la bibliothèque">
       </label>
     </div>
-    <p class="admin-hint">Les images seront téléversées avec Publier. Les images matricielles deviennent des WebP de 1920 pixels au maximum. Les SVG et ICO sont conservés.</p>
+    <p class="admin-hint">Les images seront téléversées avec Publier. Les images matricielles deviennent plusieurs WebP, sans agrandissement. Les SVG et ICO sont conservés.</p>
     <p class="admin-hint">Les icônes PNG se téléversent dans Référencement. Copiez le chemin d’une image pour la réutiliser dans une section.</p>
     <p class="admin-hint">La suppression d’un fichier publié est immédiate. Retirez d’abord ses références, puis publiez le contenu.</p>
+    <div class="admin-gallery-toolbar">
+      <label class="admin-gallery-filter">Afficher
+        <select class="admin-input" aria-label="Filtrer les images">
+          <option value="all">Toutes</option>
+          <option value="used">Utilisées</option>
+          <option value="unused">Inutilisées</option>
+        </select>
+      </label>
+      <button type="button" class="btn btn-sm btn-danger admin-prune-images" disabled>Supprimer les images inutilisées (0)</button>
+    </div>
     <div class="admin-gallery-body" aria-live="polite">Chargement des images…</div>`;
   const target = card.querySelector('.admin-gallery-body');
   const input = card.querySelector('input');
+  card.querySelector('select').addEventListener('change', () => filterImageGallery(target));
   input.addEventListener('change', async () => {
     input.disabled = true;
     preparingImages += 1;
     try {
       for (const file of input.files) {
-        pendingImages.push(await prepareImageUpload(file));
+        const upload = await prepareImageUpload(file);
+        pendingImages.push(...upload.uploads);
         markDirty();
       }
       showToast('Images préparées. Cliquez sur Publier pour les téléverser.', 'success');
@@ -1210,33 +1222,51 @@ function renderImagesView() {
 }
 
 async function renderImageGallery(target) {
+  const prune = target.closest('section').querySelector('.admin-prune-images');
+  prune.disabled = true;
   try {
     const remoteImages = await listImages();
     const pendingPaths = new Set(pendingImages.map(image => image.path));
     if (!target.isConnected) return;
     const images = remoteImages.filter(image => /\.(webp|jpe?g|png|svg|ico)$/i.test(image.name) && !pendingPaths.has(normalizeLocalImagePath(image.path)));
-    images.push(...pendingImages.map(image => ({ ...image, pending: true })));
-    const usedPaths = collectImagePaths(content);
+    images.push(...pendingImages.map(image => ({ ...image, pending: !image.sha })));
+    const groups = groupImageGalleryItems(images, collectImagePaths(content), publishedImagePaths);
+    const unusedImages = groups.filter(group => !group.used).flatMap(group => group.variants);
+    prune.textContent = `Supprimer les images inutilisées (${unusedImages.length})`;
+    prune.disabled = unusedImages.length === 0;
+    prune.onclick = () => showImageRemovalDialog(unusedImages, target);
     const grid = document.createElement('div');
     grid.className = 'admin-gallery-grid';
-    for (const image of images) {
-      const path = normalizeLocalImagePath(image.path);
-      const used = usedPaths.has(path);
-      const published = publishedImagePaths.has(path);
-      const adminIcon = path === 'assets/images/favicon.ico';
-      const unused = !used && !published && !adminIcon;
+    for (const image of groups) {
+      const path = image.path;
       const card = document.createElement('article');
-      card.className = `admin-gallery-card${unused ? ' admin-gallery-card-unused' : ''}`;
+      card.className = `admin-gallery-card${image.used ? '' : ' admin-gallery-card-unused'}`;
+      card.dataset.used = String(image.used);
       const thumbnail = document.createElement('img');
       thumbnail.src = resolveImageSrc(`/${path}`);
-      thumbnail.alt = imageAltForPath(path) || image.name;
+      thumbnail.alt = imageAltForPath(path) || image.displayName;
       thumbnail.loading = 'lazy';
+      thumbnail.decoding = 'async';
       const title = document.createElement('strong');
       title.className = 'admin-gallery-title';
-      title.textContent = image.name;
+      title.textContent = image.displayName;
+      const badges = document.createElement('div');
+      badges.className = 'admin-gallery-badges';
       const label = document.createElement('span');
-      label.className = unused ? 'admin-unused-badge' : 'admin-hint';
-      label.textContent = unused ? 'Inutilisée' : adminIcon ? 'Icône de l’administration' : published && !used ? 'Encore publiée' : 'Utilisée';
+      label.className = image.used ? 'admin-used-badge' : 'admin-unused-badge';
+      label.textContent = image.used ? 'Utilisée' : 'Inutilisée';
+      if (image.adminIcon) label.title = 'Icône de l’administration';
+      else if (image.published && !image.usedInDraft) label.title = 'Encore utilisée dans le contenu publié';
+      const count = document.createElement('span');
+      count.className = 'admin-variant-badge';
+      count.textContent = `${image.variantCount} variante${image.variantCount > 1 ? 's' : ''}`;
+      badges.append(label, count);
+      if (image.variants.some(variant => variant.pending)) {
+        const badge = document.createElement('span');
+        badge.className = 'admin-pending-badge';
+        badge.textContent = 'À publier';
+        badges.appendChild(badge);
+      }
       const imagePath = document.createElement('code');
       imagePath.textContent = `/${path}`;
       const actions = document.createElement('div');
@@ -1253,41 +1283,120 @@ async function renderImageGallery(target) {
           showToast('Copiez le chemin affiché sous l’image.', 'error');
         }
       });
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'btn btn-sm btn-danger';
-      remove.textContent = image.pending ? 'Retirer' : 'Supprimer';
-      remove.disabled = !unused;
-      if (!unused) remove.title = 'Retirez les références à cette image, puis publiez le contenu avant de la supprimer.';
-      remove.addEventListener('click', async () => {
-        if (!confirm(`${image.pending ? 'Retirer' : 'Supprimer définitivement'} ${image.name} ?`)) return;
-        remove.disabled = true;
-        try {
-          if (image.pending) pendingImages = pendingImages.filter(item => item.path !== path);
-          else await deleteImage(image);
-          showToast(image.pending ? 'Image retirée de la liste de téléversement.' : 'Image supprimée.', 'success');
-          await renderImageGallery(target);
-        } catch (error) {
-          remove.disabled = false;
-          showToast(error.message, 'error');
-        }
-      });
-      actions.append(copy, remove);
-      card.append(thumbnail, title, label, imagePath);
-      if (image.pending) {
-        const badge = document.createElement('span');
-        badge.className = 'admin-pending-badge';
-        badge.textContent = 'À publier';
-        card.appendChild(badge);
+      actions.append(copy);
+      // A used image has no delete button. The "Utilisée" badge tells why.
+      if (!image.used) {
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'btn btn-sm btn-danger';
+        remove.textContent = image.variants.every(variant => variant.pending) ? 'Retirer' : 'Supprimer';
+        remove.addEventListener('click', () => showImageRemovalDialog(image.variants, target));
+        actions.append(remove);
       }
-      card.appendChild(actions);
+      card.append(thumbnail, title, badges, imagePath, actions);
       grid.appendChild(card);
     }
-    if (images.length) target.replaceChildren(grid);
-    else target.textContent = 'Aucune image dans la bibliothèque.';
+    const empty = document.createElement('p');
+    empty.className = 'admin-gallery-empty admin-hint';
+    empty.textContent = images.length ? 'Aucune image ne correspond au filtre.' : 'Aucune image dans la bibliothèque.';
+    target.replaceChildren(grid, empty);
+    filterImageGallery(target);
   } catch (error) {
     target.textContent = error.message;
   }
+}
+
+function filterImageGallery(target) {
+  const filter = target.closest('section').querySelector('select').value;
+  const cards = [...target.querySelectorAll('.admin-gallery-card')];
+  for (const card of cards) card.hidden = filter !== 'all' && (card.dataset.used === 'true') !== (filter === 'used');
+  const empty = target.querySelector('.admin-gallery-empty');
+  if (empty) empty.hidden = cards.some(card => !card.hidden);
+}
+
+function showImageRemovalDialog(images, target) {
+  if (!images.length) return;
+  if (preparingImages) {
+    showToast('Attendez la préparation des images avant de les supprimer.', 'error');
+    return;
+  }
+  const unusedImages = groupImageGalleryItems(images, collectImagePaths(content), publishedImagePaths)
+    .filter(group => !group.used).flatMap(group => group.variants);
+  if (!unusedImages.length) return;
+  const dialog = document.createElement('dialog');
+  dialog.className = 'admin-image-dialog';
+  dialog.setAttribute('aria-labelledby', 'image-removal-title');
+  const title = document.createElement('h2');
+  title.id = 'image-removal-title';
+  title.textContent = 'Supprimer ces images inutilisées ?';
+  const summary = document.createElement('p');
+  summary.className = 'admin-hint';
+  summary.setAttribute('role', 'status');
+  summary.textContent = `${unusedImages.length} fichier(s), variantes comprises. La suppression des fichiers publiés est immédiate. Les fichiers à publier seront retirés de la liste de téléversement.`;
+  const list = document.createElement('ul');
+  list.className = 'admin-image-removal-list';
+  const statuses = unusedImages.map(image => {
+    const item = document.createElement('li');
+    const path = document.createElement('code');
+    path.textContent = `/${image.path}`;
+    const status = document.createElement('span');
+    status.textContent = image.pending ? 'À publier' : 'Publiée';
+    item.append(path, status);
+    list.appendChild(item);
+    return status;
+  });
+  const actions = document.createElement('div');
+  actions.className = 'admin-gallery-actions';
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.className = 'btn btn-sm btn-outline-muted';
+  cancel.textContent = 'Annuler';
+  cancel.autofocus = true;
+  const confirm = document.createElement('button');
+  confirm.type = 'button';
+  confirm.className = 'btn btn-sm btn-danger';
+  confirm.textContent = 'Confirmer la suppression';
+  actions.append(cancel, confirm);
+  dialog.append(title, summary, list, actions);
+  document.body.appendChild(dialog);
+  let deleting = false;
+  cancel.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('cancel', event => { if (deleting) event.preventDefault(); });
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  confirm.addEventListener('click', async () => {
+    if (groupImageGalleryItems(unusedImages, collectImagePaths(content), publishedImagePaths).some(group => group.used)) {
+      summary.textContent = 'Le contenu utilise une de ces images. Fermez cette fenêtre et actualisez la bibliothèque.';
+      confirm.disabled = true;
+      return;
+    }
+    deleting = true;
+    confirm.disabled = true;
+    cancel.disabled = true;
+    let deleted = 0;
+    let failed = 0;
+    for (const [index, image] of unusedImages.entries()) {
+      statuses[index].textContent = 'Suppression…';
+      try {
+        if (!image.pending) await deleteImage(image);
+        pendingImages = pendingImages.filter(item => item.path !== image.path);
+        deleted += 1;
+        statuses[index].textContent = image.pending ? 'Retirée de la liste de téléversement' : 'Supprimée';
+      } catch (error) {
+        failed += 1;
+        statuses[index].className = 'admin-image-removal-error';
+        statuses[index].textContent = `Échec : ${error.message}`;
+      }
+    }
+    deleting = false;
+    confirm.remove();
+    cancel.disabled = false;
+    cancel.textContent = 'Fermer';
+    summary.textContent = `${deleted} fichier(s) supprimé(s) ou retiré(s). ${failed} échec(s).`;
+    showToast(summary.textContent, failed ? 'error' : 'success');
+    await renderImageGallery(target);
+    cancel.focus();
+  });
+  dialog.showModal();
 }
 
 // ============================================================================
@@ -1342,7 +1451,11 @@ async function handlePreview() {
       const attribute = element.tagName === 'IMG' ? 'src' : 'href';
       const path = normalizeLocalImagePath(element.getAttribute(attribute));
       const pending = pendingImages.find(image => image.path === path);
-      if (pending) element.setAttribute(attribute, pending.previewUrl);
+      if (pending) {
+        element.setAttribute(attribute, pending.previewUrl);
+        element.removeAttribute('srcset');
+        element.removeAttribute('sizes');
+      }
     });
     $previewFrame.srcdoc = '<!doctype html>' + documentPreview.documentElement.outerHTML;
     $previewFrame.hidden = false;
@@ -1403,8 +1516,9 @@ async function handlePublish() {
   try {
     // 1. Upload any pending images
     for (const img of pendingImages) {
+      if (img.sha) continue;
       setStatus('saving', `Envoi de ${img.name}...`);
-      await uploadImage(img);
+      img.sha = (await uploadImage(img)).sha;
     }
 
     // 2. Update settings.json

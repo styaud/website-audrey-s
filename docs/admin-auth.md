@@ -45,6 +45,16 @@ Content and image writes force a live GitHub permission check. Reads and preview
 
 The admin editor loads EasyMDE 2.21.0 and Font Awesome 6.5.2 from pinned CDN URLs with Subresource Integrity. Do not use floating versions such as `@2` or add unpinned scripts to `/admin/`. Third-party admin JavaScript can act as the signed-in admin.
 
+### Content Organization
+
+The sidebar groups content under "Page principale", "Pages secondaires", "Annonce", and "Configuration".
+"Annonce" contains "Fenêtre contextuelle". "Configuration" contains the header, notification email, colors, and SEO settings.
+Each section from `highlights` through `resources` stores its own `nav_label` beside `anchor` under "Adresse de la section".
+An empty or missing label hides the header and footer link. A disabled section also has no link.
+The header form stores the legal pages' return link text in `header.back_label`.
+The Resources form controls visibility, introduction, and resource cards. Each card has a title, description, URL, and optional image.
+Resource links open in a new tab. Use free French resources from official organizations and check each URL before publication.
+
 ### Preview And Content Security Policy
 
 The editor posts draft content to `/api/preview` with same-origin credentials and `X-CSRF-Token`. The route uses `requireAdmin(context, { csrf: true })` and the request checks above. It renders HTML through `prepareContent()` and `render()` in `lib/render.mjs`, which the build also uses. The shared renderer escapes Markdown input and sanitizes the HTML output.
@@ -73,7 +83,19 @@ Allowed extensions:
 
 The server rejects traversal, slashes, backslashes, empty names, oversized payloads, invalid file signatures, and unsafe SVG markup. SVG uploads are allowed, but scripts, event handlers, external references, `foreignObject`, and similar active content are rejected.
 
-The admin UI converts raster uploads to WebP with a maximum dimension of 1920 pixels and quality `0.82`. It preserves SVG and ICO files. SEO icon fields are exceptions:
+The admin converts raster uploads to WebP variants at quality `0.82`. It uses these width sets:
+
+- `hero.image`: 960, 1440, 1920, 2560, 3840 pixels.
+- `seo.og_image`: 480, 960, 1200 pixels.
+- Other fields and library uploads: 480, 960, 1440, 1920 pixels.
+
+Each set stops at the source width and contains no duplicate width. The admin never enlarges an image.
+A 3000-pixel standard image creates four variants. A 700-pixel image creates 480- and 700-pixel variants.
+File names use `<base>-<width>w.webp`, with a safe base and a random suffix. The content field stores the largest variant path.
+`lib/images.mjs` shares width rules between the admin and renderer. Builds and previews add escaped `srcset` values and per-image `sizes`.
+Plain image paths keep one `src`. The hero background alone uses `fetchpriority="high"`. Images below the first screen use lazy loading and asynchronous decoding.
+
+The admin preserves SVG and ICO files. SEO icon fields are exceptions:
 
 - `seo.favicon` accepts PNG or ICO and preserves the original format.
 - `seo.apple_touch_icon` accepts only a 180 × 180 PNG and preserves the original format.
@@ -83,19 +105,30 @@ These field-specific restrictions run in the browser. The image API validates th
 
 ### Gallery And Publication
 
-The image gallery lists repository images and pending uploads. It shows image paths, a copy action, usage labels, and an `À publier` label for pending uploads.
+Open `Médias` → `Bibliothèque d’images` to view repository images and pending uploads.
+The library groups variants into one card. Each card shows a variant count, a path, and a copy action.
+Usage badges show `Utilisée` or `Inutilisée`. Pending files show `À publier`.
+The `Toutes`, `Utilisées`, and `Inutilisées` filters control the visible cards.
 
-New images stay in browser memory until the user confirms `Publier`. Preview uses their local data URLs before upload. Publication uploads every pending image first, then writes `content/settings.json`. Each image upload and the content write use separate GitHub requests. If a later request fails, earlier uploads remain in the repository.
+New images stay in browser memory until the user confirms `Publier`. Preview replaces their paths with local data URLs and removes their remote `srcset`.
+Publication uploads every variant sequentially before it writes `content/settings.json`. Each file and the content use separate GitHub requests.
+If a later request fails, earlier uploads remain in the repository. The editor retains their SHAs and does not upload them again.
 
 Publication does not delete unused images. The gallery marks an image `Inutilisée` only when all these conditions apply:
 
-- The current draft does not reference its path.
-- The published content snapshot does not reference its path.
+- The current draft does not reference the image or any of its variants.
+- The published content snapshot does not reference the image or any of its variants.
 - Its path is not `assets/images/favicon.ico`, which the admin page uses as its fixed icon.
 
-The editor refreshes the published content snapshot when it loads content and after successful publication. The gallery disables removal for all other images. Remove image references and publish the content before deletion.
+The reference scan reads strings throughout the content object, including Markdown. A reference to one variant protects the complete group.
+The editor refreshes the published content snapshot when it loads content and after successful publication.
+Remove image references and publish the content before deletion.
 
-The gallery requires confirmation for removal. Removal of a pending image only removes it from the upload queue. Deletion of a repository image calls `DELETE /api/admin/image` immediately, without another publication.
+`Supprimer les images inutilisées (N)` counts unused files, including variants and pending files.
+The review dialog lists every path before confirmation. Group removal uses the same dialog and includes every variant.
+Deletion calls the existing `DELETE /api/admin/image` endpoint sequentially with the file name, SHA, and CSRF token.
+The dialog reports each failure and refreshes the library after deletion. Pending files leave only the local upload queue.
+Published files are deleted immediately, without another publication. Run `node admin/image-gallery.test.mjs` for grouping and reference checks.
 
 These reference and fixed-icon protections apply in the gallery UI only. The delete API checks authorization, CSRF, the image name, and the supplied SHA. It does not check content references or protect the fixed admin icon.
 

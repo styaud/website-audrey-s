@@ -24,16 +24,7 @@
     "site_name": "Audrey Stypulkowski *Infirmière clinicienne membre de l'OIIQ*",
     "cta_text": "Me contacter",
     "menu_label": "Menu",
-    "nav_label": "Navigation principale"
-  },
-  "nav": {
-    "admin_label": "Navigation",
-    "services": "Services",
-    "about": "À propos de moi",
-    "faq": "FAQ",
-    "contact": "Contact",
-    "form": "Écrivez-moi",
-    "resources": "Ressources",
+    "nav_label": "Navigation principale",
     "back_label": "Retour au site"
   },
   "hero": {
@@ -42,7 +33,7 @@
     "eyebrow": "Infirmière clinicienne en parentalité et en adoption",
     "title": "Observer, soutenir, guider",
     "subtitle": "J'accompagne votre famille avant, pendant et après l'adoption, pour favoriser l'attachement et l'adaptation de chacun.",
-    "image": "/assets/images/relation-parent-enfant.webp",
+    "image": "/assets/images/relation-parent-enfant-1920w.webp",
     "image_alt": "Quatre personnes de dos, les bras autour des épaules, dans un champ doré sous un ciel bleu.",
     "portrait": "/assets/images/photo-profil-fam-i.webp",
     "portrait_alt": "Audrey Stypulkowski, les cheveux courts et bouclés, avec des lunettes bordeaux et un pull rose.",
@@ -64,6 +55,7 @@
     "admin_label": "Points forts",
     "enabled": true,
     "anchor": "points-forts",
+    "nav_label": "",
     "label": "Points forts",
     "items": [
       {
@@ -84,30 +76,31 @@
     "admin_label": "Services",
     "enabled": true,
     "anchor": "services",
+    "nav_label": "Services",
     "heading": "Mes services",
     "items": [
       {
         "title": "Soutien dans le rôle et les habiletés parentales (coaching parental et famille élargie)",
         "description": "Des outils concrets pour renforcer votre confiance et vos habiletés de parent, avec la famille élargie au besoin.",
-        "image": "/assets/images/natik-1123-home-5574909-1920.webp",
+        "image": "/assets/images/natik-1123-home-5574909-1920-1920w.webp",
         "image_alt": "Deux adultes et deux enfants assis devant un mur de briques blanches, les mains des adultes réunies en forme de toit."
       },
       {
         "title": "Adoption",
         "description": "Un accompagnement avant, pendant et après l’adoption pour favoriser l’attachement et l’adaptation de chacun.",
-        "image": "/assets/images/adoption-1.webp",
+        "image": "/assets/images/adoption-1-1920w.webp",
         "image_alt": "Des personnages et des maisons découpés dans du papier, disposés sur une table en bois."
       },
       {
         "title": "Cadre, règles, limites et respect des consignes",
         "description": "Des repères clairs et bienveillants pour poser des limites cohérentes et favoriser la coopération de l’enfant.",
-        "image": "/assets/images/cadre-et-regles.webp",
+        "image": "/assets/images/cadre-et-regles-1280w.webp",
         "image_alt": "Un mètre pliant forme une maison avec un soleil, un nuage et un cœur, près d’une plante en pot."
       },
       {
         "title": "Saine gestion des émotions",
         "description": "Aider l’enfant et le parent à reconnaître, nommer et apprivoiser les émotions au quotidien.",
-        "image": "/assets/images/gestion-des--motions--1.webp",
+        "image": "/assets/images/gestion-des--motions--1-1920w.webp",
         "image_alt": "Un jeune aux cheveux bouclés, la bouche ouverte et les mains en porte-voix, devant du feuillage."
       },
       {
@@ -119,13 +112,13 @@
       {
         "title": "Recommandations pour la maison et l’école",
         "description": "Des recommandations concrètes, adaptées aux besoins de l’enfant, à la maison comme à l’école.",
-        "image": "/assets/images/enfant-ecole--1.webp",
+        "image": "/assets/images/enfant-ecole--1-1920w.webp",
         "image_alt": "Un enfant de dos, avec une casquette verte et un sac à dos bleu, devant une porte vitrée décorée de dessins."
       },
       {
         "title": "Accompagnement du deuil",
         "description": "Un soutien humain pour traverser le deuil en famille et accompagner l’enfant selon son âge.",
-        "image": "/assets/images/plume-deuil.webp",
+        "image": "/assets/images/plume-deuil-1920w.webp",
         "image_alt": "Une goutte d’eau sur une plume blanche duveteuse, sur un fond sombre."
       },
       {
@@ -140,15 +133,17 @@
     "admin_label": "À propos",
     "enabled": true,
     "anchor": "a-propos",
+    "nav_label": "À propos de moi",
     "title": "À propos de moi",
     "body": "Je suis infirmière clinicienne, formée et diplômée des hôpitaux de Paris depuis 2005. Je débute ma carrière à l’hôpital Necker–Enfants malades, puis poursuis mon parcours à l’hôpital Sainte-Justine à Montréal en soins palliatifs pédiatriques.\nAu fil des années, j'ai enrichi ma pratique d’une vaste gamme de formations complémentaires : Techniques d’impact, NeuroGym Tonik, approche systémique, communication en situations difficiles, accompagnement du deuil, et bien d’autres.\n\nDepuis plus de 20 ans, j'accompagne les enfants, les adolescents et leurs familles. Je me distingue par mon écoute, ma présence authentique et mes solides compétences en relation d’aide. \n\nPassionnée par les neurosciences affectives et le développement de l’enfant.\n\nMon approche allie vulgarisation de concepts scientifiques, théorie de l’attachement et outils concrets, afin d’offrir des rencontres bienveillantes, structurées et adaptées à la réalité unique de chaque famille.\n\nJe suis également maman. L’adoption de mes jumeaux a profondément transformé ma vision de la parentalité et nourrit aujourd’hui ma compréhension sensible des défis que vivent les familles.\n\nSe mettre à hauteur d’enfants, c’est apprendre à être à l’écoute de leurs besoins, donner un sens à leur monde intérieur et donner aux parents d’aujourd’hui la chance de créer la société de demain.",
-    "photo": "/assets/images/natik-1123-home-5574909-1920.webp",
+    "photo": "/assets/images/natik-1123-home-5574909-1920-1920w.webp",
     "photo_alt": "Deux adultes et deux enfants assis devant un mur de briques blanches, les mains des adultes réunies en forme de toit."
   },
   "faq": {
     "admin_label": "FAQ",
     "enabled": true,
     "anchor": "faq",
+    "nav_label": "FAQ",
     "heading": "Questions fréquentes",
     "items": [
       {
@@ -173,6 +168,7 @@
     "admin_label": "Contact",
     "enabled": true,
     "anchor": "contact",
+    "nav_label": "Contact",
     "heading": "Me contacter",
     "subtitle": "N'hésitez pas à me contacter pour une première consultation ou pour toute question. Nous prendrons le temps d'évaluer votre situation et les services les mieux adaptés à vos besoins.",
     "phone": "+1 514 690-1285",
@@ -191,6 +187,7 @@
     "admin_label": "Formulaire",
     "enabled": true,
     "anchor": "ecrivez-moi",
+    "nav_label": "Écrivez-moi",
     "heading": "Écrivez-moi",
     "subtitle": "Quelques lignes suffisent. Décrivez brièvement vos besoins et je vous répondrai dans les meilleurs délais.",
     "privacy_note": "Vos renseignements restent confidentiels. Évitez d’inclure des renseignements médicaux détaillés. [Politique de confidentialité](/politique-de-confidentialite.html)",
@@ -285,11 +282,62 @@
   },
   "resources": {
     "admin_label": "Ressources",
-    "enabled": false,
+    "enabled": true,
     "anchor": "ressources",
+    "nav_label": "Ressources",
     "heading": "Ressources",
-    "intro": "",
-    "items": []
+    "intro": "Ces ressources gratuites en français proposent des repères et du soutien pour les parents et les familles du Québec.",
+    "items": [
+      {
+        "title": "Mieux vivre avec notre enfant — INSPQ",
+        "description": "Un guide pour comprendre le développement, le sommeil et les besoins de votre enfant, de la grossesse à deux ans.",
+        "url": "https://www.inspq.qc.ca/mieux-vivre",
+        "image": "",
+        "image_alt": ""
+      },
+      {
+        "title": "Adoption internationale — Gouvernement du Québec",
+        "description": "Les informations officielles du Québec sur la préparation, les démarches, les règles en vigueur et les services après l’adoption internationale.",
+        "url": "https://www.quebec.ca/famille-et-soutien-aux-personnes/grossesse-parentalite/adoption/adoption-internationale",
+        "image": "",
+        "image_alt": ""
+      },
+      {
+        "title": "Adoption et santé internationale — CHU Sainte-Justine",
+        "description": "Une présentation de la clinique, des ressources pour préparer l’adoption et des informations sur le suivi des enfants adoptés à l’international.",
+        "url": "https://www.chusj.org/fr/soins-services/S/Sante-internationale",
+        "image": "",
+        "image_alt": ""
+      },
+      {
+        "title": "Tel-jeunes Parents",
+        "description": "Des conseils sur la communication, les émotions et l’école, avec un soutien gratuit et confidentiel pour les parents d’adolescents.",
+        "url": "https://www.teljeunes.com/fr/parents",
+        "image": "",
+        "image_alt": ""
+      },
+      {
+        "title": "Tel-jeunes — Pour les adolescents",
+        "description": "Un espace à faire connaître à votre adolescent pour poser ses questions sur les émotions, la famille et les relations en toute confidentialité.",
+        "url": "https://www.teljeunes.com",
+        "image": "",
+        "image_alt": ""
+      },
+      {
+        "title": "Ressources en deuil — Fondation Monbourquette",
+        "description": "Un répertoire gratuit pour trouver des organismes et des ressources de soutien au deuil dans votre région du Québec.",
+        "url": "https://www.fondationmonbourquette.com/repertoire-provincial",
+        "image": "",
+        "image_alt": ""
+      },
+      {
+        "title": "Info-Social 811",
+        "description": "Un service téléphonique gratuit et confidentiel pour obtenir du soutien psychosocial lors de difficultés familiales, d’inquiétudes ou d’un deuil.",
+        "url": "https://www.quebec.ca/sante/trouver-une-ressource/info-social-811",
+        "image": "",
+        "image_alt": ""
+      }
+    ]
   },
   "footer": {
     "admin_label": "Pied de page",

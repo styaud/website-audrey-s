@@ -51,8 +51,7 @@ All content lives in `content/settings.json` with these sections:
 |---------|----------------|
 | `seo` | Page title, meta description, OG image and alt text, favicon, Apple touch icon |
 | `popup` | Visibility, title, message, image, alt text, dismiss label |
-| `header` | Logo, alt text, site name, nav button text, screen reader names of the menu button and the navigation. The nav button links to the contact section, or to the form when contact is hidden. It does not show when both are hidden |
-| `nav` | Navigation labels for services, about, FAQ, contact, form, and resources. `back_label` is the link at the top of the legal pages |
+| `header` | Logo, alt text, site name, nav button text, screen reader names of the menu button and the navigation. The nav button links to the contact section, or to the form when contact is hidden. It does not show when both are hidden. `back_label` sets the link text at the top of the legal pages |
 | `hero` | Label above the title, headline, subtitle, background image, arch portrait, alt text, booking button text, badges, screen reader text of the scroll cue. The phone button beside the booking button uses `contact.phone`. The portrait card shows `footer.business_name` and `footer.credentials`. On desktop, a scroll cue at the bottom of the hero links to the first visible section |
 | `highlights` | Visibility, screen reader name of the band, item titles and descriptions |
 | `services` | Visibility, heading, service titles, short descriptions, images, alt text |
@@ -72,12 +71,18 @@ Each toggleable section uses `enabled`. The header, hero, and footer always appe
 The main sections follow the table order from `hero` through `footer`.
 The enabled sections alternate between a light tone (cream) and a teal tone, so two light sections never touch.
 `styles.css` sets the tones by position with `:nth-child(… of .section)`, so hiding a section in the admin moves the tones automatically.
-Header and footer navigation includes only enabled sections with non-empty navigation labels.
+Header and footer navigation includes only enabled sections with a non-empty `nav_label`.
+Each section from `highlights` through `resources` stores this label beside its `anchor` under "Adresse de la section".
+An empty or missing label hides the link. The hero has no menu label.
+The admin groups content under "Page principale", "Pages secondaires", "Annonce", and "Configuration".
+"Annonce" contains the popup. "Configuration" contains the header, notification email, colors, and SEO settings.
 Each section has an `anchor` field that the admin can edit under "Adresse de la section". The defaults are French: `#accueil`, `#points-forts`, `#services`, `#a-propos`, `#faq`, `#contact`, `#ecrivez-moi`, `#ressources`.
 `prepareContent` in `lib/render.mjs` changes each value into a slug (lowercase, no accents, hyphens). It uses the default from `DEFAULT_ANCHORS` when the value is empty, already used by another section, or equal to an id in `RESERVED_IDS` (the other ids in `template.html`).
 The anchors do not update links typed in content, such as the `/#ecrivez-moi` links in the legal pages. `node lib/render.test.mjs` checks the reserved list against the template and checks that the page ids stay unique.
 
 `highlights.items` replaces `about.values`. `resources` replaces `education`, and resource links open in a new tab.
+The Resources section includes seven free French resources from official health organizations, public services, and family support organizations.
+They cover early childhood, adoption, adolescence, grief, and psychosocial support in Québec. Resource cards need no image.
 Form fields, subject options, and referral sources now belong to `form`, not `contact`.
 The header button, primary hero button, and contact booking button use `contact.booking_url`.
 These links open in a new tab with `rel="noopener noreferrer"`. The site no longer embeds the booking widget.
@@ -86,6 +91,24 @@ Content images have matching `*_alt` fields. The build warns when an image path 
 `prepareContent()` in `lib/render.mjs` prepares both builds and previews.
 It sanitizes Markdown, derives navigation, and serializes `LocalBusiness` JSON-LD with the logo and portrait.
 The template engine escapes other values as HTML.
+
+### Images
+
+The admin creates WebP variants at quality `0.82`, without enlargement. The content field stores the largest variant path.
+Names use `<base>-<width>w.webp`. Width sets depend on the field:
+
+- `hero.image`: 960, 1440, 1920, 2560, 3840 pixels.
+- `seo.og_image`: 480, 960, 1200 pixels.
+- Other raster images: 480, 960, 1440, 1920 pixels.
+
+The source width caps each set. A 700-pixel standard image produces 480- and 700-pixel variants.
+SVG, ICO, and SEO icons keep their formats. Apple touch icons must remain 180 × 180 PNG files.
+`lib/images.mjs` supplies the shared width rules and `srcset` values. The templates use per-image `sizes` and keep plain paths unchanged.
+
+Open `Médias` → `Bibliothèque d’images` to see grouped variants, usage badges, filters, and pending uploads.
+The removal dialog lists every unused file before deletion. It deletes published files sequentially and reports each failure.
+Draft references, published references, Markdown references, and the fixed admin icon prevent removal of the complete image group.
+Pending files remain local until publication. Run `node admin/image-gallery.test.mjs` and `node lib/render.test.mjs` for the image checks.
 
 ## Local Development
 

@@ -69,7 +69,7 @@
   {{#if popup.enabled}}
   <dialog id="popup" class="modal" aria-labelledby="popup-title">
     {{#if popup.image}}
-    <img src="{{popup.image}}" alt="{{popup.image_alt}}" class="popup-image">
+    <img src="{{popup.image}}"{{#if popup.image_srcset}} srcset="{{popup.image_srcset}}" sizes="{{popup.image_sizes}}"{{/if}} alt="{{popup.image_alt}}" class="popup-image" loading="lazy" decoding="async">
     {{/if}}
     <h2 id="popup-title" class="modal-title">{{popup.title}}</h2>
     <div class="modal-text prose">{{popup.message}}</div>
@@ -84,7 +84,7 @@
     <div class="container nav-inner">
       <a href="#{{hero.anchor}}" class="site-logo">
         {{#if header.logo}}
-        <img src="{{header.logo}}" alt="{{header.logo_alt}}" class="site-logo-img">
+        <img src="{{header.logo}}"{{#if header.logo_srcset}} srcset="{{header.logo_srcset}}" sizes="{{header.logo_sizes}}"{{/if}} alt="{{header.logo_alt}}" class="site-logo-img" decoding="async">
         {{/if}}
         <span class="site-logo-text">{{header.site_name}}</span>
       </a>
@@ -113,7 +113,7 @@
          HERO
          ================================================================ -->
     <section id="{{hero.anchor}}" class="hero">
-      <img class="hero-bg" src="{{hero.image}}" alt="{{hero.image_alt}}" fetchpriority="high">
+      <img class="hero-bg" src="{{hero.image}}"{{#if hero.image_srcset}} srcset="{{hero.image_srcset}}" sizes="{{hero.image_sizes}}"{{/if}} alt="{{hero.image_alt}}" decoding="async" fetchpriority="high">
 
       <div class="container hero-grid">
         <div class="hero-copy reveal-on-scroll reveal-from-left">
@@ -145,7 +145,7 @@
         </div>
 
         <figure class="hero-portrait reveal-on-scroll reveal-from-right">
-          <img src="{{hero.portrait}}" alt="{{hero.portrait_alt}}" width="410" height="547">
+          <img src="{{hero.portrait}}"{{#if hero.portrait_srcset}} srcset="{{hero.portrait_srcset}}" sizes="{{hero.portrait_sizes}}"{{/if}} alt="{{hero.portrait_alt}}" width="410" height="547" decoding="async">
           <figcaption class="hero-portrait-card">
             <span class="hero-portrait-name">{{footer.business_name}}</span>
             <span class="hero-portrait-role">{{footer.credentials}}</span>
@@ -187,7 +187,7 @@
           {{#each services.items}}
           <article class="timeline-item reveal-on-scroll">
             {{#if image}}
-            <img src="{{image}}" alt="{{image_alt}}" class="timeline-media" loading="lazy">
+            <img src="{{image}}"{{#if image_srcset}} srcset="{{image_srcset}}" sizes="{{image_sizes}}"{{/if}} alt="{{image_alt}}" class="timeline-media" loading="lazy" decoding="async">
             {{/if}}
             <div class="timeline-body">
               <h3 class="timeline-title">{{title}}</h3>
@@ -208,7 +208,7 @@
     <section id="{{about.anchor}}" class="section about-section">
       <div class="container about-grid">
         <div class="about-media reveal-on-scroll reveal-from-left">
-          <img src="{{about.photo}}" alt="{{about.photo_alt}}" class="about-photo" loading="lazy">
+          <img src="{{about.photo}}"{{#if about.photo_srcset}} srcset="{{about.photo_srcset}}" sizes="{{about.photo_sizes}}"{{/if}} alt="{{about.photo_alt}}" class="about-photo" loading="lazy" decoding="async">
         </div>
 
         <div class="reveal-on-scroll reveal-from-right">
@@ -430,7 +430,7 @@
           <article class="resource-card card reveal-on-scroll">
             {{#if image}}
             <div class="resource-card-media">
-              <img src="{{image}}" alt="{{image_alt}}" loading="lazy">
+              <img src="{{image}}"{{#if image_srcset}} srcset="{{image_srcset}}" sizes="{{image_sizes}}"{{/if}} alt="{{image_alt}}" loading="lazy" decoding="async">
             </div>
             {{/if}}
             <div class="resource-card-body">

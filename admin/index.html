@@ -519,6 +519,8 @@
 
     /* -- Badges (disabled section, unused image, pending upload) -- */
     .admin-hidden-badge,
+    .admin-used-badge,
+    .admin-variant-badge,
     .admin-unused-badge,
     .admin-pending-badge {
       display: inline-flex;
@@ -545,10 +547,16 @@
       color: var(--color-accent-dark);
     }
 
+    .admin-used-badge,
     .admin-pending-badge {
       border-color: var(--color-primary);
       background: var(--color-primary-light);
       color: var(--color-primary-dark);
+    }
+
+    .admin-variant-badge {
+      background: var(--color-bg-light);
+      color: var(--color-text-light);
     }
 
     /* -- Image gallery -- */
@@ -566,9 +574,24 @@
       color: var(--color-text);
     }
 
+    .admin-gallery-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-block: var(--space-4);
+    }
+
+    .admin-gallery-filter {
+      display: grid;
+      gap: var(--space-1);
+      font-size: var(--text-sm);
+    }
+
     .admin-gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
       gap: var(--space-4);
     }
 
@@ -580,6 +603,10 @@
       border: 1px solid var(--color-border);
       border-radius: var(--rounded-xl);
       background: var(--color-white);
+    }
+
+    .admin-gallery-card[hidden] {
+      display: none;
     }
 
     .admin-gallery-card-unused {
@@ -608,10 +635,59 @@
       font-size: var(--text-xs);
     }
 
+    .admin-gallery-badges,
     .admin-gallery-actions {
       display: flex;
       flex-wrap: wrap;
       gap: var(--space-2);
+    }
+
+    .admin-image-dialog {
+      width: min(94vw, 42rem);
+      max-height: 90dvh;
+      overflow: auto;
+      margin: auto;
+      padding: var(--space-6);
+      border: 1px solid var(--color-border);
+      border-radius: var(--rounded-xl);
+      background: var(--color-white);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .admin-image-dialog::backdrop {
+      background: var(--backdrop-bg);
+    }
+
+    .admin-image-dialog h2 {
+      margin-bottom: var(--space-3);
+      font-size: var(--text-xl);
+    }
+
+    .admin-image-removal-list {
+      display: grid;
+      gap: var(--space-3);
+      max-height: 45dvh;
+      overflow: auto;
+      margin-block: var(--space-4);
+      list-style: none;
+    }
+
+    .admin-image-removal-list li {
+      display: grid;
+      gap: var(--space-1);
+      overflow-wrap: anywhere;
+      font-size: var(--text-sm);
+    }
+
+    .admin-image-removal-error {
+      color: var(--color-error);
+      font-weight: 600;
+    }
+
+    @media (min-width: 769px) {
+      .admin-gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+      }
     }
 
     /* -- Preview modal (native dialog) -- */
@@ -966,10 +1042,6 @@
         padding-bottom: var(--space-6);
       }
 
-      .admin-gallery-grid {
-        grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
-      }
-
       /* Give the preview the full screen on mobile. */
       .admin-preview-modal {
         width: 100vw;
@@ -1136,6 +1208,6 @@
     integrity="sha384-mTM6vzy+/UiHrMBClNGViM9qEv0/26iCGqpJKhSzdnjrxbKjO3vkT62ujXQ8B5iv"
     crossorigin="anonymous"
   ></script>
-  <script src="admin.js?v=2026-11-23"></script>
+  <script type="module" src="admin.js?v=2026-11-24"></script>
 </body>
 </html>

@@ -48,8 +48,15 @@ Edit source files such as `content/settings.json`, `template.html`, `template-le
 - Uploads are limited to `assets/images/<safe-name>`.
 - Allowed file types are `.webp`, `.jpg`, `.jpeg`, `.png`, `.svg`, and `.ico`.
 - SVG and ICO are intentionally allowed. Keep the server-side validation that rejects traversal, slashes, unsafe SVG markup, invalid signatures, and oversized payloads.
-- The admin UI compresses normal raster uploads to WebP. It preserves SVG and ICO uploads when validation passes.
+- Raster uploads create `<base>-<width>w.webp` variants at quality `0.82`, without enlargement. Store the largest path in content.
+- Use `lib/images.mjs` for width rules. Standard widths are 480/960/1440/1920, hero backgrounds use 960/1440/1920/2560/3840, and sharing images use 480/960/1200.
+- Builds and previews derive `srcset` and per-image `sizes`. Plain paths keep one `src`. Pending previews use local data URLs.
+- Preserve SVG and ICO uploads when validation passes.
 - SEO favicon uploads preserve PNG or ICO. Apple touch icon uploads preserve PNG and require dimensions of 180 × 180 pixels.
+- Keep `Médias` → `Bibliothèque d’images` grouped by variant family, with usage badges, filters, and a file count before removal.
+- Draft, published, and Markdown references protect every variant. Keep the fixed admin favicon protected.
+- Require a review dialog before removal. Delete unused files sequentially through the existing CSRF-protected API and report each failure.
+- Keep `node admin/image-gallery.test.mjs` and `node lib/render.test.mjs` current when image behavior changes.
 
 ## Environment Rules
 

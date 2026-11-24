@@ -19,9 +19,6 @@ For behavior changes, run the renderer checks, `npm run build`, JavaScript synta
 - **Privacy** - the contact email must never appear in tracked files or git history. It lives only in `.dev.vars` and Cloudflare secrets.
 - **Generated files** - `index.html`, `politique-de-confidentialite.html`, `mentions-legales.html`, `sitemap.xml`, `robots.txt`, and `_redirects` are gitignored build output. Never edit them directly.
 - **Markdown** - rendering logic lives in `lib/render.mjs` only and is shared by `build.js` and `functions/api/preview.js`. Do not duplicate markdown rendering.
-- **Images** - the admin UI compresses normal raster uploads to WebP. It preserves SVG and ICO uploads when validation passes.
-- **SEO icons** - favicon uploads preserve PNG or ICO. Apple touch icon uploads preserve PNG and require dimensions of 180 × 180 pixels.
-- **Upload validation** - keep server validation in `lib/admin-auth.mjs` for unsafe names, traversal, invalid signatures, and active SVG content.
 
 ## Admin Access Rules
 
@@ -33,6 +30,21 @@ For behavior changes, run the renderer checks, `npm run build`, JavaScript synta
 - Mutating admin requests, logout, and preview must keep same-origin, JSON content-type, and CSRF checks.
 - Do not add floating or unpinned third-party scripts to `/admin/`. Any third-party admin script can act as the signed-in admin, so external admin scripts must be version-pinned and protected with Subresource Integrity.
 - Update [docs/admin-auth.md](docs/admin-auth.md) whenever admin auth, upload validation, session handling, or CSRF behavior changes.
+
+## Upload Rules
+
+- Uploads are limited to `assets/images/<safe-name>`.
+- Allowed file types are `.webp`, `.jpg`, `.jpeg`, `.png`, `.svg`, and `.ico`.
+- SVG and ICO are intentionally allowed. Keep the server-side validation that rejects traversal, slashes, unsafe SVG markup, invalid signatures, and oversized payloads.
+- Raster uploads create `<base>-<width>w.webp` variants at quality `0.82`, without enlargement. Store the largest path in content.
+- Use `lib/images.mjs` for width rules. Standard widths are 480/960/1440/1920, hero backgrounds use 960/1440/1920/2560/3840, and sharing images use 480/960/1200.
+- Builds and previews derive `srcset` and per-image `sizes`. Plain paths keep one `src`. Pending previews use local data URLs.
+- Preserve SVG and ICO uploads when validation passes.
+- SEO favicon uploads preserve PNG or ICO. Apple touch icon uploads preserve PNG and require dimensions of 180 × 180 pixels.
+- Keep `Médias` → `Bibliothèque d’images` grouped by variant family, with usage badges, filters, and a file count before removal.
+- Draft, published, and Markdown references protect every variant. Keep the fixed admin favicon protected.
+- Require a review dialog before removal. Delete unused files sequentially through the existing CSRF-protected API and report each failure.
+- Keep `node admin/image-gallery.test.mjs` and `node lib/render.test.mjs` current when image behavior changes.
 
 ## Environment Rules
 
