@@ -22,17 +22,22 @@ function sanitize(str) {
 
 /** Very basic email-format check. */
 function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email);
 }
 
 /** Build a raw MIME message string (no external libraries needed). */
-function createMimeMessage({ from, to, subject, body }) {
+function createMimeMessage({ from, to, replyTo, subject, body }) {
   const boundary = "----=_Part_" + Date.now().toString(36);
+  // Keep each RFC 2047 word below 75 characters, including four-byte UTF-8.
+  const encodedSubject = subject.match(/[\s\S]{1,10}/gu)
+    .map((part) => `=?UTF-8?B?${btoa(String.fromCharCode(...new TextEncoder().encode(part)))}?=`)
+    .join("\r\n ");
 
   const headers = [
     `From: ${from}`,
     `To: ${to}`,
-    `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
+    `Reply-To: <${replyTo.replace(/[\r\n]/g, "")}>`,
+    `Subject: ${encodedSubject}`,
     `Date: ${new Date().toUTCString()}`,
     `MIME-Version: 1.0`,
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -50,8 +55,9 @@ function createMimeMessage({ from, to, subject, body }) {
     .split("\n")
     .map((line) => {
       if (line.startsWith("---")) return "<hr>";
-      if (line.startsWith("  ")) return `<p style="margin:0 0 4px 16px">${line.trim()}</p>`;
-      return `<p style="margin:0 0 4px 0"><strong>${line}</strong></p>`;
+      const escapedLine = line.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+      if (line.startsWith("  ")) return `<p style="margin:0 0 4px 16px">${escapedLine.trim()}</p>`;
+      return `<p style="margin:0 0 4px 0"><strong>${escapedLine}</strong></p>`;
     })
     .join("\n");
 
@@ -122,7 +128,7 @@ export async function onRequestPost(context) {
     const name = sanitize(data.name);
     const email = sanitize(data.email);
     const phone = sanitize(data.phone || "");
-    const subject = sanitize(data.subject);
+    const subjects = Array.isArray(data.subjects) ? data.subjects.map(sanitize) : [];
     const referral = sanitize(data.referral || "");
     const message = sanitize(data.message);
     const turnstileToken = sanitize(data["cf-turnstile-response"] || data.turnstileToken || "");
@@ -131,8 +137,12 @@ export async function onRequestPost(context) {
     if (!name) return errorResponse("Le champ nom est requis.");
     if (!email) return errorResponse("Le champ email est requis.");
     if (!isValidEmail(email)) return errorResponse("L'adresse email est invalide.");
-    if (!subject) return errorResponse("Le champ sujet est requis.");
+    if (subjects.length < 1 || subjects.length > 10 || subjects.some((subject) => !subject || subject.length > 200)) {
+      return errorResponse("Veuillez choisir au moins un sujet.");
+    }
     if (!message) return errorResponse("Le champ message est requis.");
+    // Same limit as the textarea maxlength in template.html.
+    if (message.length > 3000) return errorResponse("Le message ne doit pas dépasser 3000 caractères.");
 
     // 5. Verify Turnstile token ---------------------------------------------
     if (!turnstileToken) {
@@ -172,7 +182,8 @@ export async function onRequestPost(context) {
       `  Nom : ${name}`,
       `  Email : ${email}`,
       phone ? `  Telephone : ${phone}` : null,
-      `  Sujet : ${subject}`,
+      `  Sujets :`,
+      ...subjects.map((subject) => `  - ${subject}`),
       referral ? `  Source : ${referral}` : null,
       ``,
       `----------------------------------------------`,
@@ -193,10 +204,15 @@ export async function onRequestPost(context) {
       return errorResponse("La configuration email du serveur est manquante.", 500);
     }
 
+    const subjectCharacters = Array.from(`Nouveau message de ${name} - ${subjects.join(", ")}`.replace(/[\r\n]/g, " "));
+    const subject = subjectCharacters.length > 200
+      ? subjectCharacters.slice(0, 199).join("") + "…"
+      : subjectCharacters.join("");
     const mimeMessage = createMimeMessage({
       from: `Formulaire de contact <${fromEmail}>`,
       to: toEmail,
-      subject: `Nouveau message de ${name} - ${subject}`,
+      replyTo: email,
+      subject,
       body: formattedBody,
     });
 

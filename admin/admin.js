@@ -49,7 +49,7 @@ function bindLiveColorTheming(card) {
       if (!path) return;
       const colorKey = path.split('.').pop();
       const cssVar = COLOR_CSS_MAP[colorKey];
-      const val = input.type === 'color' ? input.value : input.value;
+      const val = input.value;
       if (cssVar && /^#[0-9a-fA-F]{3,8}$/.test(val)) {
         document.documentElement.style.setProperty(cssVar, val);
       }
@@ -59,9 +59,14 @@ function bindLiveColorTheming(card) {
 
 let content = {};          // Current content state (mirrors settings.json)
 let contentSha = '';       // SHA of current settings.json (needed for updates)
-let pendingImages = [];    // { path, base64, name } - images to upload on publish
+let pendingImages = [];    // Images await publication. Each item includes a local preview.
 let csrfToken = '';        // CSRF token returned by the authenticated session endpoint
 let adminLogin = '';       // Authenticated GitHub login
+let publishedImagePaths = new Set();
+let hasUnpublishedChanges = false;
+let preparingImages = 0;
+let previewRequest = 0;
+const markdownEditors = new WeakMap();
 
 // ---- DOM REFS --------------------------------------------------------------
 const $loginScreen  = document.getElementById('login-screen');
@@ -76,35 +81,40 @@ const $statusDot    = document.getElementById('status-dot');
 const $statusText   = document.getElementById('status-text');
 const $statusTime   = document.getElementById('status-time');
 const $toast        = document.getElementById('toast');
+const $previewModal = document.getElementById('preview-modal');
+const $previewFrame = document.getElementById('preview-frame');
+const $previewStatus = document.getElementById('preview-status');
 
 // ---- SECTION DEFINITIONS ---------------------------------------------------
 // Describes the admin UI structure. Each section maps to a top-level key in
 // settings.json. Fields describe the form controls to render.
+const ALT_HINT = 'Décrivez l’image pour les lecteurs d’écran et Google';
+// Section anchor: the part of the address after #, for example /#a-propos.
+const anchorField = (example, extra = '') => ({
+  key: 'anchor', label: 'Ancre dans l’adresse', type: 'text', plain: true, group: 'Adresse de la section',
+  hint: `Exemple : ${example}. Le site garde les lettres minuscules sans accents, les chiffres et les traits d’union. Une ancre vide ou déjà utilisée reprend la valeur par défaut.${extra}`,
+});
 const SECTIONS = [
   { divider: true, label: 'Page principale' },
   {
-    key: 'hero',
-    label: 'Bannière principale',
+    key: 'hero', label: 'Bannière principale',
     fields: [
-      { key: 'title', label: 'Titre', type: 'text', group: 'Contenu', hint: 'Titre principal affiché en grand sur la bannière d\'accueil.' },
-      { key: 'subtitle', label: 'Sous-titre', type: 'textarea', group: 'Contenu', hint: 'Texte d\'accroche sous le titre principal.' },
-      { key: 'image', label: 'Image de fond', type: 'image', group: 'Image', hint: 'Image en arrière-plan de la bannière. Format large recommandé (1920x1080px).' },
-      { key: 'cta_text', label: 'Bouton principal — texte', type: 'text', group: 'Boutons', hint: 'Texte du bouton d\'action principal (ex: « Prendre rendez-vous »).' },
-      { key: 'cta_link', label: 'Bouton principal — lien', type: 'text', plain: true, group: 'Boutons', hint: 'URL ou ancre (ex: #contact).' },
-      { key: 'cta2_text', label: 'Bouton secondaire — texte', type: 'text', group: 'Boutons', hint: 'Texte du deuxième bouton (optionnel). Laissez vide pour masquer.' },
-      { key: 'cta2_link', label: 'Bouton secondaire — lien', type: 'text', plain: true, group: 'Boutons', hint: 'URL ou ancre du bouton secondaire.' },
+      { key: 'title', label: 'Titre', type: 'text', markdown: true, group: 'Contenu' },
+      { key: 'subtitle', label: 'Sous-titre', type: 'text', markdown: true, group: 'Contenu' },
+      { key: 'image', label: 'Image de fond', type: 'image', group: 'Images', hint: 'Image large en arrière-plan de la bannière.' },
+      { key: 'image_alt', label: 'Description de l’image de fond', type: 'text', plain: true, group: 'Images', hint: ALT_HINT },
+      { key: 'portrait', label: 'Portrait', type: 'image', group: 'Images', hint: 'Portrait rond affiché dans la bannière. Choisissez une image carrée.' },
+      { key: 'portrait_alt', label: 'Description du portrait', type: 'text', plain: true, group: 'Images', hint: ALT_HINT },
+      { key: 'cta_text', label: 'Bouton principal — texte', type: 'text', group: 'Boutons', hint: 'Le bouton ouvre le lien de réservation défini dans Contact.' },
+      { key: 'cta2_text', label: 'Bouton secondaire — texte', type: 'text', group: 'Boutons', hint: 'Laissez vide pour masquer le bouton.' },
+      { key: 'cta2_link', label: 'Bouton secondaire — lien', type: 'text', plain: true, group: 'Boutons', hint: 'Adresse web ou ancre, par exemple #services.' },
+      anchorField('accueil'),
     ],
   },
   {
-    key: 'about',
-    label: 'À propos',
-    fields: [
-      { key: 'title', label: 'Titre', type: 'text', hint: 'Titre de la section À propos.' },
-      { key: 'body', label: 'Contenu', type: 'textarea', hint: 'Texte de présentation. Supporte le Markdown complet.' },
-      { key: 'photo', label: 'Photo', type: 'image', hint: 'Photo de profil ou image professionnelle. Format carré recommandé.' },
-    ],
+    key: 'highlights', label: 'Points forts', toggleable: true, fields: [anchorField('points-forts')],
     list: {
-      key: 'values',
+      key: 'items', label: 'Points forts',
       fields: [
         { key: 'title', label: 'Titre', type: 'text' },
         { key: 'description', label: 'Description', type: 'textarea' },
@@ -112,47 +122,36 @@ const SECTIONS = [
     },
   },
   {
-    key: 'services',
-    label: 'Services',
-    fields: [
-      { key: 'heading', label: 'Titre de la section', type: 'text', hint: 'Titre affiché au-dessus des cartes de services.' },
-      { key: 'link_text', label: 'Texte du lien', type: 'text', hint: 'Texte affiché sous chaque carte de service (ex: « En savoir plus »).' },
-    ],
-    list: {
-      key: 'items',
-      fields: [
-        { key: 'title', label: 'Titre', type: 'text' },
-        { key: 'description', label: 'Description', type: 'textarea' },
-        { key: 'image', label: 'Image', type: 'image' },
-        { key: 'link', label: 'Lien', type: 'text', plain: true },
-      ],
-    },
-  },
-  {
-    key: 'education',
-    label: 'Contenu éducatif',
+    key: 'services', label: 'Services', toggleable: true,
     fields: [
       { key: 'heading', label: 'Titre de la section', type: 'text' },
+      anchorField('services', ' Si vous la changez, mettez aussi à jour le lien du bouton secondaire de la bannière.'),
     ],
     list: {
-      key: 'items',
+      key: 'items', label: 'Services',
       fields: [
         { key: 'title', label: 'Titre', type: 'text' },
-        { key: 'description', label: 'Description', type: 'textarea' },
+        { key: 'description', label: 'Description courte', type: 'textarea', hint: 'Une ou deux phrases, affichées sous le titre.' },
         { key: 'image', label: 'Image', type: 'image' },
-        { key: 'cta_text', label: 'Texte du bouton', type: 'text' },
-        { key: 'cta_link', label: 'Lien du bouton', type: 'text', plain: true },
+        { key: 'image_alt', label: 'Description de l’image', type: 'text', plain: true, hint: ALT_HINT },
       ],
     },
   },
   {
-    key: 'faq',
-    label: 'Questions fréquentes',
+    key: 'about', label: 'À propos', toggleable: true,
     fields: [
-      { key: 'heading', label: 'Titre de la section', type: 'text' },
+      { key: 'title', label: 'Titre', type: 'text' },
+      { key: 'body', label: 'Présentation', type: 'textarea', hint: 'Le texte accepte le format Markdown.' },
+      { key: 'photo', label: 'Photo', type: 'image', hint: 'Cette photo est distincte du portrait de la bannière.' },
+      { key: 'photo_alt', label: 'Description de la photo', type: 'text', plain: true, hint: ALT_HINT },
+      anchorField('a-propos'),
     ],
+  },
+  {
+    key: 'faq', label: 'Questions fréquentes', toggleable: true,
+    fields: [{ key: 'heading', label: 'Titre de la section', type: 'text' }, anchorField('faq')],
     list: {
-      key: 'items',
+      key: 'items', label: 'Questions et réponses',
       fields: [
         { key: 'question', label: 'Question', type: 'text' },
         { key: 'answer', label: 'Réponse', type: 'textarea' },
@@ -160,145 +159,164 @@ const SECTIONS = [
     },
   },
   {
-    key: 'contact',
-    label: 'Contact',
+    key: 'contact', label: 'Contact', toggleable: true,
     fields: [
-      { key: 'heading', label: 'Titre', type: 'text', group: 'Informations', hint: 'Titre de la section contact.' },
-      { key: 'subtitle', label: 'Sous-titre', type: 'textarea', group: 'Informations', hint: 'Court texte d\'invitation à prendre contact.' },
-      { key: 'phone', label: 'Téléphone', type: 'text', plain: true, group: 'Informations', hint: 'Numéro affiché sur le site (ex: +1 514 555-0123).' },
-      { key: 'address', label: 'Adresse', type: 'text', plain: true, group: 'Informations', hint: 'Ville ou région desservie.' },
-      { key: 'info_heading', label: 'Titre info de contact', type: 'text', group: 'Informations', hint: 'Titre au-dessus du téléphone et de l\'adresse (ex: « Nous joindre »).' },
-      { key: 'phone_label', label: 'Libellé téléphone', type: 'text', group: 'Informations', hint: 'Libellé affiché devant le numéro (ex: « Téléphone »).' },
-      { key: 'address_label', label: 'Libellé adresse', type: 'text', group: 'Informations', hint: 'Libellé affiché devant l\'adresse (ex: « Adresse »).' },
-      { key: 'consultation_heading', label: 'Encart consultation — titre', type: 'text', group: 'Encart consultation', hint: 'Titre de l\'encart de première consultation.' },
-      { key: 'consultation_text', label: 'Encart consultation — texte', type: 'textarea', group: 'Encart consultation', hint: 'Texte d\'invitation à la première consultation.' },
-      { key: 'form_name_label', label: 'Formulaire — libellé nom', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_name_placeholder', label: 'Formulaire — placeholder nom', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_email_label', label: 'Formulaire — libellé courriel', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_email_placeholder', label: 'Formulaire — placeholder courriel', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_phone_label', label: 'Formulaire — libellé téléphone', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_phone_placeholder', label: 'Formulaire — placeholder téléphone', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_subject_label', label: 'Formulaire — libellé sujet', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_subject_placeholder', label: 'Formulaire — placeholder sujet', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_message_label', label: 'Formulaire — libellé message', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_message_placeholder', label: 'Formulaire — placeholder message', type: 'text', plain: true, group: 'Formulaire — Libellés' },
-      { key: 'form_submit', label: 'Formulaire — bouton envoyer', type: 'text', plain: true, group: 'Formulaire — Messages' },
-      { key: 'form_sending', label: 'Formulaire — texte envoi en cours', type: 'text', plain: true, group: 'Formulaire — Messages' },
-      { key: 'form_success', label: 'Formulaire — message de succès', type: 'textarea', plain: true, group: 'Formulaire — Messages', hint: 'Message affiché dans le dialogue après envoi réussi.' },
-      { key: 'form_error', label: 'Formulaire — message d\'erreur', type: 'text', plain: true, group: 'Formulaire — Messages' },
-      { key: 'form_network_error', label: 'Formulaire — erreur de connexion', type: 'text', plain: true, group: 'Formulaire — Messages' },
-      { key: 'form_close', label: 'Formulaire — bouton fermer', type: 'text', plain: true, group: 'Formulaire — Messages' },
-      { key: 'form_referral_label', label: 'Formulaire — libellé référence', type: 'text', plain: true, group: 'Formulaire — Référence' },
-      { key: 'form_referral_placeholder', label: 'Formulaire — placeholder référence', type: 'text', plain: true, group: 'Formulaire — Référence' },
+      { key: 'heading', label: 'Titre', type: 'text', group: 'Coordonnées' },
+      { key: 'subtitle', label: 'Sous-titre', type: 'textarea', group: 'Coordonnées' },
+      { key: 'phone', label: 'Téléphone', type: 'text', plain: true, group: 'Coordonnées' },
+      { key: 'address', label: 'Adresse', type: 'text', plain: true, group: 'Coordonnées', hint: 'L’adresse n’est pas affichée sur la page. Google la lit dans les données structurées du site.' },
+      { key: 'call_title', label: 'Titre', type: 'text', group: 'Option 1 — Téléphone' },
+      { key: 'call_text', label: 'Texte', type: 'text', plain: true, group: 'Option 1 — Téléphone', hint: 'Le bouton affiche le numéro de téléphone.' },
+      { key: 'booking_title', label: 'Titre', type: 'text', group: 'Option 2 — Rendez-vous en ligne' },
+      { key: 'booking_text', label: 'Texte', type: 'text', plain: true, group: 'Option 2 — Rendez-vous en ligne' },
+      { key: 'booking_label', label: 'Texte du bouton', type: 'text', group: 'Option 2 — Rendez-vous en ligne' },
+      { key: 'booking_url', label: 'Lien de réservation', type: 'text', plain: true, group: 'Option 2 — Rendez-vous en ligne', hint: 'Ce lien ouvre un nouvel onglet. Il sert aussi aux boutons de l’en-tête et de la bannière.' },
+      { key: 'form_title', label: 'Titre', type: 'text', group: 'Option 3 — Formulaire' },
+      { key: 'form_text', label: 'Texte', type: 'text', plain: true, group: 'Option 3 — Formulaire', hint: 'Cette option est masquée quand la section Formulaire est masquée.' },
+      { key: 'form_link_label', label: 'Texte du bouton', type: 'text', group: 'Option 3 — Formulaire' },
+      anchorField('contact'),
+    ],
+  },
+  {
+    key: 'form', label: 'Formulaire', toggleable: true,
+    fields: [
+      { key: 'heading', label: 'Titre', type: 'text', group: 'Présentation' },
+      { key: 'subtitle', label: 'Sous-titre', type: 'textarea', group: 'Présentation' },
+      { key: 'privacy_note', label: 'Note de confidentialité', type: 'textarea', group: 'Présentation', hint: 'Affichée sous les étapes. Le texte accepte le format Markdown.' },
+      { key: 'form_name_label', label: 'Nom — libellé', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_name_placeholder', label: 'Nom — texte indicatif', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_email_label', label: 'Courriel — libellé', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_email_placeholder', label: 'Courriel — texte indicatif', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_phone_label', label: 'Téléphone — libellé', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_phone_placeholder', label: 'Téléphone — texte indicatif', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_subject_label', label: 'Sujets — libellé', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_subject_placeholder', label: 'Sujets — texte indicatif', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_message_label', label: 'Message — libellé', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_message_placeholder', label: 'Message — texte indicatif', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_submit', label: 'Bouton d’envoi', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_sending', label: 'Envoi en cours', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_success', label: 'Message de succès', type: 'textarea', plain: true, group: 'Messages' },
+      { key: 'form_error', label: 'Message d’erreur', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_network_error', label: 'Erreur de connexion', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_subject_required', label: 'Sujet obligatoire', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_subject_limit', label: 'Limite de sujets', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_required_error', label: 'Champ obligatoire vide', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_email_error', label: 'Courriel invalide', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_close', label: 'Bouton de fermeture', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_referral_label', label: 'Provenance — libellé', type: 'text', plain: true, group: 'Provenance' },
+      { key: 'form_referral_placeholder', label: 'Provenance — texte indicatif', type: 'text', plain: true, group: 'Provenance' },
+      anchorField('ecrivez-moi', ' Si vous la changez, mettez aussi à jour les liens « /#ecrivez-moi » des pages légales.'),
     ],
     lists: [
-      {
-        key: 'form_subjects',
-        fields: [
-          { key: 'title', label: 'Sujet', type: 'text' },
-        ],
-      },
-      {
-        key: 'referral_sources',
-        fields: [
-          { key: 'title', label: 'Source', type: 'text' },
-        ],
-      },
+      { key: 'steps', label: 'Étapes (comment ça se passe)', fields: [{ key: 'title', label: 'Titre', type: 'text', plain: true }, { key: 'text', label: 'Texte', type: 'text', plain: true }] },
+      { key: 'form_subjects', label: 'Sujets du formulaire', fields: [{ key: 'title', label: 'Sujet', type: 'text', plain: true }] },
+      { key: 'referral_sources', label: 'Sources de provenance', fields: [{ key: 'title', label: 'Source', type: 'text', plain: true }] },
     ],
   },
   {
-    key: 'footer',
-    label: 'Pied de page',
+    key: 'resources', label: 'Ressources', toggleable: true,
     fields: [
-      { key: 'business_name', label: 'Nom commercial', type: 'text', hint: 'Nom affiché dans le bas de page.' },
-      { key: 'credentials', label: 'Accréditations', type: 'text', hint: 'Numéro de membre, ordre professionnel, etc.' },
-      { key: 'privacy_link', label: 'Lien politique de confidentialité', type: 'text', plain: true, hint: 'URL de la page (ex: /politique-de-confidentialite.html).' },
-      { key: 'privacy_label', label: 'Libellé confidentialité', type: 'text', plain: true, hint: 'Texte du lien (ex: « Politique de confidentialité »).' },
-      { key: 'legal_link', label: 'Lien mentions légales', type: 'text', plain: true, hint: 'URL de la page (ex: /mentions-legales.html).' },
-      { key: 'legal_label', label: 'Libellé mentions légales', type: 'text', plain: true, hint: 'Texte du lien (ex: « Mentions légales »).' },
-      { key: 'copyright', label: 'Mention légale', type: 'text', plain: true, hint: 'Texte après le nom commercial (ex: « Tous droits réservés. »).' },
-      { key: 'admin_link_label', label: 'Libellé lien admin', type: 'text', plain: true, hint: 'Texte du lien vers le panneau d\'administration dans le pied de page.' },
+      { key: 'heading', label: 'Titre de la section', type: 'text' },
+      { key: 'intro', label: 'Introduction', type: 'textarea' },
+      anchorField('ressources'),
+    ],
+    list: {
+      key: 'items', label: 'Ressources',
+      fields: [
+        { key: 'title', label: 'Titre', type: 'text' },
+        { key: 'description', label: 'Description', type: 'textarea' },
+        { key: 'url', label: 'Lien', type: 'text', plain: true, hint: 'Le lien ouvre un nouvel onglet.' },
+        { key: 'image', label: 'Image', type: 'image' },
+        { key: 'image_alt', label: 'Description de l’image', type: 'text', plain: true, hint: ALT_HINT },
+      ],
+    },
+  },
+  {
+    key: 'footer', label: 'Pied de page',
+    fields: [
+      { key: 'business_name', label: 'Nom commercial', type: 'text' },
+      { key: 'credentials', label: 'Accréditations', type: 'text' },
+      { key: 'privacy_link', label: 'Lien de confidentialité', type: 'text', plain: true },
+      { key: 'privacy_label', label: 'Libellé de confidentialité', type: 'text', plain: true },
+      { key: 'legal_link', label: 'Lien des mentions légales', type: 'text', plain: true },
+      { key: 'legal_label', label: 'Libellé des mentions légales', type: 'text', plain: true },
+      { key: 'copyright', label: 'Mention du droit d’auteur', type: 'text', plain: true },
+      { key: 'admin_link_label', label: 'Libellé du lien d’administration', type: 'text', plain: true },
     ],
   },
-  // --- Divider ---
   { divider: true, label: 'Pages secondaires' },
   {
-    key: 'privacy_page',
-    label: 'Politique de confidentialité',
+    key: 'privacy_page', label: 'Politique de confidentialité',
     fields: [
       { key: 'title', label: 'Titre de la page', type: 'text' },
-      { key: 'updated', label: 'Date de mise à jour', type: 'text', plain: true, hint: 'Ex: « Dernière mise à jour : avril 2026 ».' },
-      { key: 'body', label: 'Contenu', type: 'textarea', hint: 'Contenu complet de la page. Supporte le Markdown.' },
+      { key: 'updated', label: 'Date de mise à jour', type: 'text', plain: true },
+      { key: 'body', label: 'Contenu', type: 'textarea', hint: 'Le texte accepte le format Markdown.' },
     ],
   },
   {
-    key: 'legal_page',
-    label: 'Mentions légales',
+    key: 'legal_page', label: 'Mentions légales',
     fields: [
       { key: 'title', label: 'Titre de la page', type: 'text' },
-      { key: 'updated', label: 'Date de mise à jour', type: 'text', plain: true, hint: 'Ex: « Dernière mise à jour : avril 2026 ».' },
-      { key: 'body', label: 'Contenu', type: 'textarea', hint: 'Contenu complet de la page. Supporte le Markdown.' },
+      { key: 'updated', label: 'Date de mise à jour', type: 'text', plain: true },
+      { key: 'body', label: 'Contenu', type: 'textarea', hint: 'Le texte accepte le format Markdown.' },
     ],
   },
-  // --- Divider ---
   { divider: true, label: 'Configuration' },
   {
-    key: 'header',
-    label: 'En-tête',
+    key: 'header', label: 'En-tête',
     fields: [
-      { key: 'logo', label: 'Logo', type: 'image', hint: 'Logo affiché dans la barre de navigation. Laissez vide pour afficher le nom du site.' },
-      { key: 'site_name', label: 'Nom du site', type: 'text', hint: 'Texte affiché dans la barre de navigation si aucun logo n\'est défini.' },
-      { key: 'cta_text', label: 'Bouton d\'action — texte', type: 'text', hint: 'Texte du bouton principal dans la barre de navigation (ex: « Prendre rendez-vous »).' },
-      { key: 'cta_link', label: 'Bouton d\'action — lien', type: 'text', plain: true, hint: 'URL ou ancre du bouton (ex: #contact ou un lien externe).' },
+      { key: 'logo', label: 'Logo', type: 'image' },
+      { key: 'logo_alt', label: 'Description du logo', type: 'text', plain: true, hint: ALT_HINT },
+      { key: 'site_name', label: 'Nom du site', type: 'text', markdown: true },
+      { key: 'cta_text', label: 'Texte du bouton', type: 'text', hint: 'Le bouton ouvre le lien de réservation défini dans Contact.' },
     ],
   },
   {
-    key: 'nav',
-    label: 'Navigation (libellés)',
+    key: 'nav', label: 'Navigation',
     fields: [
-      { key: 'services', label: 'Services', type: 'text', hint: 'Libellé du lien vers la section services. Partagé entre la barre de navigation et le pied de page.' },
-      { key: 'about', label: 'À propos', type: 'text', hint: 'Libellé du lien vers la section à propos.' },
-      { key: 'education', label: 'Mesures légales', type: 'text', hint: 'Libellé du lien vers la section mesures légales.' },
-      { key: 'faq', label: 'FAQ', type: 'text', hint: 'Libellé du lien vers la section FAQ.' },
-      { key: 'contact', label: 'Contact', type: 'text', hint: 'Libellé du lien vers la section contact (affiché dans le pied de page uniquement).' },
+      { key: 'services', label: 'Services', type: 'text', plain: true, hint: 'Les liens apparaissent dans l’en-tête et le pied de page. Un libellé vide masque le lien.' },
+      { key: 'about', label: 'À propos', type: 'text', plain: true },
+      { key: 'faq', label: 'Questions fréquentes', type: 'text', plain: true },
+      { key: 'contact', label: 'Contact', type: 'text', plain: true },
+      { key: 'form', label: 'Formulaire', type: 'text', plain: true },
+      { key: 'resources', label: 'Ressources', type: 'text', plain: true },
     ],
   },
   {
-    key: 'popup',
-    label: 'Fenêtre contextuelle (popup)',
+    key: 'popup', label: 'Fenêtre contextuelle', toggleable: true,
     fields: [
-      { key: 'enabled', label: 'Activée', type: 'toggle', hint: 'Affiche un message temporaire aux visiteurs à l\'ouverture du site. Utile pour les annonces importantes.' },
-      { key: 'title', label: 'Titre', type: 'text', hint: 'Titre de l\'annonce (ex: « Avis important »).' },
-      { key: 'message', label: 'Message', type: 'textarea', hint: 'Contenu de l\'annonce. Supporte le Markdown.' },
-      { key: 'image', label: 'Image ou icône', type: 'image', hint: 'Image optionnelle affichée au-dessus du titre (64x64px recommandé).' },
-      { key: 'dismiss_label', label: 'Texte du bouton fermer', type: 'text', hint: 'Texte du bouton pour fermer la fenêtre (ex: « Fermer », « J\'ai compris »).' },
+      { key: 'title', label: 'Titre', type: 'text' },
+      { key: 'message', label: 'Message', type: 'textarea' },
+      { key: 'image', label: 'Image', type: 'image' },
+      { key: 'image_alt', label: 'Description de l’image', type: 'text', plain: true, hint: ALT_HINT },
+      { key: 'dismiss_label', label: 'Texte du bouton de fermeture', type: 'text' },
     ],
   },
   {
-    key: 'seo',
-    label: 'Référencement et métadonnées',
+    key: 'colors', label: 'Couleurs',
     fields: [
-      { key: 'title', label: 'Titre de l\'onglet', type: 'text', plain: true, hint: 'Titre affiché dans l\'onglet du navigateur et dans les résultats Google. Idéalement 50-60 caractères.' },
-      { key: 'description', label: 'Méta description', type: 'textarea', plain: true, hint: 'Description affichée sous le titre dans les résultats Google. Idéalement 150-160 caractères.' },
-      { key: 'og_image', label: 'Image de partage', type: 'image', hint: 'Image affichée lorsque le site est partagé sur les réseaux sociaux (Facebook, LinkedIn, etc.). Format recommandé : 1200x630px.' },
-      { key: 'favicon', label: 'Favicon', type: 'image', hint: 'Petite icône affichée dans l\'onglet du navigateur. Format SVG ou PNG carré recommandé (32x32px ou SVG).' },
+      { key: 'primary', label: 'Couleur principale', type: 'color' },
+      { key: 'primary_dark', label: 'Couleur principale foncée', type: 'color' },
+      { key: 'primary_light', label: 'Couleur principale claire', type: 'color' },
+      { key: 'accent', label: 'Couleur des boutons', type: 'color' },
+      { key: 'accent_dark', label: 'Couleur des boutons (survol)', type: 'color' },
+      { key: 'text', label: 'Texte principal', type: 'color' },
+      { key: 'text_light', label: 'Texte secondaire', type: 'color' },
+      { key: 'bg', label: 'Arrière-plan des cartes', type: 'color' },
+      { key: 'bg_light', label: 'Arrière-plan des sections claires', type: 'color' },
+      { key: 'bg_dark', label: 'Arrière-plan du pied de page', type: 'color' },
+      { key: 'border', label: 'Bordures', type: 'color' },
     ],
   },
   {
-    key: 'colors',
-    label: 'Couleurs du site',
+    key: 'seo', label: 'Référencement',
     fields: [
-      { key: 'primary', label: 'Couleur principale', type: 'color', hint: 'Couleur dominante du site : liens, boutons secondaires, accents visuels (ex: vert forêt).' },
-      { key: 'primary_dark', label: 'Couleur principale foncée', type: 'color', hint: 'Variante plus foncée de la couleur principale, utilisée pour les survols et les contrastes.' },
-      { key: 'primary_light', label: 'Couleur principale claire', type: 'color', hint: 'Variante très claire de la couleur principale, utilisée pour les arrière-plans subtils.' },
-      { key: 'accent', label: 'Couleur d\'accent', type: 'color', hint: 'Couleur vive pour les boutons d\'action principaux et les éléments à mettre en valeur (ex: orange, corail).' },
-      { key: 'accent_dark', label: 'Couleur d\'accent foncée', type: 'color', hint: 'Variante plus foncée de la couleur d\'accent, utilisée au survol des boutons principaux.' },
-      { key: 'text', label: 'Texte principal', type: 'color', hint: 'Couleur du texte courant et des titres. Un ton foncé pour une bonne lisibilité.' },
-      { key: 'text_light', label: 'Texte secondaire', type: 'color', hint: 'Couleur du texte moins important : descriptions, indices, mentions légales.' },
-      { key: 'bg', label: 'Arrière-plan', type: 'color', hint: 'Couleur de fond principale du site (généralement blanc ou très clair).' },
-      { key: 'bg_light', label: 'Arrière-plan alternatif', type: 'color', hint: 'Couleur de fond légèrement différente pour alterner les sections et créer du contraste.' },
-      { key: 'bg_dark', label: 'Arrière-plan foncé', type: 'color', hint: 'Couleur de fond sombre utilisée pour le pied de page et les zones foncées.' },
-      { key: 'border', label: 'Bordures', type: 'color', hint: 'Couleur des bordures et séparateurs entre les éléments.' },
+      { key: 'title', label: 'Titre de l’onglet et des résultats Google', type: 'text', plain: true, hint: 'Visez 50 à 60 caractères.' },
+      { key: 'description', label: 'Méta description', type: 'textarea', plain: true, hint: 'Visez 150 à 160 caractères. Cette métadonnée utilise du texte sans mise en forme.' },
+      { key: 'og_image', label: 'Image de partage', type: 'image', hint: 'Format recommandé : 1200 × 630 pixels.' },
+      { key: 'og_image_alt', label: 'Description de l’image de partage', type: 'text', plain: true, hint: ALT_HINT },
+      { key: 'favicon', label: 'Icône du navigateur', type: 'image', accept: '.ico,.png', hint: 'Fichier ICO ou PNG. Le format original est conservé.' },
+      { key: 'apple_touch_icon', label: 'Icône Apple', type: 'image', accept: '.png', hint: 'Fichier PNG de 180 × 180 pixels. Le format original est conservé.' },
     ],
   },
 ];
@@ -322,6 +340,18 @@ const SECTIONS = [
   $btnPreview.addEventListener('click', handlePreview);
   $btnPublish.addEventListener('click', handlePublish);
   if ($btnLogout) $btnLogout.addEventListener('click', handleLogout);
+  document.getElementById('preview-close').addEventListener('click', () => $previewModal.close());
+  $previewModal.addEventListener('close', () => {
+    previewRequest += 1;
+    $previewFrame.srcdoc = '';
+    $previewFrame.hidden = true;
+  });
+  window.addEventListener('beforeunload', event => {
+    if (hasUnpublishedChanges || pendingImages.length || preparingImages) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
 })();
 
 // Actions popover (mobile)
@@ -401,17 +431,27 @@ function apiHeaders(includeCsrf = false) {
 }
 
 async function apiJson(url, options = {}) {
-  const res = await fetch(url, {
-    method: options.method || 'GET',
-    credentials: 'same-origin',
-    headers: apiHeaders(options.csrf),
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || err.message || `Erreur API ${res.status}`);
+  let response;
+  try {
+    response = await fetch(url, {
+      method: options.method || 'GET',
+      credentials: 'same-origin',
+      headers: apiHeaders(options.csrf),
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+  } catch {
+    throw new Error('Connexion impossible. Vérifiez votre connexion Internet et réessayez.');
   }
-  return res.json();
+  if (!response.ok) throw new Error(apiErrorMessage(response.status));
+  return response.json();
+}
+
+function apiErrorMessage(status) {
+  if (status === 401) return 'Votre session a expiré. Reconnectez-vous pour continuer.';
+  if (status === 403) return 'Accès refusé. Reconnectez-vous et vérifiez vos permissions GitHub.';
+  if (status === 409 || status === 422) return 'Le contenu a changé sur GitHub. Copiez vos modifications avant de recharger la page.';
+  if (status === 400 || status === 413) return 'Le fichier ou le contenu est invalide. Vérifiez le format et la limite de 5 Mo par image.';
+  return `Le serveur ne peut pas terminer cette opération (${status}). Réessayez plus tard.`;
 }
 
 async function loadSession() {
@@ -422,7 +462,7 @@ async function loadSession() {
     adminLogin = session.login || '';
     return true;
   } catch (e) {
-    console.error('loadSession error:', e);
+    console.error('Erreur de session :', e);
     return false;
   }
 }
@@ -456,16 +496,37 @@ async function listImages() {
   return data.files || [];
 }
 
-// Collect all image paths referenced anywhere in the content object
-function collectImagePaths(obj) {
+function normalizeLocalImagePath(value) {
+  const path = String(value || '').trim().replace(/^https?:\/\/[^/]+\//i, '').split(/[?#]/)[0].replace(/^\/+/, '');
+  return path.startsWith(`${IMAGES_PATH}/`) ? path : '';
+}
+
+function collectImagePaths(source) {
   const paths = new Set();
-  JSON.stringify(obj, (_, value) => {
-    if (typeof value === 'string' && value.startsWith('/' + IMAGES_PATH + '/')) {
-      paths.add(value.slice(1)); // remove leading /
+  JSON.stringify(source, (_, value) => {
+    if (typeof value === 'string') {
+      for (const match of value.match(/\/?assets\/images\/[^\s"'<>),]+/gi) || []) {
+        paths.add(normalizeLocalImagePath(match));
+      }
     }
     return value;
   });
   return paths;
+}
+
+function imageAltForPath(path, source = content) {
+  if (!source || typeof source !== 'object') return '';
+  for (const [key, value] of Object.entries(source)) {
+    if (typeof value === 'string' && normalizeLocalImagePath(value) === normalizeLocalImagePath(path)) {
+      const alt = source[`${key}_alt`];
+      if (typeof alt === 'string' && alt.trim()) return alt;
+    }
+    if (value && typeof value === 'object') {
+      const alt = imageAltForPath(path, value);
+      if (alt) return alt;
+    }
+  }
+  return '';
 }
 
 // ============================================================================
@@ -478,10 +539,18 @@ async function loadContent() {
     const data = await apiJson(API.content);
     contentSha = data.sha;
     content = data.content;
+    for (const section of getSections()) {
+      if (section.toggleable) {
+        content[section.key] ||= {};
+        content[section.key].enabled ??= true;
+      }
+    }
+    publishedImagePaths = collectImagePaths(content);
+    hasUnpublishedChanges = false;
     setStatus('connected', adminLogin ? `Connecté : ${adminLogin}` : 'Connecté');
     return true;
   } catch (e) {
-    console.error('loadContent error:', e);
+    console.error('Erreur de chargement :', e);
     setStatus('error', 'Erreur de chargement');
     return false;
   }
@@ -500,6 +569,23 @@ function getSections() {
 function getSectionLabel(sectionDef) {
   const data = content[sectionDef.key];
   return (data && data.admin_label) || sectionDef.label;
+}
+
+function updateSectionNavigation() {
+  document.querySelectorAll('.admin-sidebar-item, .admin-mobile-tab').forEach(button => {
+    const section = getSections().find(item => item.key === button.dataset.section);
+    const label = section ? getSectionLabel(section) : 'Images';
+    button.textContent = label;
+    button.classList.toggle('active', button.dataset.section === activeSection);
+    if (button.dataset.section === activeSection) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+    if (section?.toggleable && content[section.key]?.enabled === false) {
+      const badge = document.createElement('span');
+      badge.className = 'admin-hidden-badge';
+      badge.textContent = 'masquée';
+      button.append(' ', badge);
+    }
+  });
 }
 
 function getDividerForSection(sectionKey) {
@@ -549,40 +635,44 @@ function renderSections() {
     mobileTabs.appendChild(tab);
   });
 
+  for (const [target, className] of [[sidebar, 'admin-sidebar-item'], [mobileTabs, 'admin-mobile-tab']]) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = className;
+    button.dataset.section = 'images';
+    button.textContent = 'Images';
+    button.addEventListener('click', () => showSection('images'));
+    target.appendChild(button);
+  }
+
   // Show first section
   showSection(sections[0].key);
 }
 
 function showSection(sectionKey) {
+  if (preparingImages) {
+    showToast('Attendez la préparation des images avant de changer de section.', 'error');
+    return;
+  }
   // Save current section's edits before switching
   collectContent();
 
   activeSection = sectionKey;
-  const sectionDef = getSections().find(s => s.key === sectionKey);
+  updateSectionNavigation();
+  disposeMarkdownEditors($sections);
+  $sections.replaceChildren();
+  if (sectionKey === 'images') {
+    renderImagesView();
+    return;
+  }
+  const sectionDef = getSections().find(section => section.key === sectionKey);
   if (!sectionDef) return;
-
-  // Update sidebar labels and active state
-  const sections = getSections();
-  document.querySelectorAll('.admin-sidebar-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.section === sectionKey);
-    const def = sections.find(s => s.key === el.dataset.section);
-    if (def) el.textContent = getSectionLabel(def);
-  });
-
-  // Update mobile tab labels and active state
-  document.querySelectorAll('.admin-mobile-tab').forEach(el => {
-    el.classList.toggle('active', el.dataset.section === sectionKey);
-    const def = sections.find(s => s.key === el.dataset.section);
-    if (def) el.textContent = getSectionLabel(def);
-  });
 
   // Scroll active mobile tab into view
   const activeTab = document.querySelector('.admin-mobile-tab.active');
   if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
-  // Render section content
-  const container = document.getElementById('sections-container');
-  container.innerHTML = '';
+  const container = $sections;
 
   const card = document.createElement('div');
   card.className = 'admin-content-card';
@@ -599,17 +689,11 @@ function showSection(sectionKey) {
   titleInput.className = 'admin-section-label-input';
   titleInput.value = getSectionLabel(sectionDef);
   titleInput.dataset.path = `${sectionDef.key}.admin_label`;
+  titleInput.setAttribute('aria-label', 'Nom de la section dans l’administration');
   titleInput.addEventListener('input', () => {
-    // Live-update sidebar and tabs
-    const sections = getSections();
-    const val = titleInput.value.trim();
-    if (val) setNestedValue(content, `${sectionDef.key}.admin_label`, val);
-    document.querySelectorAll('.admin-sidebar-item').forEach(el => {
-      if (el.dataset.section === sectionKey) el.textContent = val || sectionDef.label;
-    });
-    document.querySelectorAll('.admin-mobile-tab').forEach(el => {
-      if (el.dataset.section === sectionKey) el.textContent = val || sectionDef.label;
-    });
+    setNestedValue(content, `${sectionDef.key}.admin_label`, titleInput.value.trim());
+    updateSectionNavigation();
+    markDirty();
   });
 
   const editIcon = document.createElement('span');
@@ -619,6 +703,13 @@ function showSection(sectionKey) {
   titleRow.appendChild(titleInput);
   titleRow.appendChild(editIcon);
   card.appendChild(titleRow);
+
+  if (sectionDef.toggleable) {
+    card.appendChild(createField(sectionDef.key, {
+      key: 'enabled', label: 'Section affichée', type: 'toggle',
+      hint: 'Une section masquée disparaît aussi de la navigation du site.',
+    }, content[sectionDef.key]?.enabled !== false));
+  }
 
   // Build field grid with sub-groups
   const grid = document.createElement('div');
@@ -637,7 +728,7 @@ function showSection(sectionKey) {
     }
 
     const fieldEl = createField(sectionDef.key, field, sectionData[field.key]);
-    const isFullWidth = field.type === 'textarea' || field.type === 'image' || field.key === 'heading' || field.key === 'title';
+    const isFullWidth = field.type === 'textarea' || field.type === 'image' || field.key.endsWith('_alt') || field.key === 'heading' || field.key === 'title';
     if (isFullWidth) fieldEl.classList.add('admin-field-full');
     grid.appendChild(fieldEl);
   });
@@ -671,109 +762,101 @@ function hintHtml(fieldDef) {
 function createField(sectionKey, fieldDef, value) {
   const group = document.createElement('div');
   group.className = 'admin-field';
-
   const dataPath = `${sectionKey}.${fieldDef.key}`;
+  const id = `field-${dataPath.replace(/\./g, '-')}`;
+  const label = `<label class="admin-label" for="${id}">${esc(fieldDef.label)}</label>${hintHtml(fieldDef)}`;
 
   if (fieldDef.type === 'toggle') {
-    group.innerHTML = `
-      <label class="admin-label">${esc(fieldDef.label)}</label>
-      ${hintHtml(fieldDef)}
-      <div class="flex items-center gap-4" style="margin-top: var(--space-2);">
+    group.innerHTML = `${label}
+      <div class="flex items-center gap-4 mt-2">
         <label class="admin-toggle">
-          <input type="checkbox" data-path="${dataPath}" ${value ? 'checked' : ''}>
+          <input id="${id}" type="checkbox" role="switch" data-path="${dataPath}" ${value !== false ? 'checked' : ''}>
           <span class="admin-toggle-slider"></span>
         </label>
-      </div>
-    `;
-  } else if (fieldDef.type === 'textarea') {
-    const taId = `ta-${dataPath.replace(/\./g, '-')}`;
-    group.innerHTML = `
-      <label class="admin-label">${esc(fieldDef.label)}</label>
-      ${hintHtml(fieldDef)}
-      <textarea class="textarea" id="${taId}" data-path="${dataPath}" rows="4">${esc(value || '')}</textarea>
-    `;
-    if (!fieldDef.plain) {
-      // Defer so textarea is in DOM before EasyMDE attaches
-      initMarkdownEditor(group);
-    }
+        <span class="admin-hint">${value !== false ? 'Affichée' : 'Masquée'}</span>
+      </div>`;
+    const input = group.querySelector('input');
+    input.addEventListener('change', () => {
+      setNestedValue(content, dataPath, input.checked);
+      group.querySelector('span.admin-hint').textContent = input.checked ? 'Affichée' : 'Masquée';
+      updateSectionNavigation();
+      markDirty();
+    });
   } else if (fieldDef.type === 'image') {
-    const id = `img-${dataPath.replace(/\./g, '-')}`;
-    group.innerHTML = `
-      <label class="admin-label">${esc(fieldDef.label)}</label>
-      ${hintHtml(fieldDef)}
+    const alt = getNestedValue(content, `${dataPath}_alt`) || String(value || '').split('/').pop();
+    group.innerHTML = `${label}
       <div class="admin-image-field">
-        ${value
-          ? `<img src="${esc(resolveImageSrc(value))}" alt="" class="admin-thumbnail" id="${id}-thumb">`
-          : `<div class="admin-thumbnail-placeholder" id="${id}-thumb">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-            </div>`
-        }
-        <div>
+        <img class="admin-thumbnail" ${value ? `src="${esc(resolveImageSrc(value))}"` : 'hidden'} alt="${esc(alt)}">
+        <div class="admin-image-controls">
+          <input id="${id}" type="text" class="input" data-path="${dataPath}" value="${esc(value || '')}" placeholder="/assets/images/image.webp">
           <label class="admin-upload-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Choisir
-            <input type="file" accept="image/*,.ico" class="admin-file-input" data-path="${dataPath}" data-thumb="${id}-thumb">
+            Choisir une image
+            <input type="file" accept="${fieldDef.accept || '.webp,.jpg,.jpeg,.png,.svg,.ico'}" class="admin-file-input" data-image-path="${dataPath}" aria-label="${esc(`Téléverser : ${fieldDef.label}`)}">
           </label>
-          <p class="admin-hint">${esc(value || 'Aucune image')}</p>
+          <p class="admin-hint">L’image sera téléversée avec Publier. Utilisez un chemin de la bibliothèque pour réutiliser une image.</p>
         </div>
-      </div>
-    `;
-    // Bind file input after insertion
-    setTimeout(() => {
-      const fileInput = group.querySelector('input[type="file"]');
-      if (fileInput) {
-        fileInput.addEventListener('change', handleImageSelect);
-      }
-    }, 0);
+      </div>`;
+    const pathInput = group.querySelector('input[type="text"]');
+    pathInput.addEventListener('input', () => updateImageThumbnail(group, pathInput.value));
+    group.querySelector('input[type="file"]').addEventListener('change', handleImageSelect);
   } else if (fieldDef.type === 'color') {
-    const colorId = `color-${dataPath.replace(/\./g, '-')}`;
-    group.innerHTML = `
-      <label class="admin-label">${esc(fieldDef.label)}</label>
-      ${hintHtml(fieldDef)}
-      <div class="flex items-center gap-3" style="margin-top: var(--space-2);">
-        <input type="color" class="admin-color-picker" id="${colorId}-picker" value="${esc(value || '#000000')}">
-        <input type="text" class="input admin-color-text" data-path="${dataPath}" id="${colorId}-text" value="${esc(value || '')}" style="max-width: 8rem; font-family: monospace;" placeholder="#000000">
-      </div>
-    `;
-    setTimeout(() => {
-      const picker = group.querySelector(`#${colorId}-picker`);
-      const text = group.querySelector(`#${colorId}-text`);
-      if (picker && text) {
-        picker.addEventListener('input', () => { text.value = picker.value; });
-        text.addEventListener('input', () => {
-          if (/^#[0-9a-fA-F]{6}$/.test(text.value)) picker.value = text.value;
-        });
-        text.addEventListener('blur', () => {
-          if (text.value && !/^#[0-9a-fA-F]{3,8}$/.test(text.value)) text.value = picker.value;
-        });
-      }
-    }, 0);
-  } else if (fieldDef.plain) {
-    // Plain text input (links, metadata) — no markdown
-    group.innerHTML = `
-      <label class="admin-label">${esc(fieldDef.label)}</label>
-      ${hintHtml(fieldDef)}
-      <input type="text" class="input" data-path="${dataPath}" value="${esc(value || '')}">
-    `;
+    group.innerHTML = `${label}
+      <div class="flex items-center gap-3 mt-2">
+        <input type="color" class="admin-color-picker" value="${esc(value || '#000000')}" aria-label="${esc(`Choisir : ${fieldDef.label}`)}">
+        <input id="${id}" type="text" class="input admin-color-text" data-path="${dataPath}" value="${esc(value || '')}" placeholder="#000000" style="max-width: 8rem; font-family: monospace;">
+      </div>`;
+    const picker = group.querySelector('input[type="color"]');
+    const text = group.querySelector('input[type="text"]');
+    picker.addEventListener('input', () => { text.value = picker.value; });
+    text.addEventListener('input', () => {
+      if (/^#[0-9a-fA-F]{6}$/.test(text.value)) picker.value = text.value;
+    });
+    text.addEventListener('blur', () => {
+      if (!/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(text.value)) text.value = picker.value;
+    });
+  } else if (fieldDef.type !== 'textarea' && !fieldDef.markdown) {
+    group.innerHTML = `${label}<input id="${id}" type="text" class="input" data-path="${dataPath}" value="${esc(value || '')}">`;
   } else {
-    // Short markdown field — EasyMDE with compact height
-    group.innerHTML = `
-      <label class="admin-label">${esc(fieldDef.label)}</label>
-      ${hintHtml(fieldDef)}
-      <textarea class="textarea" data-path="${dataPath}" rows="1">${esc(value || '')}</textarea>
-    `;
-    initMarkdownEditor(group, true);
+    const compact = fieldDef.type !== 'textarea';
+    group.innerHTML = `${label}<textarea id="${id}" class="textarea" data-path="${dataPath}" rows="${compact ? 1 : 4}">${esc(value || '')}</textarea>`;
+    requestAnimationFrame(() => {
+      if (group.isConnected) initMarkdownEditor(group, compact, fieldDef.plain);
+    });
   }
 
+  group.addEventListener('input', markDirty);
+  if (fieldDef.key.endsWith('_alt')) {
+    group.querySelector('input').addEventListener('input', event => {
+      const imagePath = dataPath.slice(0, -4);
+      const scope = group.closest('.admin-edit-form, .admin-content-card');
+      scope?.querySelectorAll('.admin-image-field').forEach(imageField => {
+        if (imageField.querySelector('[data-path]')?.dataset.path === imagePath) {
+          const image = imageField.querySelector('img');
+          image.alt = event.target.value || imageField.querySelector('[data-path]').value.split('/').pop();
+        }
+      });
+    });
+  }
   return group;
 }
 
 function resolveImageSrc(path) {
   if (!path) return '';
-  // If path starts with / it's relative to site root, go up one level from admin/
-  if (path.startsWith('/')) return '..' + path;
-  if (path.startsWith('http')) return path;
-  return '../' + path;
+  const pending = pendingImages.find(image => image.path === normalizeLocalImagePath(path));
+  if (pending) return pending.previewUrl;
+  if (/^https?:\/\//i.test(path) || path.startsWith('/')) return path;
+  return '/' + path;
+}
+
+function updateImageThumbnail(group, path) {
+  const image = group.querySelector('img');
+  image.hidden = !path;
+  if (path) image.src = resolveImageSrc(path);
+  else image.removeAttribute('src');
+  const dataPath = group.querySelector('[data-path]').dataset.path;
+  const scope = group.closest('.admin-edit-form, .admin-content-card');
+  const alt = Array.from(scope?.querySelectorAll('[data-path]') || []).find(input => input.dataset.path === `${dataPath}_alt`);
+  image.alt = alt?.value || String(path || '').split('/').pop();
 }
 
 // ============================================================================
@@ -789,7 +872,7 @@ function createListEditor(sectionKey, listDef, items) {
   heading.className = 'admin-subgroup-header flex items-center justify-between mb-4';
   heading.innerHTML = `
     <span class="admin-label" style="margin-bottom:0;font-size:var(--text-base);">
-      ${esc(listDef.key === 'items' ? 'Éléments' : listDef.key === 'values' ? 'Valeurs' : listDef.key === 'form_subjects' ? 'Sujets du formulaire' : 'Éléments')}
+      ${esc(listDef.label || 'Éléments')}
     </span>
     <span class="text-xs text-light">${items.length} élément${items.length !== 1 ? 's' : ''}</span>
   `;
@@ -812,30 +895,20 @@ function createListEditor(sectionKey, listDef, items) {
     Ajouter
   `;
   addBtn.addEventListener('click', () => {
-    // Show an edit form for a new item WITHOUT adding to content yet
-    const newItem = {};
-    listDef.fields.forEach(f => { newItem[f.key] = ''; });
+    collectContent();
+    refreshList(container, sectionKey, listDef);
     const arr = getNestedValue(content, `${sectionKey}.${listDef.key}`) || [];
-    const newIdx = arr.length;
-
-    const form = createEditForm(sectionKey, listDef, newItem, newIdx);
-
-    // Override cancel: just remove the form (item was never added)
-    form.querySelector('[data-action="cancel"]').onclick = () => form.remove();
-
-    // Override save: add the item to content, then refresh
+    const newItem = Object.fromEntries(listDef.fields.map(field => [field.key, '']));
+    const form = createEditForm(sectionKey, listDef, newItem, arr.length);
+    form.querySelector('[data-action="cancel"]').onclick = () => {
+      disposeMarkdownEditors(form);
+      form.remove();
+    };
     form.querySelector('[data-action="save"]').onclick = () => {
-      const saved = {};
-      form.querySelectorAll('[data-path]').forEach(input => {
-        const key = input.dataset.path.split('.').pop();
-        saved[key] = input.type === 'checkbox' ? input.checked : input.value;
-      });
-      arr.push(saved);
-      setNestedValue(content, `${sectionKey}.${listDef.key}`, arr);
+      collectContent();
+      markDirty();
       refreshList(container, sectionKey, listDef);
     };
-
-    // Insert form before the add button
     addBtn.before(form);
   });
   container.appendChild(addBtn);
@@ -855,7 +928,8 @@ function createListItem(sectionKey, listDef, item, index, totalCount) {
 
   let thumbHtml = '';
   if (imageField && item[imageField.key]) {
-    thumbHtml = `<img src="${esc(resolveImageSrc(item[imageField.key]))}" alt="" class="admin-thumbnail">`;
+    const alt = item[`${imageField.key}_alt`] || item[imageField.key].split('/').pop();
+    thumbHtml = `<img src="${esc(resolveImageSrc(item[imageField.key]))}" alt="${esc(alt)}" class="admin-thumbnail">`;
   } else if (imageField) {
     thumbHtml = `<div class="admin-thumbnail-placeholder">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
@@ -900,6 +974,8 @@ function createListItem(sectionKey, listDef, item, index, totalCount) {
 
   el.querySelector('[data-action="delete"]').addEventListener('click', () => {
     if (!confirm('Supprimer cet élément ?')) return;
+    collectContent();
+    markDirty();
     const arr = getNestedValue(content, `${sectionKey}.${listDef.key}`) || [];
     arr.splice(index, 1);
     setNestedValue(content, `${sectionKey}.${listDef.key}`, arr);
@@ -916,54 +992,7 @@ function createEditForm(sectionKey, listDef, item, index) {
   form.className = 'admin-edit-form';
 
   listDef.fields.forEach(field => {
-    const fPath = `${sectionKey}.${listDef.key}.${index}.${field.key}`;
-    const group = document.createElement('div');
-    group.className = 'admin-field';
-
-    if (field.type === 'textarea') {
-      group.innerHTML = `
-        <label class="admin-label">${esc(field.label)}</label>
-        <textarea class="textarea" data-path="${fPath}" rows="3">${esc(item[field.key] || '')}</textarea>
-      `;
-      initMarkdownEditor(group);
-    } else if (field.type === 'image') {
-      const thumbId = `edit-thumb-${sectionKey}-${index}-${field.key}`;
-      group.innerHTML = `
-        <label class="admin-label">${esc(field.label)}</label>
-        <div class="admin-image-field">
-          ${item[field.key]
-            ? `<img src="${esc(resolveImageSrc(item[field.key]))}" alt="" class="admin-thumbnail" id="${thumbId}">`
-            : `<div class="admin-thumbnail-placeholder" id="${thumbId}">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-              </div>`
-          }
-          <div>
-            <label class="admin-upload-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Choisir
-              <input type="file" accept="image/*,.ico" class="admin-file-input" data-path="${fPath}" data-thumb="${thumbId}">
-            </label>
-            <p class="admin-hint">${esc(item[field.key] || 'Aucune image')}</p>
-          </div>
-        </div>
-      `;
-      setTimeout(() => {
-        const fi = group.querySelector('input[type="file"]');
-        if (fi) fi.addEventListener('change', handleImageSelect);
-      }, 0);
-    } else if (field.plain) {
-      group.innerHTML = `
-        <label class="admin-label">${esc(field.label)}</label>
-        <input type="text" class="input" data-path="${fPath}" value="${esc(item[field.key] || '')}">
-      `;
-    } else {
-      group.innerHTML = `
-        <label class="admin-label">${esc(field.label)}</label>
-        <textarea class="textarea" data-path="${fPath}" rows="1">${esc(item[field.key] || '')}</textarea>
-      `;
-      initMarkdownEditor(group, true);
-    }
-    form.appendChild(group);
+    form.appendChild(createField(`${sectionKey}.${listDef.key}.${index}`, field, item[field.key]));
   });
 
   const actions = document.createElement('div');
@@ -978,8 +1007,13 @@ function createEditForm(sectionKey, listDef, item, index) {
 
 function openListItemEditor(listItemEl, sectionKey, listDef, index) {
   const container = listItemEl.closest('[data-list-key]');
+  collectContent();
   const existing = container.querySelector('.admin-edit-form');
-  if (existing) existing.remove();
+  if (existing) {
+    disposeMarkdownEditors(existing);
+    existing.remove();
+    container.querySelectorAll('.admin-list-item').forEach(item => { item.style.display = ''; });
+  }
 
   const arr = getNestedValue(content, `${sectionKey}.${listDef.key}`) || [];
   const item = arr[index];
@@ -993,31 +1027,23 @@ function openListItemEditor(listItemEl, sectionKey, listDef, index) {
 
   // Bind form actions
   form.querySelector('[data-action="cancel"]').addEventListener('click', () => {
+    disposeMarkdownEditors(form);
     form.remove();
     listItemEl.style.display = '';
   });
 
   form.querySelector('[data-action="save"]').addEventListener('click', () => {
-    // Collect values from the edit form
-    form.querySelectorAll('[data-path]').forEach(input => {
-      const path = input.dataset.path;
-      let val;
-      if (input.type === 'checkbox') {
-        val = input.checked;
-      } else if (input.type === 'file') {
-        return; // Images handled by handleImageSelect
-      } else {
-        val = input.value;
-      }
-      setNestedValue(content, path, val);
-    });
-    form.remove();
-    listItemEl.style.display = '';
+    collectContent();
+    markDirty();
     refreshList(container, sectionKey, listDef);
   });
 }
 
 function refreshList(container, sectionKey, listDef) {
+  container.querySelectorAll('.admin-edit-form').forEach(form => {
+    disposeMarkdownEditors(form);
+    form.remove();
+  });
   const arr = getNestedValue(content, `${sectionKey}.${listDef.key}`) || [];
   const listEl = container.querySelector('.admin-list-items');
   listEl.innerHTML = '';
@@ -1035,101 +1061,207 @@ function refreshList(container, sectionKey, listDef) {
 //  IMAGE HANDLING
 // ============================================================================
 
-function handleImageSelect(e) {
-  const file = e.target.files[0];
+async function handleImageSelect(event) {
+  const input = event.target;
+  const file = input.files[0];
   if (!file) return;
-
-  const dataPath = e.target.dataset.path;
-  const thumbId = e.target.dataset.thumb;
-  const isSvg = file.type === 'image/svg+xml';
-  const isIco = file.type === 'image/x-icon' || file.type === 'image/vnd.microsoft.icon' || /\.ico$/i.test(file.name);
-
-  const process = (isSvg || isIco) ? readFileAsBase64(file) : compressToWebP(file);
-
-  process.then(({ base64Data, previewUrl }) => {
-    const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9.-]/g, '-').toLowerCase();
-    const ext = isSvg ? 'svg' : (isIco ? 'ico' : 'webp');
-    const safeName = `${baseName}.${ext}`;
-    const imgPath = `/${IMAGES_PATH}/${safeName}`;
-
-    setNestedValue(content, dataPath, imgPath);
-
-    pendingImages.push({
-      path: `${IMAGES_PATH}/${safeName}`,
-      base64: base64Data,
-      name: safeName,
-    });
-
-    // Update thumbnail preview
-    const thumbEl = document.getElementById(thumbId);
-    if (thumbEl) {
-      if (thumbEl.tagName === 'IMG') {
-        thumbEl.src = previewUrl;
-      } else {
-        const img = document.createElement('img');
-        img.src = previewUrl;
-        img.alt = '';
-        img.className = 'admin-thumbnail';
-        img.id = thumbId;
-        thumbEl.replaceWith(img);
-      }
-    }
-
-    const hint = e.target.closest('.admin-image-field')?.querySelector('.admin-hint');
-    if (hint) hint.textContent = safeName;
-  });
+  const group = input.closest('.admin-field');
+  input.disabled = true;
+  preparingImages += 1;
+  try {
+    const upload = await prepareImageUpload(file, input.dataset.imagePath);
+    if (!group.isConnected) return;
+    pendingImages.push(upload);
+    const pathInput = group.querySelector('[data-path]');
+    pathInput.value = `/${upload.path}`;
+    updateImageThumbnail(group, pathInput.value);
+    markDirty();
+    showToast('Image préparée. Cliquez sur Publier pour la téléverser.', 'success');
+  } catch (error) {
+    showToast(error.message, 'error');
+  } finally {
+    preparingImages -= 1;
+    input.disabled = false;
+    input.value = '';
+  }
 }
 
-// Convert an image file to WebP using Canvas, with optional max dimension resize.
-function compressToWebP(file, maxDim = 1920, quality = 0.82) {
+async function prepareImageUpload(file, fieldPath = '') {
+  const extension = file.name.split('.').pop().toLowerCase();
+  if (!['webp', 'jpg', 'jpeg', 'png', 'svg', 'ico'].includes(extension)) {
+    throw new Error('Choisissez une image WebP, JPG, PNG, SVG ou ICO.');
+  }
+  if (!file.size) throw new Error('Le fichier est vide.');
+  const isFavicon = fieldPath === 'seo.favicon';
+  const isAppleIcon = fieldPath === 'seo.apple_touch_icon';
+  if (isFavicon && !['ico', 'png'].includes(extension)) throw new Error('L’icône du navigateur doit être un fichier ICO ou PNG.');
+  if (isAppleIcon && extension !== 'png') throw new Error('L’icône Apple doit être un fichier PNG de 180 × 180 pixels.');
+  const preserve = extension === 'svg' || extension === 'ico' || isFavicon || isAppleIcon;
+  if (preserve && file.size > 5 * 1024 * 1024) throw new Error('L’image dépasse la limite de 5 Mo.');
+  if (isAppleIcon) {
+    const image = await loadImageFile(file);
+    if (image.width !== 180 || image.height !== 180) throw new Error('L’icône Apple doit mesurer 180 × 180 pixels.');
+  }
+  const result = preserve ? await readFileAsBase64(file) : await compressToWebP(file);
+  if (result.base64Data.length * 3 / 4 > 5 * 1024 * 1024) throw new Error('L’image préparée dépasse la limite de 5 Mo.');
+  const base = file.name.replace(/\.[^.]+$/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 75).toLowerCase() || 'image';
+  const name = `${base}-${crypto.randomUUID().slice(0, 8)}.${preserve ? extension : 'webp'}`;
+  return { name, path: `${IMAGES_PATH}/${name}`, base64: result.base64Data, previewUrl: result.previewUrl };
+}
+
+function loadImageFile(file) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(img.src);
-      let { width, height } = img;
-
-      // Resize if larger than maxDim
-      if (width > maxDim || height > maxDim) {
-        const ratio = Math.min(maxDim / width, maxDim / height);
-        width = Math.round(width * ratio);
-        height = Math.round(height * ratio);
-      }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-
-      canvas.toBlob((blob) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const previewUrl = URL.createObjectURL(blob);
-          const base64Data = reader.result.split(',')[1];
-          resolve({ base64Data, previewUrl });
-        };
-        reader.readAsDataURL(blob);
-      }, 'image/webp', quality);
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(img.src);
-      reject(new Error('Impossible de charger l\u2019image'));
-    };
-    img.src = URL.createObjectURL(file);
+    const image = new Image();
+    const url = URL.createObjectURL(file);
+    image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+    image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Impossible de lire cette image.')); };
+    image.src = url;
   });
 }
 
-// Read a file as base64 without conversion (for SVGs and other non-raster formats)
+// Raster images use the existing 1920-pixel limit and WebP quality.
+async function compressToWebP(file, maxDim = 1920, quality = 0.82) {
+  const image = await loadImageFile(file);
+  const ratio = Math.min(1, maxDim / image.width, maxDim / image.height);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(image.width * ratio));
+  canvas.height = Math.max(1, Math.round(image.height * ratio));
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('Le navigateur ne peut pas préparer cette image.');
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+  if (!blob || blob.type !== 'image/webp') throw new Error('Le navigateur ne peut pas convertir cette image en WebP.');
+  return readFileAsBase64(blob);
+}
+
 function readFileAsBase64(file) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      resolve({
-        base64Data: reader.result.split(',')[1],
-        previewUrl: URL.createObjectURL(file),
-      });
-    };
+    reader.onload = () => resolve({ base64Data: reader.result.split(',')[1], previewUrl: reader.result });
+    reader.onerror = () => reject(new Error('Impossible de lire ce fichier.'));
     reader.readAsDataURL(file);
   });
+}
+
+function renderImagesView() {
+  const card = document.createElement('section');
+  card.className = 'admin-content-card';
+  card.innerHTML = `
+    <div class="admin-gallery-header">
+      <h1 class="admin-content-title">Bibliothèque d’images</h1>
+      <label class="admin-upload-btn">Ajouter des images
+        <input class="admin-file-input" type="file" multiple accept=".webp,.jpg,.jpeg,.png,.svg,.ico" aria-label="Ajouter des images à la bibliothèque">
+      </label>
+    </div>
+    <p class="admin-hint">Les images seront téléversées avec Publier. Les images matricielles deviennent des WebP de 1920 pixels au maximum. Les SVG et ICO sont conservés.</p>
+    <p class="admin-hint">Les icônes PNG se téléversent dans Référencement. Copiez le chemin d’une image pour la réutiliser dans une section.</p>
+    <p class="admin-hint">La suppression d’un fichier publié est immédiate. Retirez d’abord ses références, puis publiez le contenu.</p>
+    <div class="admin-gallery-body" aria-live="polite">Chargement des images…</div>`;
+  const target = card.querySelector('.admin-gallery-body');
+  const input = card.querySelector('input');
+  input.addEventListener('change', async () => {
+    input.disabled = true;
+    preparingImages += 1;
+    try {
+      for (const file of input.files) {
+        pendingImages.push(await prepareImageUpload(file));
+        markDirty();
+      }
+      showToast('Images préparées. Cliquez sur Publier pour les téléverser.', 'success');
+    } catch (error) {
+      showToast(error.message, 'error');
+    } finally {
+      preparingImages -= 1;
+      input.disabled = false;
+      input.value = '';
+      if (target.isConnected) renderImageGallery(target);
+    }
+  });
+  $sections.appendChild(card);
+  $sections.scrollTo(0, 0);
+  renderImageGallery(target);
+}
+
+async function renderImageGallery(target) {
+  try {
+    const remoteImages = await listImages();
+    const pendingPaths = new Set(pendingImages.map(image => image.path));
+    if (!target.isConnected) return;
+    const images = remoteImages.filter(image => /\.(webp|jpe?g|png|svg|ico)$/i.test(image.name) && !pendingPaths.has(normalizeLocalImagePath(image.path)));
+    images.push(...pendingImages.map(image => ({ ...image, pending: true })));
+    const usedPaths = collectImagePaths(content);
+    const grid = document.createElement('div');
+    grid.className = 'admin-gallery-grid';
+    for (const image of images) {
+      const path = normalizeLocalImagePath(image.path);
+      const used = usedPaths.has(path);
+      const published = publishedImagePaths.has(path);
+      const adminIcon = path === 'assets/images/favicon.ico';
+      const unused = !used && !published && !adminIcon;
+      const card = document.createElement('article');
+      card.className = `admin-gallery-card${unused ? ' admin-gallery-card-unused' : ''}`;
+      const thumbnail = document.createElement('img');
+      thumbnail.src = resolveImageSrc(`/${path}`);
+      thumbnail.alt = imageAltForPath(path) || image.name;
+      thumbnail.loading = 'lazy';
+      const title = document.createElement('strong');
+      title.className = 'admin-gallery-title';
+      title.textContent = image.name;
+      const label = document.createElement('span');
+      label.className = unused ? 'admin-unused-badge' : 'admin-hint';
+      label.textContent = unused ? 'Inutilisée' : adminIcon ? 'Icône de l’administration' : published && !used ? 'Encore publiée' : 'Utilisée';
+      const imagePath = document.createElement('code');
+      imagePath.textContent = `/${path}`;
+      const actions = document.createElement('div');
+      actions.className = 'admin-gallery-actions';
+      const copy = document.createElement('button');
+      copy.type = 'button';
+      copy.className = 'btn btn-sm btn-outline-muted';
+      copy.textContent = 'Copier le chemin';
+      copy.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(`/${path}`);
+          showToast('Chemin copié.', 'success');
+        } catch {
+          showToast('Copiez le chemin affiché sous l’image.', 'error');
+        }
+      });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'btn btn-sm btn-danger';
+      remove.textContent = image.pending ? 'Retirer' : 'Supprimer';
+      remove.disabled = !unused;
+      if (!unused) remove.title = 'Retirez les références à cette image, puis publiez le contenu avant de la supprimer.';
+      remove.addEventListener('click', async () => {
+        if (!confirm(`${image.pending ? 'Retirer' : 'Supprimer définitivement'} ${image.name} ?`)) return;
+        remove.disabled = true;
+        try {
+          if (image.pending) pendingImages = pendingImages.filter(item => item.path !== path);
+          else await deleteImage(image);
+          showToast(image.pending ? 'Image retirée de la liste de téléversement.' : 'Image supprimée.', 'success');
+          await renderImageGallery(target);
+        } catch (error) {
+          remove.disabled = false;
+          showToast(error.message, 'error');
+        }
+      });
+      actions.append(copy, remove);
+      card.append(thumbnail, title, label, imagePath);
+      if (image.pending) {
+        const badge = document.createElement('span');
+        badge.className = 'admin-pending-badge';
+        badge.textContent = 'À publier';
+        card.appendChild(badge);
+      }
+      card.appendChild(actions);
+      grid.appendChild(card);
+    }
+    if (images.length) target.replaceChildren(grid);
+    else target.textContent = 'Aucune image dans la bibliothèque.';
+  } catch (error) {
+    target.textContent = error.message;
+  }
 }
 
 // ============================================================================
@@ -1157,34 +1289,43 @@ function collectContent() {
 // ============================================================================
 
 async function handlePreview() {
-  collectContent();
-
-  // The preview request is authenticated and protected with the session CSRF token.
-  const previewWindow = window.open('about:blank', '_blank');
-  if (!previewWindow) {
-    showToast('Impossible d’ouvrir l’aperçu. Autorisez les fenêtres pop-up.', 'error');
+  if (preparingImages) {
+    showToast('Attendez la préparation des images avant d’ouvrir l’aperçu.', 'error');
     return;
   }
-  previewWindow.opener = null;
-  previewWindow.document.open();
-  previewWindow.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Aperçu</title></head><body>Chargement de l’aperçu...</body></html>');
-  previewWindow.document.close();
+  collectContent();
+  if ($previewModal.open) return;
+  const requestId = ++previewRequest;
+  $previewFrame.hidden = true;
+  $previewStatus.hidden = false;
+  $previewStatus.textContent = 'Chargement de l’aperçu…';
+  $previewModal.showModal();
 
   try {
-    const res = await fetch(API.preview, {
+    const response = await fetch(API.preview, {
       method: 'POST',
       credentials: 'same-origin',
       headers: apiHeaders(true),
       body: JSON.stringify(content),
     });
-    const html = await res.text();
-    if (!res.ok) throw new Error(`Erreur de prévisualisation ${res.status}`);
-    previewWindow.document.open();
-    previewWindow.document.write(html);
-    previewWindow.document.close();
-  } catch (e) {
-    previewWindow.close();
-    showToast(e.message, 'error');
+    if (!response.ok) throw new Error(apiErrorMessage(response.status));
+    const html = await response.text();
+    if (!$previewModal.open || requestId !== previewRequest) return;
+    const documentPreview = new DOMParser().parseFromString(html, 'text/html');
+    documentPreview.querySelectorAll('img[src], link[rel="icon"], link[rel="apple-touch-icon"]').forEach(element => {
+      const attribute = element.tagName === 'IMG' ? 'src' : 'href';
+      const path = normalizeLocalImagePath(element.getAttribute(attribute));
+      const pending = pendingImages.find(image => image.path === path);
+      if (pending) element.setAttribute(attribute, pending.previewUrl);
+    });
+    $previewFrame.srcdoc = '<!doctype html>' + documentPreview.documentElement.outerHTML;
+    $previewFrame.hidden = false;
+    $previewStatus.hidden = true;
+  } catch (error) {
+    if (!$previewModal.open || requestId !== previewRequest) return;
+    const message = error instanceof TypeError ? 'Connexion impossible. Vérifiez votre connexion Internet et réessayez.' : error.message;
+    $previewStatus.textContent = message;
+    showToast(message, 'error');
   }
 }
 
@@ -1219,11 +1360,17 @@ function showPublishConfirmation() {
 }
 
 async function handlePublish() {
+  if ($btnPublish.disabled) return;
+  if (preparingImages) {
+    showToast('Attendez la préparation des images avant de publier.', 'error');
+    return;
+  }
   const confirmed = await showPublishConfirmation();
   if (!confirmed) return;
 
   collectContent();
   $btnPublish.disabled = true;
+  $editorScreen.inert = true;
   $btnPublish.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> Publication...';
   setStatus('saving', 'Publication en cours...');
 
@@ -1233,7 +1380,6 @@ async function handlePublish() {
       setStatus('saving', `Envoi de ${img.name}...`);
       await uploadImage(img);
     }
-    pendingImages = [];
 
     // 2. Update settings.json
     setStatus('saving', 'Mise à jour du contenu...');
@@ -1242,26 +1388,20 @@ async function handlePublish() {
     // Update SHA for next publish
     contentSha = result.sha;
 
-    // 3. Clean up orphaned images
-    setStatus('saving', 'Nettoyage des images...');
-    const referencedPaths = collectImagePaths(content);
-    const remoteFiles = await listImages();
-    for (const file of remoteFiles) {
-      if (file.type === 'file' && !referencedPaths.has(file.path)) {
-        try {
-          await deleteImage(file);
-        } catch (_) { /* non-critical, skip */ }
-      }
-    }
+    pendingImages = [];
+    publishedImagePaths = collectImagePaths(content);
+    hasUnpublishedChanges = false;
 
     setStatus('connected', 'Publié');
     $statusTime.textContent = `Dernière publication : ${new Date().toLocaleTimeString('fr-CA')}`;
-    showToast('Publié ! Le site sera mis à jour dans ~30 secondes.', 'success');
+    showToast('Modifications publiées. Le site sera mis à jour après le déploiement.', 'success');
+    if (activeSection === 'images') showSection('images');
   } catch (e) {
-    console.error('Publish error:', e);
+    console.error('Erreur de publication :', e);
     setStatus('error', 'Erreur de publication');
     showToast(`Erreur : ${e.message}`, 'error');
   } finally {
+    $editorScreen.inert = false;
     $btnPublish.disabled = false;
     $btnPublish.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -1274,26 +1414,40 @@ async function handlePublish() {
 //  UTILITIES
 // ============================================================================
 
-function esc(str) {
-  if (str == null) return '';
-  const d = document.createElement('div');
-  d.textContent = String(str);
-  return d.innerHTML;
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character]);
 }
 
-// Initialize EasyMDE on a textarea.
-// compact=true for single-line fields (titles, buttons).
-function initMarkdownEditor(container, compact) {
+function initMarkdownEditor(container, compact, plain = false) {
   if (typeof EasyMDE === 'undefined') return null;
-  const ta = container.querySelector('textarea');
-  if (!ta) return null;
-
-  const toolbar = compact
-    ? ['bold', 'italic', 'strikethrough', '|', 'link', '|', 'preview', '|', 'guide']
-    : ['bold', 'italic', 'strikethrough', 'code', '|', 'heading-1', 'heading-2', 'heading-3', '|', 'unordered-list', 'ordered-list', 'quote', '|', 'link', '|', 'preview', '|', 'guide'];
-
+  const textarea = container.querySelector('textarea');
+  if (!textarea || markdownEditors.has(textarea)) return markdownEditors.get(textarea);
+  const buttons = {
+    bold: ['toggleBold', 'fa-bold', 'Gras'],
+    italic: ['toggleItalic', 'fa-italic', 'Italique'],
+    strikethrough: ['toggleStrikethrough', 'fa-strikethrough', 'Texte barré'],
+    code: ['toggleCodeBlock', 'fa-code', 'Bloc de code'],
+    'heading-1': ['toggleHeading1', 'fa-heading', 'Titre de niveau 1'],
+    'heading-2': ['toggleHeading2', 'fa-heading', 'Titre de niveau 2'],
+    'heading-3': ['toggleHeading3', 'fa-heading', 'Titre de niveau 3'],
+    'unordered-list': ['toggleUnorderedList', 'fa-list-ul', 'Liste à puces'],
+    'ordered-list': ['toggleOrderedList', 'fa-list-ol', 'Liste numérotée'],
+    quote: ['toggleBlockquote', 'fa-quote-left', 'Citation'],
+    link: ['drawLink', 'fa-link', 'Insérer un lien'],
+    preview: ['togglePreview', 'fa-eye', 'Afficher l’aperçu'],
+  };
+  const names = plain ? ['preview'] : compact
+    ? ['bold', 'italic', 'strikethrough', '|', 'link', '|', 'preview']
+    : ['bold', 'italic', 'strikethrough', 'code', '|', 'heading-1', 'heading-2', 'heading-3', '|', 'unordered-list', 'ordered-list', 'quote', '|', 'link', '|', 'preview'];
+  const toolbar = names.map(name => {
+    if (name === '|') return name;
+    const [action, icon, title] = buttons[name];
+    return { name, action: EasyMDE[action], className: `fa ${icon}`, title, noDisable: name === 'preview' };
+  });
   const editor = new EasyMDE({
-    element: ta,
+    element: textarea,
     spellChecker: false,
     autoDownloadFontAwesome: false,
     forceSync: true,
@@ -1301,14 +1455,65 @@ function initMarkdownEditor(container, compact) {
     minHeight: compact ? '50px' : '120px',
     maxHeight: compact ? '50px' : undefined,
     toolbar,
+    shortcuts: plain ? Object.fromEntries(Object.values(buttons).map(([action]) => [action, null])) : undefined,
+    promptTexts: { link: 'Adresse du lien :', image: 'Adresse de l’image :' },
+    renderingConfig: { singleLineBreaks: false, sanitizerFunction: sanitizeMarkdownHtml },
+    previewRender(source) {
+      if (plain) return `<p>${esc(source).replace(/\n/g, '<br>')}</p>`;
+      const escaped = String(source).replace(/[&<>]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[character]);
+      return this.parent.markdown(escaped);
+    },
   });
-
-  if (compact) {
-    const wrapper = ta.closest('.EasyMDEContainer') || ta.parentElement.querySelector('.EasyMDEContainer');
-    if (wrapper) wrapper.classList.add('compact');
-  }
-
+  markdownEditors.set(textarea, editor);
+  editor.codemirror.on('change', markDirty);
+  const input = editor.codemirror.getInputField();
+  input.setAttribute('aria-label', container.querySelector('.admin-label').textContent);
+  if (compact) container.querySelector('.EasyMDEContainer').classList.add('compact');
   return editor;
+}
+
+function sanitizeMarkdownHtml(html) {
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  const allowed = new Set(['P', 'BR', 'STRONG', 'B', 'EM', 'I', 'DEL', 'S', 'CODE', 'PRE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'BLOCKQUOTE', 'A', 'IMG', 'HR', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD']);
+  for (const element of template.content.querySelectorAll('*')) {
+    if (!allowed.has(element.tagName)) {
+      element.replaceWith(document.createTextNode(element.textContent));
+      continue;
+    }
+    const attributes = element.tagName === 'A' ? ['href', 'title'] : element.tagName === 'IMG' ? ['src', 'alt', 'title'] : [];
+    for (const attribute of Array.from(element.attributes)) {
+      if (!attributes.includes(attribute.name)) element.removeAttribute(attribute.name);
+    }
+    for (const attribute of ['href', 'src']) {
+      if (!element.hasAttribute(attribute)) continue;
+      const value = element.getAttribute(attribute).trim();
+      const valid = !/[\u0000-\u0020\u007f\\]/.test(value) && (/^https?:\/\//i.test(value) || /^\/(?!\/)/.test(value)
+        || (attribute === 'href' && /^(mailto:|tel:|#)/i.test(value)));
+      if (valid) element.setAttribute(attribute, value);
+      else element.removeAttribute(attribute);
+    }
+    if (element.tagName === 'A') {
+      element.setAttribute('target', '_blank');
+      element.setAttribute('rel', 'noopener noreferrer');
+    }
+  }
+  return template.innerHTML;
+}
+
+function disposeMarkdownEditors(container) {
+  container.querySelectorAll('textarea[data-path]').forEach(textarea => {
+    const editor = markdownEditors.get(textarea);
+    if (!editor) return;
+    editor.toTextArea();
+    editor.cleanup();
+    markdownEditors.delete(textarea);
+  });
+}
+
+function markDirty() {
+  hasUnpublishedChanges = true;
+  setStatus('saving', 'Modifications non publiées');
 }
 
 
@@ -1400,6 +1605,8 @@ function initDragReorder(handle, el, sectionKey, listDef, index) {
 
   function doReorder(fromIdx, toIdx) {
     if (fromIdx === toIdx) return;
+    collectContent();
+    markDirty();
     const arr = getNestedValue(content, listPath) || [];
     const [moved] = arr.splice(fromIdx, 1);
     arr.splice(toIdx, 0, moved);

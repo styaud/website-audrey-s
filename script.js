@@ -3,288 +3,332 @@
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
-
-  /* ========================================================================
-     1. HAMBURGER MENU
-     ======================================================================== */
-
-  const hamburger = document.querySelector('.hamburger');
-  const navMenu = document.querySelector('.nav-menu');
+  const nav = document.querySelector('.site-nav');
+  const hamburger = document.querySelector('button.hamburger');
+  const navMenu = document.getElementById('primary-nav');
 
   if (hamburger && navMenu) {
-    const navLinks = navMenu.querySelectorAll('.nav-link');
-
-    function openMenu() {
-      hamburger.classList.add('active');
-      navMenu.classList.add('active');
-      hamburger.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
-    }
+    const desktop = window.matchMedia('(min-width: 1200px)');
+    let previousOverflow = document.body.style.overflow;
 
     function closeMenu() {
+      if (!navMenu.classList.contains('active')) return;
       hamburger.classList.remove('active');
       navMenu.classList.remove('active');
       hamburger.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = previousOverflow;
     }
 
-    function toggleMenu() {
+    hamburger.addEventListener('click', () => {
       if (navMenu.classList.contains('active')) {
         closeMenu();
-      } else {
-        openMenu();
+      } else if (!desktop.matches) {
+        previousOverflow = document.body.style.overflow;
+        hamburger.classList.add('active');
+        navMenu.classList.add('active');
+        hamburger.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
       }
-    }
+    });
 
-    hamburger.addEventListener('click', toggleMenu);
-
-    // Close on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+    navMenu.addEventListener('click', (event) => {
+      if (event.target === navMenu || event.target.closest('a')) closeMenu();
+    });
+    document.addEventListener('click', (event) => {
+      if (!navMenu.contains(event.target) && !hamburger.contains(event.target)) closeMenu();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && navMenu.classList.contains('active')) {
         closeMenu();
         hamburger.focus();
       }
     });
-
-    // Close when clicking any link inside the menu (nav links + CTA button)
-    navMenu.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', () => {
-        closeMenu();
-      });
-    });
-
-    // Close when clicking on the nav-menu backdrop itself (not its children)
-    navMenu.addEventListener('click', (e) => {
-      if (e.target === navMenu) {
-        closeMenu();
-      }
+    desktop.addEventListener('change', (event) => {
+      if (event.matches) closeMenu();
     });
   }
 
-  /* ========================================================================
-     2. HEADER SCROLL EFFECT
-     ======================================================================== */
-
-  const nav = document.querySelector('.site-nav');
-
   if (nav) {
-    function updateNavScroll() {
-      if (window.scrollY > 50) {
-        nav.classList.add('scrolled');
-      } else {
-        nav.classList.remove('scrolled');
-      }
-    }
-
-    // Set initial state
+    const updateNavScroll = () => nav.classList.toggle('scrolled', window.scrollY > 50);
     updateNavScroll();
-
     window.addEventListener('scroll', updateNavScroll, { passive: true });
   }
 
-  /* ========================================================================
-     3. SMOOTH SCROLL WITH HEADER OFFSET
-     ======================================================================== */
-
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener('click', (e) => {
-      const targetId = anchor.getAttribute('href');
-      if (targetId === '#' || targetId === '') return;
-
-      const target = document.querySelector(targetId);
-      if (!target) return;
-
-      e.preventDefault();
-
-      const headerOffset = nav ? nav.offsetHeight : 0;
-      const elementPosition = target.getBoundingClientRect().top + window.scrollY;
-      const offsetPosition = elementPosition - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
-      });
-    });
-  });
-
-  /* ========================================================================
-     4. FAQ ACCORDION
-     ======================================================================== */
-
-  const accordionHeaders = document.querySelectorAll('.accordion-header');
-
-  accordionHeaders.forEach((header) => {
-    header.addEventListener('click', () => {
-      const parentItem = header.closest('.accordion-item');
-      const content = parentItem.querySelector('.accordion-content');
-      const isActive = parentItem.classList.contains('active');
-
-      // Close all other open items
-      accordionHeaders.forEach((otherHeader) => {
-        const otherItem = otherHeader.closest('.accordion-item');
-        const otherContent = otherItem.querySelector('.accordion-content');
-        if (otherItem !== parentItem && otherItem.classList.contains('active')) {
-          otherItem.classList.remove('active');
-          otherContent.style.maxHeight = '0';
-          otherHeader.setAttribute('aria-expanded', 'false');
-        }
-      });
-
-      // Toggle current item
-      if (isActive) {
-        parentItem.classList.remove('active');
-        content.style.maxHeight = '0';
-        header.setAttribute('aria-expanded', 'false');
-      } else {
-        parentItem.classList.add('active');
-        content.style.maxHeight = content.scrollHeight + 'px';
-        header.setAttribute('aria-expanded', 'true');
-      }
-    });
-  });
-
-  /* ========================================================================
-     5. POPUP MODAL
-     ======================================================================== */
-
   const popup = document.getElementById('popup');
+  const formModal = document.getElementById('form-modal');
 
-  if (popup) {
-    const popupClose = document.getElementById('popup-close');
-    const modal = popup.querySelector('.modal');
-
-    // Lock body scroll while popup is visible
-    document.body.style.overflow = 'hidden';
-
-    function closePopup() {
-      popup.remove();
-      document.body.style.overflow = '';
-    }
-
-    // Close on button click
-    if (popupClose) {
-      popupClose.addEventListener('click', closePopup);
-    }
-
-    // Close on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && document.body.contains(popup)) {
-        closePopup();
+  for (const dialog of [popup, formModal]) {
+    if (!dialog) continue;
+    document.getElementById(`${dialog.id}-close`)?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (event) => {
+      if (event.target !== dialog) return;
+      const bounds = dialog.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right ||
+          event.clientY < bounds.top || event.clientY > bounds.bottom) {
+        dialog.close();
       }
     });
-
-    // Close on backdrop click (outside modal)
-    popup.addEventListener('click', (e) => {
-      if (e.target === popup) {
-        closePopup();
-      }
-    });
-
-    // Focus trap inside modal
-    if (modal) {
-      const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-      modal.addEventListener('keydown', (e) => {
-        if (e.key !== 'Tab') return;
-
-        const focusableElements = modal.querySelectorAll(focusableSelector);
-        if (focusableElements.length === 0) return;
-
-        const firstFocusable = focusableElements[0];
-        const lastFocusable = focusableElements[focusableElements.length - 1];
-
-        if (e.shiftKey) {
-          // Shift+Tab: if focus is on first element, wrap to last
-          if (document.activeElement === firstFocusable) {
-            e.preventDefault();
-            lastFocusable.focus();
-          }
-        } else {
-          // Tab: if focus is on last element, wrap to first
-          if (document.activeElement === lastFocusable) {
-            e.preventDefault();
-            firstFocusable.focus();
-          }
-        }
-      });
-
-      // Move initial focus into the modal
-      const firstFocusable = modal.querySelector(focusableSelector);
-      if (firstFocusable) {
-        firstFocusable.focus();
-      }
-    }
   }
 
-  /* ========================================================================
-     6. CONTACT FORM SUBMISSION
-     ======================================================================== */
+  if (popup) popup.showModal();
 
   const contactForm = document.getElementById('contact-form');
 
   if (contactForm) {
     const submitBtn = contactForm.querySelector('button[type="submit"]');
-    const submitBtnOriginalText = submitBtn ? submitBtn.textContent : '';
+    const submitLabel = submitBtn.querySelector('.btn-label');
+    const submitBtnOriginalText = submitLabel.textContent;
     const msgs = {
       sending: contactForm.dataset.sending || 'Envoi en cours...',
       success: contactForm.dataset.success || 'Message envoyé.',
       error: contactForm.dataset.error || 'Une erreur est survenue.',
       network: contactForm.dataset.networkError || 'Erreur de connexion.',
+      subjectRequired: contactForm.dataset.subjectRequired || 'Veuillez choisir au moins un sujet.',
+      subjectLimit: contactForm.dataset.subjectLimit || 'Veuillez choisir au plus 10 sujets.',
+      required: contactForm.dataset.required || 'Ce champ est requis.',
+      emailInvalid: contactForm.dataset.emailInvalid || 'Adresse courriel invalide.',
     };
-    const formModal = document.getElementById('form-modal');
-    const formModalIcon = document.getElementById('form-modal-icon');
+
+    // Inline validation: French messages under each required field, shown after the first visit.
+    const requiredFields = Array.from(contactForm.querySelectorAll('input[required], textarea[required]'));
+
+    function validateField(field) {
+      const message = field.validity.valueMissing ? msgs.required
+        : field.validity.typeMismatch ? msgs.emailInvalid : '';
+      const error = document.getElementById(`${field.id}-error`);
+      if (error) error.textContent = message;
+      field.classList.toggle('input-error', Boolean(message));
+      field.classList.toggle('is-valid', !message);
+      field.setAttribute('aria-invalid', String(Boolean(message)));
+      return !message;
+    }
+
+    requiredFields.forEach((field) => {
+      field.addEventListener('blur', () => { if (field.value || field.dataset.touched) validateField(field); field.dataset.touched = '1'; });
+      field.addEventListener('input', () => { if (field.classList.contains('input-error') || field.classList.contains('is-valid')) validateField(field); });
+    });
+
+    const message = document.getElementById('contact-message');
+    const messageCount = document.getElementById('contact-message-count');
+    const updateCount = () => { messageCount.textContent = `${message.value.length} / ${message.maxLength}`; };
+    message.addEventListener('input', updateCount);
     const formModalMessage = document.getElementById('form-modal-message');
-    const formModalClose = document.getElementById('form-modal-close');
+    const subjectSelect = document.getElementById('subject-select');
+    const subjectToggle = document.getElementById('subject-toggle');
+    const subjectList = document.getElementById('subject-listbox');
+    const subjectChips = document.getElementById('subject-chips');
+    const subjectInputs = document.getElementById('subject-inputs');
+    const subjectError = document.getElementById('subject-error');
+    const subjectStatus = document.getElementById('subject-status');
+    const subjectPlaceholder = document.getElementById('subject-placeholder');
+    const subjectPlaceholderText = subjectPlaceholder.textContent;
+    const options = Array.from(subjectList.querySelectorAll('[role="option"]'));
+    const selectedSubjects = [];
+    let activeIndex = -1;
+    let sending = false;
 
-    function showFormModal(success, message) {
-      formModalIcon.textContent = success ? '\u2713' : '\u2717';
-      formModalIcon.style.color = success ? 'var(--color-primary)' : 'var(--color-error)';
-      formModalMessage.textContent = message;
-      formModal.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+    function setSubjectError(message) {
+      subjectError.textContent = message;
+      subjectToggle.setAttribute('aria-invalid', String(Boolean(message) && selectedSubjects.length === 0));
     }
 
-    function closeFormModal() {
-      formModal.classList.add('hidden');
-      document.body.style.overflow = '';
-    }
-
-    if (formModalClose) formModalClose.addEventListener('click', closeFormModal);
-    if (formModal) {
-      formModal.addEventListener('click', (e) => {
-        if (e.target === formModal) closeFormModal();
+    function renderSubjects() {
+      options.forEach((option) => {
+        option.setAttribute('aria-selected', String(selectedSubjects.includes(option.dataset.value)));
       });
+      subjectChips.replaceChildren();
+      subjectInputs.replaceChildren();
+      selectedSubjects.forEach((subject, index) => {
+        const chip = document.createElement('span');
+        chip.className = 'subject-chip';
+        const label = document.createElement('span');
+        label.textContent = subject;
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'subject-chip-remove';
+        remove.textContent = '×';
+        remove.setAttribute('aria-label', `Retirer le sujet ${subject}`);
+        remove.addEventListener('click', () => {
+          selectedSubjects.splice(index, 1);
+          renderSubjects();
+          const buttons = subjectChips.querySelectorAll('button');
+          (buttons[Math.min(index, buttons.length - 1)] || subjectToggle).focus();
+        });
+        chip.append(label, remove);
+        subjectChips.append(chip);
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'subjects';
+        input.value = subject;
+        subjectInputs.append(input);
+      });
+      setSubjectError('');
+      const count = selectedSubjects.length;
+      const countText = `${count} sujet${count > 1 ? 's' : ''} sélectionné${count > 1 ? 's' : ''}`;
+      subjectPlaceholder.textContent = count === 0 ? subjectPlaceholderText : countText;
+      subjectToggle.classList.toggle('has-value', count > 0);
+      subjectStatus.textContent = count === 0 ? 'Aucun sujet sélectionné.' : `${countText}.`;
     }
 
-    contactForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    function setActiveOption(index) {
+      if (!options.length) return;
+      options[activeIndex]?.classList.remove('is-active');
+      activeIndex = Math.max(0, Math.min(index, options.length - 1));
+      const option = options[activeIndex];
+      option.classList.add('is-active');
+      subjectToggle.setAttribute('aria-activedescendant', option.id);
+      option.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
 
-      // Gather form data
+    function openSubjects(index = activeIndex < 0 ? 0 : activeIndex) {
+      if (!options.length) return;
+      subjectList.hidden = false;
+      subjectToggle.setAttribute('aria-expanded', 'true');
+      setActiveOption(index);
+    }
+
+    function closeSubjects() {
+      subjectList.hidden = true;
+      subjectToggle.setAttribute('aria-expanded', 'false');
+      subjectToggle.removeAttribute('aria-activedescendant');
+      options[activeIndex]?.classList.remove('is-active');
+    }
+
+    function toggleSubject(subject) {
+      const index = selectedSubjects.indexOf(subject);
+      if (index !== -1) {
+        selectedSubjects.splice(index, 1);
+      } else if (selectedSubjects.length < 10) {
+        selectedSubjects.push(subject);
+      } else {
+        setSubjectError(msgs.subjectLimit);
+        return;
+      }
+      renderSubjects();
+    }
+
+    subjectToggle.addEventListener('click', () => {
+      subjectToggle.focus();
+      if (subjectList.hidden) openSubjects();
+      else closeSubjects();
+    });
+    subjectToggle.addEventListener('keydown', (event) => {
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          if (subjectList.hidden) openSubjects(0);
+          else setActiveOption(activeIndex + 1);
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          if (subjectList.hidden) openSubjects(options.length - 1);
+          else setActiveOption(activeIndex - 1);
+          break;
+        case 'Home':
+          event.preventDefault();
+          openSubjects(0);
+          break;
+        case 'End':
+          event.preventDefault();
+          openSubjects(options.length - 1);
+          break;
+        case 'Enter':
+        case ' ':
+          event.preventDefault();
+          if (subjectList.hidden) openSubjects();
+          else if (activeIndex >= 0) toggleSubject(options[activeIndex].dataset.value);
+          break;
+        case 'Backspace':
+          if (subjectList.hidden && selectedSubjects.length) {
+            event.preventDefault();
+            selectedSubjects.pop();
+            renderSubjects();
+          }
+          break;
+      }
+    });
+    subjectSelect.addEventListener('keydown', (event) => {
+      if (event.key === 'Tab') closeSubjects();
+      if (event.key === 'Escape' && !subjectList.hidden) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeSubjects();
+        subjectToggle.focus();
+      }
+    });
+    subjectList.addEventListener('mousedown', (event) => event.preventDefault());
+    options.forEach((option, index) => {
+      option.addEventListener('click', () => {
+        subjectToggle.focus();
+        setActiveOption(index);
+        toggleSubject(option.dataset.value);
+      });
+    });
+    document.addEventListener('click', (event) => {
+      if (!subjectSelect.contains(event.target)) closeSubjects();
+    });
+    subjectSelect.addEventListener('focusout', (event) => {
+      if (!subjectSelect.contains(event.relatedTarget)) closeSubjects();
+    });
+    renderSubjects();
+
+    function showFormModal(message) {
+      formModalMessage.textContent = message;
+      if (!formModal.open) formModal.showModal();
+    }
+
+    function resetForm() {
+      contactForm.reset();
+      requiredFields.forEach((field) => {
+        field.classList.remove('input-error', 'is-valid');
+        field.removeAttribute('aria-invalid');
+        delete field.dataset.touched;
+        const error = document.getElementById(`${field.id}-error`);
+        if (error) error.textContent = '';
+      });
+      updateCount();
+      selectedSubjects.length = 0;
+      closeSubjects();
+      activeIndex = -1;
+      renderSubjects();
+      if (typeof window.turnstile?.reset === 'function') window.turnstile.reset();
+    }
+
+    contactForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (sending) return;
+
       const formData = new FormData(contactForm);
-      const data = {};
-      formData.forEach((value, key) => { data[key] = value; });
+      const data = Object.fromEntries(formData);
+      data.subjects = formData.getAll('subjects');
+      data['cf-turnstile-response'] = formData.get('cf-turnstile-response') || '';
 
-      // Honeypot check — silently pretend success
+      // Accept the honeypot without a network request.
       if (data.bot_field) {
-        showFormModal(true, msgs.success);
-        contactForm.reset();
+        resetForm();
+        showFormModal(msgs.success);
         return;
       }
 
-      // Get Turnstile token
-      const turnstileInput = contactForm.querySelector('input[name="cf-turnstile-response"]');
-      if (turnstileInput && turnstileInput.value) {
-        data.turnstileToken = turnstileInput.value;
-      } else if (typeof turnstile !== 'undefined' && typeof turnstile.getResponse === 'function') {
-        const token = turnstile.getResponse();
-        if (token) data.turnstileToken = token;
+      const invalidField = requiredFields.filter((field) => !validateField(field))[0];
+      const subjectsValid = data.subjects.length > 0;
+      setSubjectError(subjectsValid ? '' : msgs.subjectRequired);
+      if (invalidField) {
+        invalidField.focus();
+        return;
+      }
+      if (!subjectsValid) {
+        subjectToggle.focus();
+        openSubjects();
+        return;
       }
 
-      // Show loading state
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = msgs.sending;
-      }
+      closeSubjects();
+      sending = true;
+      submitBtn.disabled = true;
+      submitLabel.textContent = msgs.sending;
+      contactForm.setAttribute('aria-busy', 'true');
 
       try {
         const response = await fetch('/api/contact', {
@@ -292,54 +336,121 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         });
+        const result = await response.json().catch(() => null);
 
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-          showFormModal(true, msgs.success);
-          contactForm.reset();
-          if (typeof turnstile !== 'undefined' && typeof turnstile.reset === 'function') {
-            turnstile.reset();
-          }
+        if (response.ok && result?.success === true) {
+          resetForm();
+          showFormModal(msgs.success);
         } else {
-          showFormModal(false, result.error || msgs.error);
+          showFormModal(typeof result?.error === 'string' && result.error ? result.error : msgs.error);
         }
       } catch {
-        showFormModal(false, msgs.network);
+        showFormModal(msgs.network);
       } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = submitBtnOriginalText;
-        }
+        sending = false;
+        submitBtn.disabled = false;
+        submitLabel.textContent = submitBtnOriginalText;
+        contactForm.removeAttribute('aria-busy');
       }
     });
   }
-
-  /* ========================================================================
-     7. LAZY SCROLL REVEAL
-     ======================================================================== */
 
   const revealElements = document.querySelectorAll('.reveal-on-scroll');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (revealElements.length > 0 && 'IntersectionObserver' in window) {
-    const revealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('revealed');
-            revealObserver.unobserve(entry.target);
-          }
-        });
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '0px 0px -40px 0px',
-      }
-    );
+  if (!reducedMotion.matches && 'IntersectionObserver' in window && revealElements.length) {
+    // Keep .reveal-pending until the fade ends: the end state needs its transition.
+    // Then remove it, so cards get their own hover transitions back.
+    const settle = (event) => {
+      if (event.target !== event.currentTarget || event.propertyName !== 'opacity') return;
+      event.currentTarget.classList.remove('reveal-pending');
+      event.currentTarget.removeEventListener('transitionend', settle);
+    };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.addEventListener('transitionend', settle);
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-    revealElements.forEach((el) => {
-      revealObserver.observe(el);
+    revealElements.forEach((element) => {
+      observer.observe(element);
+      element.classList.add('reveal-pending');
     });
+    reducedMotion.addEventListener('change', (event) => {
+      if (!event.matches) return;
+      observer.disconnect();
+      revealElements.forEach((element) => {
+        element.classList.remove('reveal-pending');
+        element.classList.add('revealed');
+      });
+    });
+  } else {
+    revealElements.forEach((element) => element.classList.add('revealed'));
   }
 
+  // Scroll spy: mark the nav link of the section that crosses the middle of the viewport.
+  // Sections without a nav link (hero) clear the mark.
+  const spyLinks = document.querySelectorAll('.nav-link[href^="#"]');
+  if (spyLinks.length && 'IntersectionObserver' in window) {
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        spyLinks.forEach((link) => link.classList.toggle('is-current', link.hash === `#${entry.target.id}`));
+      });
+    }, { rootMargin: '-50% 0px -50% 0px' });
+    document.querySelectorAll('main > section[id]').forEach((section) => spy.observe(section));
+  }
+
+  // FAQ: only one answer is open at a time. Height changes are animated.
+  // Without JS, the native <details> elements still open and close.
+  const faqItems = [...document.querySelectorAll('.faq-item')];
+
+  const setFaqOpen = (item, open) => {
+    // Start from the current height, also when an animation is in progress.
+    const from = item.getBoundingClientRect().height;
+    item._faqAnimation?.cancel();
+    item.classList.toggle('is-closing', !open);
+
+    if (reducedMotion.matches) {
+      item.open = open;
+      item.classList.remove('is-closing');
+      return;
+    }
+
+    item.open = false;
+    const closedHeight = item.getBoundingClientRect().height;
+    item.open = true; // Keep the answer visible while it closes.
+    const openHeight = item.getBoundingClientRect().height;
+
+    item.style.overflow = 'hidden';
+    const animation = item.animate(
+      { height: [`${from}px`, `${open ? openHeight : closedHeight}px`] },
+      { duration: 300, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+    );
+    item._faqAnimation = animation;
+    animation.onfinish = () => {
+      item.open = open;
+      item.classList.remove('is-closing');
+      item.style.overflow = '';
+      item._faqAnimation = null;
+    };
+    animation.oncancel = () => { item.style.overflow = ''; };
+  };
+
+  faqItems.forEach((item) => {
+    item.querySelector('.faq-question').addEventListener('click', (event) => {
+      event.preventDefault();
+      const open = !item.open || item.classList.contains('is-closing');
+      if (open) {
+        faqItems.forEach((other) => {
+          if (other !== item && other.open && !other.classList.contains('is-closing')) setFaqOpen(other, false);
+        });
+      }
+      setFaqOpen(item, open);
+    });
+  });
 });

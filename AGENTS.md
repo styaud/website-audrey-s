@@ -13,8 +13,9 @@ This repo is a vanilla static site for `audreyhauteurdenfant.com` with Cloudflar
 - `npm run build` - runs `node build.js` and generates the gitignored static output files.
 - `npm run dev` - builds and starts `wrangler pages dev` on port `8788`.
 - `node --check <file>` - syntax-check changed JavaScript modules.
+- `node lib/render.test.mjs` - run the renderer checks for sanitization, navigation, and content preparation.
 
-There is no automated test suite. For behavior changes, validate with `npm run build`, targeted syntax checks, and local Wrangler/browser checks.
+For behavior changes, run the renderer checks, `npm run build`, JavaScript syntax checks, and local Wrangler/browser checks.
 
 ## Generated Files
 
@@ -25,6 +26,7 @@ Do not edit these directly:
 - `mentions-legales.html`
 - `sitemap.xml`
 - `robots.txt`
+- `_redirects`
 
 Edit source files such as `content/settings.json`, `template.html`, `template-legal.html`, `styles.css`, `build.js`, and files under `lib/`, `admin/`, or `functions/`.
 
@@ -46,7 +48,8 @@ Edit source files such as `content/settings.json`, `template.html`, `template-le
 - Uploads are limited to `assets/images/<safe-name>`.
 - Allowed file types are `.webp`, `.jpg`, `.jpeg`, `.png`, `.svg`, and `.ico`.
 - SVG and ICO are intentionally allowed. Keep the server-side validation that rejects traversal, slashes, unsafe SVG markup, invalid signatures, and oversized payloads.
-- Raster uploads are compressed to WebP by the admin UI. SVG and ICO uploads are preserved when validation passes.
+- The admin UI compresses normal raster uploads to WebP. It preserves SVG and ICO uploads when validation passes.
+- SEO favicon uploads preserve PNG or ICO. Apple touch icon uploads preserve PNG and require dimensions of 180 × 180 pixels.
 
 ## Environment Rules
 

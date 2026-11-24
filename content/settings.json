@@ -4,102 +4,53 @@
     "title": "Audrey Stypulkowski, Infirmière. B.Sc — Parentalité",
     "description": "Audrey Stypulkowski, Infirmière clinicienne en parentalité. \nObserver, soutenir, guider \nPlus de 20 ans d'expérience au service des familles",
     "og_image": "/assets/images/logo-audrey-arri-re-plan-transparent.webp",
-    "favicon": "/favicon.svg"
+    "og_image_alt": "Logo : un adulte à hauteur d’un enfant devant un arbre multicolore, dans le contour d’une maison avec un soleil.",
+    "favicon": "/assets/images/favicon.ico",
+    "apple_touch_icon": "/assets/images/apple-touch-icon.png"
   },
   "popup": {
-    "admin_label": "Popup",
+    "admin_label": "Fenêtre contextuelle",
     "enabled": true,
     "title": "Avis important",
     "message": "Ce site est présentement en construction. \n\nVeuillez revenir plus tard pour voir le contenu du site web mis-à-jour. ",
     "image": "",
+    "image_alt": "",
     "dismiss_label": "Fermer"
   },
   "header": {
     "admin_label": "En-tête",
     "logo": "/assets/images/logo-audrey-arri-re-plan-transparent.webp",
+    "logo_alt": "Un adulte à hauteur d’un enfant devant un arbre multicolore, dans le contour d’une maison avec un soleil.",
     "site_name": "Audrey Stypulkowski *Infirmière clinicienne membre de l'OIIQ*",
-    "cta_text": "Prendre rendez-vous",
-    "cta_link": "#contact"
+    "cta_text": "Prendre rendez-vous"
   },
   "nav": {
     "admin_label": "Navigation",
     "services": "Services",
-    "about": "À propos",
-    "education": "Mesures légales",
+    "about": "À propos de moi",
     "faq": "FAQ",
-    "contact": "Contact"
+    "contact": "Contact",
+    "form": "Écrivez-moi",
+    "resources": "Ressources"
   },
   "hero": {
     "admin_label": "Bannière",
+    "anchor": "accueil",
     "title": "Observer, soutenir, guider \n*Plus de 20 ans d'expérience au service des familles*",
     "subtitle": "*Je vous accompagne dans votre parentalité*",
     "image": "/assets/images/relation-parent-enfant.webp",
+    "image_alt": "Quatre personnes de dos, les bras autour des épaules, dans un champ doré sous un ciel bleu.",
+    "portrait": "/assets/images/photo-profil-fam-i.webp",
+    "portrait_alt": "Audrey Stypulkowski, les cheveux courts et bouclés, avec des lunettes bordeaux et un pull rose.",
     "cta_text": "Prendre rendez-vous",
-    "cta_link": "",
     "cta2_text": "Mes services",
     "cta2_link": "#services"
   },
-  "services": {
-    "admin_label": "Services",
-    "heading": "Mes services",
-    "link_text": "En savoir plus",
+  "highlights": {
+    "admin_label": "Points forts",
+    "enabled": true,
+    "anchor": "points-forts",
     "items": [
-      {
-        "title": "Soutien dans le rôle et les habiletés parentales (coaching parental et famille élargie)",
-        "description": "",
-        "image": "/assets/images/natik-1123-home-5574909-1920.webp",
-        "link": "#contact"
-      },
-      {
-        "title": "Adoption",
-        "description": "",
-        "link": "",
-        "image": "/assets/images/adoption-1.webp"
-      },
-      {
-        "title": "Cadre, règles, limites et respect des consignes",
-        "description": "",
-        "link": "",
-        "image": "/assets/images/cadre-et-regles.webp"
-      },
-      {
-        "title": "Saine gestion des émotions",
-        "description": "",
-        "image": "/assets/images/gestion-des--motions--1.webp",
-        "link": "#contact"
-      },
-      {
-        "title": "Soutien dans les routines (sommeil, transitions, devoirs…)",
-        "description": "",
-        "link": "",
-        "image": "/assets/images/routine-famille.webp"
-      },
-      {
-        "title": "Recommandations pour la maison et l’école",
-        "description": "",
-        "link": "",
-        "image": "/assets/images/enfant-ecole--1.webp"
-      },
-      {
-        "title": "Accompagnement du deuil",
-        "description": "",
-        "link": "",
-        "image": "/assets/images/plume-deuil.webp"
-      },
-      {
-        "title": "Conférences",
-        "description": "",
-        "link": "",
-        "image": "/assets/images/conf-rence.webp"
-      }
-    ]
-  },
-  "about": {
-    "admin_label": "À propos",
-    "title": "À propos",
-    "body": "Je suis infirmière clinicienne, formée et diplômée des hôpitaux de Paris depuis 2005. Je débute ma carrière à l’hôpital Necker–Enfants malades, puis poursuis mon parcours à l’hôpital Sainte-Justine à Montréal en soins palliatifs pédiatriques.\nAu fil des années, j'ai enrichi ma pratique d’une vaste gamme de formations complémentaires : Techniques d’impact, NeuroGym Tonik, approche systémique, communication en situations difficiles, accompagnement du deuil, et bien d’autres.\n\nDepuis plus de 20 ans, j'accompagne les enfants, les adolescents et leurs familles. Je me distingue par mon écoute, ma présence authentique et mes solides compétences en relation d’aide. \n\nPassionnée par les neurosciences affectives et le développement de l’enfant.\n\nMon approche allie vulgarisation de concepts scientifiques, théorie de l’attachement et outils concrets, afin d’offrir des rencontres bienveillantes, structurées et adaptées à la réalité unique de chaque famille.\n\nJe suis également maman. L’adoption de mes jumeaux a profondément transformé ma vision de la parentalité et nourrit aujourd’hui ma compréhension sensible des défis que vivent les familles.\n\nSe mettre à hauteur d’enfants, c’est apprendre à être à l’écoute de leurs besoins, donner un sens à leur monde intérieur et donner aux parents d’aujourd’hui la chance de créer la société de demain.",
-    "photo": "/assets/images/photo-profil-fam-i.webp",
-    "values": [
       {
         "title": "Expérience",
         "description": "Plus de 20 ans de pratique auprès des familles, des enfants et des adultes en situation de vulnérabilité. Une expertise solide forgée sur le terrain."
@@ -114,13 +65,75 @@
       }
     ]
   },
-  "education": {
-    "admin_label": "Mesures légales",
-    "heading": "",
-    "items": []
+  "services": {
+    "admin_label": "Services",
+    "enabled": true,
+    "anchor": "services",
+    "heading": "Mes services",
+    "items": [
+      {
+        "title": "Soutien dans le rôle et les habiletés parentales (coaching parental et famille élargie)",
+        "description": "Des outils concrets pour renforcer votre confiance et vos habiletés de parent, avec la famille élargie au besoin.",
+        "image": "/assets/images/natik-1123-home-5574909-1920.webp",
+        "image_alt": "Deux adultes et deux enfants assis devant un mur de briques blanches, les mains des adultes réunies en forme de toit."
+      },
+      {
+        "title": "Adoption",
+        "description": "Un accompagnement avant, pendant et après l’adoption pour favoriser l’attachement et l’adaptation de chacun.",
+        "image": "/assets/images/adoption-1.webp",
+        "image_alt": "Des personnages et des maisons découpés dans du papier, disposés sur une table en bois."
+      },
+      {
+        "title": "Cadre, règles, limites et respect des consignes",
+        "description": "Des repères clairs et bienveillants pour poser des limites cohérentes et favoriser la coopération de l’enfant.",
+        "image": "/assets/images/cadre-et-regles.webp",
+        "image_alt": "Un mètre pliant forme une maison avec un soleil, un nuage et un cœur, près d’une plante en pot."
+      },
+      {
+        "title": "Saine gestion des émotions",
+        "description": "Aider l’enfant et le parent à reconnaître, nommer et apprivoiser les émotions au quotidien.",
+        "image": "/assets/images/gestion-des--motions--1.webp",
+        "image_alt": "Un jeune aux cheveux bouclés, la bouche ouverte et les mains en porte-voix, devant du feuillage."
+      },
+      {
+        "title": "Soutien dans les routines (sommeil, transitions, devoirs…)",
+        "description": "Des routines adaptées à votre famille pour des journées plus fluides : sommeil, transitions et devoirs.",
+        "image": "/assets/images/routine-famille.webp",
+        "image_alt": "Une fillette à lunettes et une femme devant un cahier ouvert, les mains levées d’un air perplexe."
+      },
+      {
+        "title": "Recommandations pour la maison et l’école",
+        "description": "Des recommandations concrètes, adaptées aux besoins de l’enfant, à la maison comme à l’école.",
+        "image": "/assets/images/enfant-ecole--1.webp",
+        "image_alt": "Un enfant de dos, avec une casquette verte et un sac à dos bleu, devant une porte vitrée décorée de dessins."
+      },
+      {
+        "title": "Accompagnement du deuil",
+        "description": "Un soutien humain pour traverser le deuil en famille et accompagner l’enfant selon son âge.",
+        "image": "/assets/images/plume-deuil.webp",
+        "image_alt": "Une goutte d’eau sur une plume blanche duveteuse, sur un fond sombre."
+      },
+      {
+        "title": "Conférences",
+        "description": "Des conférences sur la parentalité et le développement de l’enfant pour les écoles, organismes et milieux de travail.",
+        "image": "/assets/images/conf-rence.webp",
+        "image_alt": "Deux microphones sur un pupitre transparent, avec des feuilles et un stylo, devant un public flou."
+      }
+    ]
+  },
+  "about": {
+    "admin_label": "À propos",
+    "enabled": true,
+    "anchor": "a-propos",
+    "title": "À propos de moi",
+    "body": "Je suis infirmière clinicienne, formée et diplômée des hôpitaux de Paris depuis 2005. Je débute ma carrière à l’hôpital Necker–Enfants malades, puis poursuis mon parcours à l’hôpital Sainte-Justine à Montréal en soins palliatifs pédiatriques.\nAu fil des années, j'ai enrichi ma pratique d’une vaste gamme de formations complémentaires : Techniques d’impact, NeuroGym Tonik, approche systémique, communication en situations difficiles, accompagnement du deuil, et bien d’autres.\n\nDepuis plus de 20 ans, j'accompagne les enfants, les adolescents et leurs familles. Je me distingue par mon écoute, ma présence authentique et mes solides compétences en relation d’aide. \n\nPassionnée par les neurosciences affectives et le développement de l’enfant.\n\nMon approche allie vulgarisation de concepts scientifiques, théorie de l’attachement et outils concrets, afin d’offrir des rencontres bienveillantes, structurées et adaptées à la réalité unique de chaque famille.\n\nJe suis également maman. L’adoption de mes jumeaux a profondément transformé ma vision de la parentalité et nourrit aujourd’hui ma compréhension sensible des défis que vivent les familles.\n\nSe mettre à hauteur d’enfants, c’est apprendre à être à l’écoute de leurs besoins, donner un sens à leur monde intérieur et donner aux parents d’aujourd’hui la chance de créer la société de demain.",
+    "photo": "/assets/images/natik-1123-home-5574909-1920.webp",
+    "photo_alt": "Deux adultes et deux enfants assis devant un mur de briques blanches, les mains des adultes réunies en forme de toit."
   },
   "faq": {
     "admin_label": "FAQ",
+    "enabled": true,
+    "anchor": "faq",
     "heading": "Questions fréquentes",
     "items": [
       {
@@ -143,23 +156,55 @@
   },
   "contact": {
     "admin_label": "Contact",
+    "enabled": true,
+    "anchor": "contact",
     "heading": "Me contacter",
-    "subtitle": "N'hésitez pas à communiquer avec moi pour toute question ou pour prendre rendez-vous. Je vous répondrai dans les meilleurs délais.",
-    "phone": "+1(514)690-1285",
+    "subtitle": "N'hésitez pas à me contacter pour une première consultation ou pour toute question. Nous prendrons le temps d'évaluer votre situation et les services les mieux adaptés à vos besoins.",
+    "phone": "+1 514 690-1285",
     "address": "444 Chem. de la Grande-Côte, Rosemère, QC J7A1L1",
-    "info_heading": "Nous joindre",
-    "phone_label": "",
-    "address_label": "Adresse",
-    "consultation_heading": "Première consultation",
-    "consultation_text": "N'hésitez pas à me contacter pour une première consultation. Nous prendrons le temps d'évaluer votre situation et les services les mieux adaptés à vos besoins.\nVous pouvez également prendre directement rendez-vous sur GOrendez-vous via le lien suivant :\n<div data-professionalpagename=\"audreystypulkowskiinfirmireenparentalit\" data-bookingwidgeturlparams=\"companyId=142995\" data-language=\"fr\" data-label=\"Prendre un rendez-vous\" data-url=\"https://www.gorendezvous.com/\" class=\"gorendezvous-button\" data-buttoncolor=\"info\" data-width=\"280px\" data-height=\"50px\"><a href=\"https://www.gorendezvous.com/audreystypulkowskiinfirmireenparentalit?companyId=142995\" target=\"GOrendezvous\">Prendre un rendez-vous</a></div>\n<script>!function (d, s) { var js, sid = \"gorendezvous-bookingwidget-script\"; var sEl = d.getElementById(sid); if(sEl) { sEl.parentNode.removeChild(sEl); } js = d.createElement(s); js.id = sid; js.src = \"https://www.gorendezvous.com/Scripts/gorendezvous.bookingWidgetV2.min.js?v=\" + (Math.floor(new Date().getTime()/(1000*60*30))*(1000*60*30)).toString(); d.body.appendChild(js); } (document, \"script\");</script>",
+    "call_title": "Par téléphone",
+    "call_text": "Appelez-moi pour discuter de votre situation.",
+    "booking_title": "Rendez-vous en ligne",
+    "booking_text": "Choisissez une plage horaire qui vous convient sur GOrendez-vous.",
+    "booking_url": "https://www.gorendezvous.com/audreystypulkowskiinfirmireenparentalit?companyId=142995",
+    "booking_label": "Prendre rendez-vous",
+    "form_title": "Par écrit",
+    "form_text": "Envoyez-moi un message. Je vous répondrai dans les meilleurs délais.",
+    "form_link_label": "Écrire un message"
+  },
+  "form": {
+    "admin_label": "Formulaire",
+    "enabled": true,
+    "anchor": "ecrivez-moi",
+    "heading": "Écrivez-moi",
+    "subtitle": "Quelques lignes suffisent. Décrivez brièvement vos besoins et je vous répondrai dans les meilleurs délais.",
+    "privacy_note": "Vos renseignements restent confidentiels. Évitez d’inclure des renseignements médicaux détaillés. [Politique de confidentialité](/politique-de-confidentialite.html)",
+    "steps": [
+      {
+        "title": "Vous m’écrivez",
+        "text": "Quelques mots sur votre situation et vos besoins."
+      },
+      {
+        "title": "Je vous réponds",
+        "text": "Je vous recontacte pour mieux comprendre votre demande."
+      },
+      {
+        "title": "Première rencontre",
+        "text": "Nous planifions ensemble une première consultation."
+      }
+    ],
     "form_name_label": "Nom complet",
     "form_name_placeholder": "Votre nom",
     "form_email_label": "Courriel",
     "form_email_placeholder": "votre@courriel.com",
     "form_phone_label": "Téléphone",
     "form_phone_placeholder": "",
-    "form_subject_label": "Sujet",
-    "form_subject_placeholder": "Sélectionnez un sujet",
+    "form_subject_label": "Sujets",
+    "form_subject_placeholder": "Choisissez un ou plusieurs sujets",
+    "form_subject_required": "Sélectionnez au moins un sujet.",
+    "form_subject_limit": "Sélectionnez au maximum 10 sujets.",
+    "form_required_error": "Ce champ est requis.",
+    "form_email_error": "Veuillez entrer une adresse courriel valide.",
     "form_message_label": "Message",
     "form_message_placeholder": "Décrivez brièvement votre situation...",
     "form_submit": "Envoyer le message",
@@ -168,7 +213,7 @@
     "form_error": "Une erreur est survenue. Veuillez réessayer.",
     "form_network_error": "Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.",
     "form_close": "Fermer",
-    "form_referral_label": "Comment avez-vous entendu parler de nous ?",
+    "form_referral_label": "Comment m’avez-vous connue ?",
     "form_referral_placeholder": "Sélectionnez une option",
     "form_subjects": [
       {
@@ -217,6 +262,14 @@
       }
     ]
   },
+  "resources": {
+    "admin_label": "Ressources",
+    "enabled": false,
+    "anchor": "ressources",
+    "heading": "Ressources",
+    "intro": "",
+    "items": []
+  },
   "footer": {
     "admin_label": "Pied de page",
     "business_name": "Audrey Stypulkowski, Inf.B.Sc",
@@ -231,27 +284,27 @@
   "privacy_page": {
     "admin_label": "Politique de confidentialité",
     "title": "Politique de confidentialité",
-    "updated": "Dernière mise à jour : avril 2026",
-    "body": "## 1. Introduction\n\nLe site audreyhauteurdenfant.com est exploité par Audrey Stypulkowski, Infirmière clinicienne et membre de l'Ordre des Infirmiers et Infirmières du Québec (OIIQ). La protection de vos renseignements personnels est une priorité.\n\n## 2. Renseignements recueillis\n\nLes seuls renseignements personnels recueillis sont ceux que vous fournissez volontairement via le formulaire de contact :\n\n- Nom\n- Adresse courriel\n- Numéro de téléphone (facultatif)\n- Sujet et contenu de votre message\n\nCe site n'utilise aucun cookie de suivi, aucun outil d'analytique tiers et ne recueille aucune donnée de navigation.\n\n## 3. Utilisation des renseignements\n\nLes renseignements transmis via le formulaire de contact servent uniquement à répondre à votre demande de service ou d'information. Ils sont acheminés par courriel sécurisé et ne sont jamais partagés, vendus ou communiqués à des tiers.\n\n## 4. Conservation des données\n\nLes messages reçus via le formulaire sont conservés dans une boîte courriel professionnelle sécurisée. Aucun dossier clinique n'est conservé sur ce site. Les dossiers professionnels sont tenus conformément aux normes de l'OIIQ.\n\n## 5. Vos droits\n\nConformément à la Loi sur la protection des renseignements personnels dans le secteur privé (Loi 25), vous avez le droit de :\n\n- Accéder aux renseignements personnels vous concernant\n- Demander la rectification ou la suppression de vos données\n- Retirer votre consentement à tout moment\n\nPour exercer ces droits, veuillez communiquer avec nous via le [formulaire de contact](/#contact).\n\n## 6. Responsable de la protection des renseignements\n\nAudrey Stypulkowski, Inf.B.Sc. est responsable de la protection des renseignements personnels recueillis sur ce site. Pour toute question, utilisez le [formulaire de contact](/#contact).\n\n## 7. Modifications\n\nCette politique peut être mise à jour périodiquement. La date de dernière mise à jour est indiquée en haut de cette page."
+    "updated": "Dernière mise à jour : novembre 2026",
+    "body": "## 1. Portée et personne responsable\n\nCette politique décrit le traitement des renseignements personnels liés au site audreyhauteurdenfant.com et à son formulaire de contact.\n\nAudrey Stypulkowski, Inf. B.Sc., infirmière clinicienne, exploite ce site en entreprise individuelle. Elle est responsable de la protection des renseignements personnels. Elle encadre leur utilisation, leur conservation et leur destruction. Elle traite aussi les demandes d'accès, les plaintes et les incidents de confidentialité.\n\nPour la joindre :\n\n- **Formulaire :** [formulaire de contact](/#ecrivez-moi).\n- **Téléphone :** +1 514 690-1285.\n- **Adresse postale :** Audrey Stypulkowski, 444 Chem. de la Grande-Côte, Rosemère, QC J7A 1L1.\n\nLes dossiers cliniques sont distincts du site. Leur tenue et leur protection relèvent des règles professionnelles et des lois applicables aux services de santé.\n\n## 2. Renseignements fournis et utilisation\n\nLe formulaire recueille les renseignements que vous inscrivez :\n\n- Votre nom.\n- Votre adresse courriel.\n- Votre numéro de téléphone, si vous le fournissez.\n- Le ou les sujets choisis.\n- La source de référence, si vous indiquez comment vous avez connu les services.\n- Le contenu de votre message.\n\nVotre nom, votre adresse courriel, au moins un sujet et votre message sont nécessaires pour envoyer le formulaire. Le téléphone et la source de référence sont facultatifs.\n\nCes renseignements servent à comprendre votre demande, à vous répondre et à assurer le suivi nécessaire. Les messages parviennent à la boîte courriel professionnelle d'Audrey. Ils ne sont pas publiés sur le site, vendus ou utilisés à des fins publicitaires.\n\nLe formulaire sert à une première prise de contact. **Ne transmettez pas de renseignements médicaux détaillés, de numéro d'assurance maladie ou de documents cliniques.** Évitez aussi les renseignements qui identifient un enfant ou une autre personne. Audrey pourra préciser avec vous un moyen adapté pour transmettre les renseignements nécessaires aux services.\n\n## 3. Consentement et choix\n\nVous pouvez choisir de ne pas utiliser le formulaire et communiquer avec Audrey par téléphone ou par la poste. Le refus de fournir un renseignement facultatif n'empêche pas de transmettre une demande.\n\nL'envoi du formulaire permet d'utiliser les renseignements fournis pour traiter votre demande et vous répondre. Il ne constitue pas un consentement à des soins ou à une autre utilisation. Audrey doit obtenir un consentement exprès lorsque la loi l'exige, notamment pour communiquer des renseignements sensibles.\n\nVous pouvez retirer votre consentement à une utilisation ou à une communication future en contactant Audrey aux coordonnées ci-dessus. Elle vous explique les conséquences possibles sur la réponse ou le suivi. Le retrait n'annule pas les utilisations déjà autorisées. Il ne permet pas de supprimer un renseignement que la loi exige de conserver.\n\n## 4. Données techniques et témoins\n\nLe site ne comporte aucun outil d'analyse de fréquentation, aucun témoin de suivi et aucune publicité. Cela ne signifie pas qu'aucun renseignement technique ne transite par les fournisseurs du site.\n\nCloudflare reçoit les renseignements techniques nécessaires pour afficher et protéger les pages, notamment l'adresse IP et des renseignements sur le navigateur. Cloudflare Turnstile examine aussi des caractéristiques du navigateur et de la connexion pour distinguer les personnes des robots. Cloudflare utilise ces signaux pour protéger le formulaire et améliorer la détection des robots.\n\nSelon la configuration de sécurité, Cloudflare peut utiliser des témoins techniques strictement nécessaires. Ces témoins ne servent pas au suivi publicitaire. Le blocage des fonctions de sécurité peut empêcher l'envoi du formulaire. Vous pouvez alors joindre Audrey par téléphone.\n\nLes polices de caractères proviennent des serveurs de Google Fonts. Google reçoit votre adresse IP et les renseignements techniques associés à la requête. Ceux-ci peuvent inclure le type de navigateur et l'adresse de provenance transmise par celui-ci. L'API Google Fonts ne dépose pas de témoins.\n\nL'espace d'administration utilise un témoin de session strictement nécessaire pour la propriétaire du site. Ce témoin ne sert pas au suivi des visiteurs.\n\n## 5. Accès aux renseignements et fournisseurs\n\nAudrey reçoit les demandes et utilise les renseignements nécessaires pour y répondre. Les fournisseurs techniques participent au fonctionnement du site et de la messagerie :\n\n- **Cloudflare :** hébergement, diffusion des pages, sécurité avec Turnstile et acheminement des courriels. Cloudflare traite des données techniques et les renseignements nécessaires à l'envoi des messages.\n- **Messagerie professionnelle :** son fournisseur reçoit et conserve les messages destinés à Audrey pour assurer le service de courriel.\n- **GitHub :** hébergement du code et du contenu public du site. Les messages du formulaire, les renseignements des visiteurs et les dossiers cliniques ne lui sont pas transmis.\n- **Google Fonts :** transmission des polices de caractères et traitement des données techniques associées à leur chargement. Le contenu du formulaire ne lui est pas transmis.\n- **GOrendez-vous :** service externe de réservation, accessible par un lien. Sa propre politique s'applique aux renseignements qu'il recueille lorsque vous consultez son site.\n\nLes renseignements confiés dans le cadre de l'exercice infirmier sont protégés par le secret professionnel. Leur communication exige votre autorisation ou une permission expresse de la loi. Les communications doivent se limiter aux renseignements nécessaires aux fins autorisées.\n\n## 6. Traitement à l'extérieur du Québec\n\nCertains fournisseurs utilisent des infrastructures situées à l'extérieur du Québec, notamment dans d'autres pays. Des renseignements personnels peuvent donc y être traités ou conservés. Les lois de ces territoires peuvent différer de celles du Québec.\n\nAvant une communication hors Québec, Audrey doit réaliser une évaluation des facteurs relatifs à la vie privée. Cette évaluation porte notamment sur la sensibilité des renseignements, leur utilisation, les garanties de protection et les lois du territoire concerné. La communication ne peut avoir lieu que si l'évaluation démontre une protection adéquate. Une entente écrite doit encadrer cette communication.\n\n## 7. Conservation et destruction\n\nAudrey conserve les messages dans sa boîte courriel professionnelle pendant le traitement de la demande et le suivi nécessaire. Elle les supprime lorsque ces fins sont accomplies, sous réserve des obligations légales de conservation. La destruction doit protéger leur confidentialité et empêcher leur récupération. Vous pouvez demander à Audrey la durée applicable à vos renseignements.\n\nLorsqu'un renseignement sert à prendre une décision à votre sujet, la loi applicable peut imposer sa conservation pendant au moins un an après cette décision.\n\nAucun dossier clinique n'est conservé sur ce site. Le règlement applicable aux membres de l'OIIQ impose une conservation d'au moins **cinq ans après la fermeture d'un dossier clinique inactif**. Une obligation légale peut imposer une durée plus longue. Si un renseignement du formulaire doit intégrer un dossier clinique, les règles de ce dossier s'appliquent.\n\n## 8. Sécurité et incidents de confidentialité\n\nL'accès aux renseignements doit se limiter à Audrey et aux personnes autorisées qui en ont besoin pour les fins décrites. Les mesures de protection doivent tenir compte de leur sensibilité. Aucune transmission par Internet ni aucun système informatique ne garantit une sécurité absolue.\n\nUn incident de confidentialité peut comprendre une perte, un accès non autorisé, une utilisation non autorisée ou une communication non autorisée. Si un incident survient, Audrey doit prendre des mesures raisonnables pour limiter les risques et prévenir un nouvel incident. Elle doit évaluer la sensibilité des renseignements, les conséquences possibles et le risque d'utilisation préjudiciable. Elle doit aussi consigner l'incident dans un registre.\n\nEn cas de risque de préjudice sérieux, Audrey doit aviser rapidement la Commission d'accès à l'information et les personnes concernées. Les exceptions prévues par la loi restent applicables. Vous pouvez signaler un incident aux coordonnées de la section 1.\n\n## 9. Vos droits\n\nSous réserve des conditions et des exceptions prévues par la loi, vous pouvez :\n\n- Savoir si Audrey détient des renseignements personnels à votre sujet, y accéder et en obtenir une copie.\n- Faire rectifier des renseignements inexacts, incomplets ou équivoques.\n- Demander la suppression de renseignements lorsque leur collecte, leur communication ou leur conservation n'est pas autorisée par la loi.\n- Retirer votre consentement à une utilisation ou à une communication qui repose sur ce consentement.\n- Recevoir les renseignements informatisés que vous avez fournis dans un format structuré couramment utilisé, selon les conditions prévues par la loi.\n- Demander la cessation de diffusion d'un renseignement ou la désindexation d'un lien associé à votre nom, dans les cas prévus par la loi.\n\nLa désindexation retire un lien des résultats de recherche sans nécessairement supprimer la page. La réindexation peut aussi être demandée dans les cas prévus par la loi. Ces droits ne constituent pas un droit général à l'effacement des dossiers cliniques.\n\n## 10. Faire une demande\n\nAdressez une demande écrite à Audrey par le [formulaire de contact](/#ecrivez-moi) ou par la poste. Décrivez les renseignements recherchés et le droit que vous souhaitez exercer. Audrey doit vérifier votre identité et, s'il y a lieu, votre autorisation à représenter une autre personne. Elle vous aide au besoin à préciser votre demande.\n\nAudrey doit répondre par écrit avec diligence, au plus tard **30 jours après la réception** d'une demande d'accès ou de rectification. Ce délai s'applique aussi aux demandes de cessation de diffusion, de désindexation ou de réindexation. Un refus doit expliquer ses motifs, son fondement légal, les recours possibles et leurs délais.\n\nL'accès est gratuit. Des frais raisonnables peuvent s'appliquer à la reproduction, à la transcription ou à la transmission, selon la loi. Audrey doit vous informer de leur montant approximatif avant de les engager.\n\n## 11. Plaintes et recours\n\nPour une plainte relative à vos renseignements personnels, contactez Audrey aux coordonnées de la section 1. Décrivez la situation et le résultat souhaité. Audrey examine les faits, demande les précisions nécessaires et vous informe de sa réponse et des mesures retenues. Elle limite l'accès à la plainte aux personnes qui doivent la traiter.\n\nVous pouvez aussi déposer une plainte auprès de la **Commission d'accès à l'information du Québec**. Son numéro sans frais est le **1 888 528-7741**.\n\nUn refus d'accès ou de rectification peut faire l'objet d'une demande d'examen de mésentente auprès de la Commission. L'absence de réponse dans le délai légal ouvre aussi ce recours. Vous devez normalement l'exercer dans les **30 jours du refus ou de l'expiration du délai de réponse**. Ce recours concerne aussi les demandes de cessation de diffusion, de désindexation ou de réindexation.\n\n## 12. Modifications de cette politique\n\nLa date de mise à jour figure en haut de cette page. Toute modification fait l'objet d'un avis sur le site. Audrey doit aussi diffuser cet avis par un moyen adapté pour informer les personnes concernées. Une nouvelle utilisation qui exige votre consentement fait l'objet d'une demande distincte."
   },
   "legal_page": {
     "admin_label": "Mentions légales",
     "title": "Mentions légales",
-    "updated": "Dernière mise à jour : avril 2026",
-    "body": "## 1. Nature des services\n\nCe site présente les services professionnels d'infirmière clinicienne par Audrey Stypulkowski, Inf.B.Sc. Les services offerts sont de nature psychosociale (évaluations, Coaching et soutien aux habiletés parentales, accompagnement). Ils ne constituent pas des services de psychothérapie ni de travail social.\n\n## 2. Urgences\n\nCe site et les services offerts ne constituent pas un service d'urgence. Si vous êtes en situation de crise :\n\n- Composez le **911** pour toute urgence immédiate\n- Contactez **Info-Social 811** pour du soutien psychosocial\n- Contactez **Tel-Aide 514 935-1101** pour une écoute active 24/7\n\n## 3. Accréditations professionnelles\n\nAudrey Stypulkowski est membre de l'Ordre des Infirmiers et Infirmières du Québec (OIIQ). L'exercice de la profession est encadré par le Code des professions du Québec.\n\n## 4. Contenu du site\n\nLes informations publiées sur ce site sont fournies à titre informatif uniquement et ne remplacent pas un avis clinique individualisé. Le contenu peut être modifié sans préavis.\n\n## 5. Hébergement\n\nCe site est hébergé par Cloudflare, Inc. Les données transitent via le réseau mondial de Cloudflare.\n\n## 6. Propriété intellectuelle\n\nL'ensemble du contenu de ce site (textes, images, mise en page) est protégé par le droit d'auteur. Toute reproduction sans autorisation préalable est interdite.\n\n## 7. Contact\n\nPour toute question relative à ces mentions légales, veuillez utiliser le [formulaire de contact](/#contact).\n\n## 8. Politique de confidentialité\n\nConsultez notre [politique de confidentialité](/politique-de-confidentialite.html) pour en savoir plus sur la gestion de vos renseignements personnels."
+    "updated": "Dernière mise à jour : novembre 2026",
+    "body": "## 1. Éditrice du site\n\nLe site **audreyhauteurdenfant.com** est publié par **Audrey Stypulkowski, Inf. B.Sc., infirmière clinicienne**. Elle exerce en entreprise individuelle, en son propre nom.\n\n- **Adresse professionnelle :** 444 Chem. de la Grande-Côte, Rosemère, QC J7A 1L1.\n- **Téléphone :** +1 514 690-1285.\n- **Contact en ligne :** [formulaire de contact](/#ecrivez-moi).\n\n## 2. Encadrement professionnel\n\nAudrey Stypulkowski est membre de l'**Ordre des infirmières et infirmiers du Québec (OIIQ)**. Son numéro de permis est le **2111210**.\n\nSon exercice est encadré notamment par le Code des professions, la Loi sur les infirmières et les infirmiers et le code de déontologie applicable. Les obligations déontologiques concernent aussi la présentation de ses services et le respect du secret professionnel. Les dossiers cliniques sont tenus hors de ce site selon les règles applicables à la profession.\n\n## 3. Nature des services\n\nLe site présente les services suivants :\n\n- Accompagnement parental et coaching parental.\n- Soutien aux familles.\n- Accompagnement dans le deuil.\n- Conférences.\n\nCes services s'inscrivent dans le champ d'exercice infirmier. Ils ne constituent **ni des services de psychothérapie ni des services de travail social**. La présentation des services ne promet aucun résultat particulier.\n\n## 4. Urgences et ressources d'aide\n\n**N'utilisez pas le formulaire pour une urgence.** Le site et le formulaire ne constituent pas un service d'urgence et ne garantissent pas de réponse immédiate.\n\n- **Urgence immédiate ou danger pour la vie : composez le 911.**\n- **Besoin de soutien psychosocial non urgent : composez le 811, option 2, pour joindre Info-Social.** Ce service est gratuit et confidentiel, 24 heures sur 24, 7 jours sur 7.\n- **Besoin de parler : contactez Tel-Aide Montréal au 514 935-1101 ou au 1 877 935-1101, sans frais.** Ce service d'écoute est gratuit et confidentiel, 24 heures sur 24, 7 jours sur 7.\n\nN'attendez pas une réponse d'Audrey si votre situation exige une aide immédiate.\n\n## 5. Information et prise de contact\n\nLes renseignements, textes et ressources du site servent à informer. Ils ne remplacent pas une évaluation ni des conseils professionnels adaptés à votre situation.\n\nLa consultation du site ou l'envoi d'un message ne confirme pas un rendez-vous ni une prise en charge. Le formulaire sert à une première prise de contact. Ne transmettez pas de renseignements médicaux détaillés, de numéro d'assurance maladie ou de documents cliniques par ce formulaire.\n\nLe contenu du site peut évoluer. Vous pouvez signaler une erreur ou demander une précision par le [formulaire de contact](/#ecrivez-moi).\n\n## 6. Hébergement et services techniques\n\nLe site est hébergé par **Cloudflare, Inc.** Cloudflare assure aussi la diffusion des pages, la protection contre les robots avec Turnstile et l'acheminement des messages du formulaire.\n\nGitHub héberge le code et le contenu public du site. Il ne reçoit pas les messages des visiteurs ni les dossiers cliniques. Les polices de caractères proviennent de Google Fonts.\n\nCes fournisseurs peuvent utiliser des infrastructures situées à l'extérieur du Québec. La [politique de confidentialité](/politique-de-confidentialite.html) décrit les traitements de renseignements personnels liés au site.\n\n## 7. Réservation et liens externes\n\nLe bouton de réservation mène au site externe **GOrendez-vous**. Ce service possède ses propres conditions d'utilisation et sa propre politique de confidentialité. Consultez-les avant de lui transmettre des renseignements.\n\nLe site propose aussi des liens vers des ressources externes. Leurs exploitants gèrent leur contenu, leur disponibilité et leurs pratiques de confidentialité. Leur contenu peut changer sans modification du présent site. Un lien ne remplace pas des conseils professionnels adaptés à votre situation.\n\n## 8. Propriété intellectuelle\n\nLes textes, images, logos et éléments graphiques du site relèvent de leurs titulaires de droits respectifs. Toute utilisation doit respecter ces droits et les licences applicables.\n\nSauf exception prévue par la loi ou autorisation applicable, leur reproduction ou leur diffusion nécessite l'accord du titulaire. Adressez toute demande concernant un contenu d'Audrey par le [formulaire de contact](/#ecrivez-moi).\n\n## 9. Exactitude, disponibilité et responsabilité\n\nAudrey cherche à fournir des renseignements exacts. Une erreur, une omission ou une interruption technique reste possible. Pour une question sur votre situation, demandez une consultation adaptée plutôt que de vous fier uniquement au contenu du site.\n\nCes mentions ne limitent pas la responsabilité civile professionnelle d'Audrey Stypulkowski. Elles ne retirent aucun droit ni recours que la loi vous reconnaît.\n\n## 10. Confidentialité et questions\n\nAudrey Stypulkowski est la responsable de la protection des renseignements personnels. Consultez la [politique de confidentialité](/politique-de-confidentialite.html) pour connaître les renseignements traités, leurs destinataires, leur conservation et vos droits.\n\nPour une question sur ces mentions, utilisez le [formulaire de contact](/#ecrivez-moi). Vous pouvez aussi joindre Audrey au +1 514 690-1285 ou à l'adresse postale de la section 1."
   },
   "colors": {
     "admin_label": "Couleurs",
-    "primary": "#7d2a7e",
-    "primary_dark": "#1e5c51",
-    "primary_light": "#e6f2ef",
-    "accent": "#c4654a",
-    "accent_dark": "#a8503a",
-    "text": "#1a1a2e",
-    "text_light": "#6b7280",
+    "primary": "#0f766e",
+    "primary_dark": "#134e4a",
+    "primary_light": "#ddf3ef",
+    "accent": "#cc4a12",
+    "accent_dark": "#a63a0d",
+    "text": "#2b211c",
+    "text_light": "#6b5e57",
     "bg": "#ffffff",
-    "bg_light": "#f8f9fa",
-    "bg_dark": "#1a1a2e",
-    "border": "#e5e7eb"
+    "bg_light": "#fdf7ef",
+    "bg_dark": "#0c2f2c",
+    "border": "#ece2d6"
   }
 }

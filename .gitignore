@@ -7,6 +7,7 @@ node_modules/
 /robots.txt
 /politique-de-confidentialite.html
 /mentions-legales.html
+/_redirects
 
 # Cloudflare / Wrangler
 .dev.vars

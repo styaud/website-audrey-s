@@ -1,20 +1,25 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr-CA">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{seo.title}}</title>
   <meta name="description" content="{{seo.description}}">
   <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://audreyhauteurdenfant.com/">
   {{#if seo.favicon}}
-  <link rel="icon" href="{{seo.favicon}}">
+  <link rel="icon" href="{{seo.favicon}}" type="{{seo.favicon_type}}">
+  {{/if}}
+  {{#if seo.apple_touch_icon}}
+  <link rel="apple-touch-icon" sizes="180x180" href="{{seo.apple_touch_icon}}">
   {{/if}}
 
   <!-- Open Graph -->
   <meta property="og:title" content="{{seo.title}}">
   <meta property="og:description" content="{{seo.description}}">
   <meta property="og:image" content="{{seo.og_image}}">
-  <meta property="og:url" content="https://audreyhauteurdenfant.com">
+  <meta property="og:image:alt" content="{{seo.og_image_alt}}">
+  <meta property="og:url" content="https://audreyhauteurdenfant.com/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fr_CA">
 
@@ -23,14 +28,15 @@
   <meta name="twitter:title" content="{{seo.title}}">
   <meta name="twitter:description" content="{{seo.description}}">
   <meta name="twitter:image" content="{{seo.og_image}}">
+  <meta name="twitter:image:alt" content="{{seo.og_image_alt}}">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,600,100;1,9..144,400..600,100&family=Nunito+Sans:opsz,wght@6..12,400..700&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/styles.css">
 
   <!-- Color overrides from admin settings -->
   {{#if colors.primary}}
@@ -52,20 +58,7 @@
   {{/if}}
 
   <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "{{header.site_name}}",
-    "description": "{{seo.description}}",
-    "telephone": "{{contact.phone}}",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "{{contact.address}}"
-    },
-    "url": "https://audreyhauteurdenfant.com"
-  }
-  </script>
+  <script type="application/ld+json">{{json_ld}}</script>
 
 </head>
 <body>
@@ -74,324 +67,400 @@
        POPUP
        ================================================================ -->
   {{#if popup.enabled}}
-  <div class="modal-backdrop" id="popup" role="dialog" aria-modal="true" aria-labelledby="popup-title">
-    <div class="modal">
-      {{#if popup.image}}
-      <img src="{{popup.image}}" alt="" class="popup-image">
-      {{/if}}
-      <h2 id="popup-title" class="text-2xl font-bold mb-4 text-center">{{popup.title}}</h2>
-      <div class="text-light mb-6 leading-relaxed text-center">{{popup.message}}</div>
-      <button class="btn btn-primary w-full" id="popup-close">{{popup.dismiss_label}}</button>
-    </div>
-  </div>
+  <dialog id="popup" class="modal" aria-labelledby="popup-title">
+    {{#if popup.image}}
+    <img src="{{popup.image}}" alt="{{popup.image_alt}}" class="popup-image">
+    {{/if}}
+    <h2 id="popup-title" class="modal-title">{{popup.title}}</h2>
+    <div class="modal-text prose">{{popup.message}}</div>
+    <button class="btn btn-primary w-full" id="popup-close" type="button">{{popup.dismiss_label}}</button>
+  </dialog>
   {{/if}}
 
   <!-- ================================================================
        HEADER / NAV
        ================================================================ -->
-  <header id="nav" class="site-nav fixed top-0 w-full transition duration-300" style="z-index: 60;">
-    <div class="container flex justify-between items-center py-4">
-      <a href="#hero" class="site-logo text-xl font-bold text-white transition">{{header.site_name}}</a>
+  <header class="site-nav fixed top-0 w-full">
+    <div class="container nav-inner">
+      <a href="#{{hero.anchor}}" class="site-logo">
+        {{#if header.logo}}
+        <img src="{{header.logo}}" alt="{{header.logo_alt}}" class="site-logo-img">
+        {{/if}}
+        <span class="site-logo-text">{{header.site_name}}</span>
+      </a>
 
       <!-- Hamburger (mobile) -->
-      <button class="hamburger text-white" aria-label="Menu" aria-expanded="false">
+      <button class="hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="primary-nav">
         <span></span>
         <span></span>
         <span></span>
       </button>
 
       <!-- Navigation -->
-      <nav class="nav-menu text-white">
-        <a href="#about" class="nav-link">{{nav.about}}</a>
-        <a href="#services" class="nav-link">{{nav.services}}</a>
-        <a href="#education" class="nav-link">{{nav.education}}</a>
-        <a href="#faq" class="nav-link">{{nav.faq}}</a>
-        <a href="{{header.cta_link}}" class="btn btn-primary">{{header.cta_text}}</a>
+      <nav class="nav-menu" id="primary-nav" aria-label="Navigation principale">
+        {{#each nav_items}}
+        <a href="{{href}}" class="nav-link">{{label}}</a>
+        {{/each}}
+        <a href="{{contact.booking_url}}" class="btn btn-primary nav-cta" target="_blank" rel="noopener noreferrer">{{header.cta_text}}</a>
       </nav>
     </div>
   </header>
 
-  <!-- ================================================================
-       HERO
-       ================================================================ -->
-  <section id="hero" class="min-h-screen relative overflow-hidden" style="background-image: url('{{hero.image}}'); background-size: cover; background-position: center;">
-    <!-- Gradient overlay -->
-    <div class="absolute inset-0" style="background: linear-gradient(to right, rgba(26,26,46,0.85) 0%, rgba(26,26,46,0.4) 100%);"></div>
+  <main>
+    <!-- ================================================================
+         HERO
+         ================================================================ -->
+    <section id="{{hero.anchor}}" class="hero">
+      <img class="hero-bg" src="{{hero.image}}" alt="{{hero.image_alt}}" fetchpriority="high">
 
-    <div class="relative z-10 container flex items-center min-h-screen">
-      <div class="max-w-prose">
-        <h1 class="text-5xl font-bold text-white mb-4 leading-tight">{{hero.title}}</h1>
-        <p class="text-lg mb-8 leading-relaxed" style="color: rgba(255,255,255,0.8);">{{hero.subtitle}}</p>
-        <div class="flex flex-wrap gap-4">
-          <a href="{{hero.cta_link}}" class="btn btn-primary btn-lg">{{hero.cta_text}}</a>
-          {{#if hero.cta2_text}}
-          <a href="{{hero.cta2_link}}" class="btn btn-outline btn-lg" style="border-color: #fff; color: #fff;">{{hero.cta2_text}}</a>
-          {{/if}}
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       ABOUT
-       ================================================================ -->
-  <section id="about" class="section bg-light">
-    <div class="container">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        <!-- Photo -->
-        <div>
-          <img src="{{about.photo}}" alt="{{about.title}}" class="rounded-xl shadow-lg w-full" loading="lazy">
-        </div>
-
-        <!-- Text -->
-        <div>
-          <h2 class="text-3xl font-bold mb-6">{{about.title}}</h2>
-          <div class="text-light leading-relaxed">{{about.body}}</div>
-        </div>
-      </div>
-
-      <!-- Values -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-        {{#each about.values}}
-        <div class="bg-white rounded-xl shadow p-6 text-center">
-          <h3 class="text-lg font-semibold text-primary mb-2">{{title}}</h3>
-          <p class="text-light leading-relaxed">{{description}}</p>
-        </div>
-        {{/each}}
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       SERVICES
-       ================================================================ -->
-  <section id="services" class="section">
-    <div class="container">
-      <h2 class="text-3xl font-bold text-center mb-12">{{services.heading}}</h2>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {{#each services.items}}
-        <article class="card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-          <img src="{{image}}" alt="{{title}}" class="w-full" style="height: 12rem; object-fit: cover;" loading="lazy">
-          <div class="p-6">
-            <h3 class="text-xl font-semibold mb-2">{{title}}</h3>
-            <p class="text-light leading-relaxed">{{description}}</p>
-            {{#if link}}
-            <a href="{{link}}" class="inline-flex items-center mt-4 text-primary font-medium">
-              {{services.link_text}}
-              <svg class="ml-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </a>
+      <div class="container hero-grid">
+        <div class="hero-copy reveal-on-scroll reveal-from-left">
+          <h1 class="hero-title">{{hero.title}}</h1>
+          <p class="hero-subtitle">{{hero.subtitle}}</p>
+          <div class="hero-actions">
+            <a href="{{contact.booking_url}}" class="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">{{hero.cta_text}}</a>
+            {{#if hero.cta2_text}}
+            <a href="{{hero.cta2_link}}" class="btn btn-outline-light btn-lg"{{#if hero.cta2_external}} target="_blank" rel="noopener noreferrer"{{/if}}>{{hero.cta2_text}}</a>
             {{/if}}
           </div>
-        </article>
-        {{/each}}
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       EDUCATION (Mesures légales)
-       ================================================================ -->
-  <section id="education" class="section bg-light">
-    <div class="container">
-      <h2 class="text-3xl font-bold text-center mb-12">{{education.heading}}</h2>
-
-      {{#each education.items}}
-      <div class="flex flex-col md:flex-row gap-8 items-center mb-12">
-        <!-- Image -->
-        <div class="flex-1 w-full">
-          <img src="{{image}}" alt="{{title}}" class="rounded-xl shadow w-full" style="object-fit: cover;" loading="lazy">
         </div>
 
-        <!-- Text -->
-        <div class="flex-1">
-          <h3 class="text-2xl font-semibold mb-4">{{title}}</h3>
-          <div class="text-light leading-relaxed mb-4">{{description}}</div>
-          {{#if cta_text}}
-          <a href="{{cta_link}}" class="btn btn-outline">{{cta_text}}</a>
+        <div class="hero-portrait reveal-on-scroll reveal-from-right">
+          <img src="{{hero.portrait}}" alt="{{hero.portrait_alt}}" width="410" height="547">
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         HIGHLIGHTS
+         ================================================================ -->
+    {{#if highlights.enabled}}
+    <section id="{{highlights.anchor}}" class="highlights-band" aria-label="Points forts">
+      <div class="container highlights-grid reveal-stagger">
+        {{#each highlights.items}}
+        <div class="highlight-item reveal-on-scroll">
+          <h3 class="highlight-title">{{title}}</h3>
+          <div class="highlight-text prose">{{description}}</div>
+        </div>
+        {{/each}}
+      </div>
+    </section>
+    {{/if}}
+
+    <!-- ================================================================
+         SERVICES (chronologie verticale)
+         ================================================================ -->
+    {{#if services.enabled}}
+    <section id="{{services.anchor}}" class="section services-section">
+      <div class="container">
+        <h2 class="section-title reveal-on-scroll">{{services.heading}}</h2>
+
+        <div class="services-timeline reveal-stagger">
+          {{#each services.items}}
+          <article class="timeline-item reveal-on-scroll">
+            {{#if image}}
+            <img src="{{image}}" alt="{{image_alt}}" class="timeline-media" loading="lazy">
+            {{/if}}
+            <div class="timeline-body">
+              <h3 class="timeline-title">{{title}}</h3>
+              {{#if description}}
+              <div class="timeline-text prose">{{description}}</div>
+              {{/if}}
+            </div>
+          </article>
+          {{/each}}
+        </div>
+      </div>
+    </section>
+    {{/if}}
+    <!-- ================================================================
+         ABOUT
+         ================================================================ -->
+    {{#if about.enabled}}
+    <section id="{{about.anchor}}" class="section about-section">
+      <div class="container about-grid">
+        <div class="about-media reveal-on-scroll reveal-from-left">
+          <img src="{{about.photo}}" alt="{{about.photo_alt}}" class="about-photo" loading="lazy">
+        </div>
+
+        <div class="reveal-on-scroll reveal-from-right">
+          <h2 class="about-title">{{about.title}}</h2>
+          <div class="about-body prose">{{about.body}}</div>
+        </div>
+      </div>
+    </section>
+    {{/if}}
+
+    <!-- ================================================================
+         FAQ
+         ================================================================ -->
+    {{#if faq.enabled}}
+    <section id="{{faq.anchor}}" class="section faq-section">
+      <div class="container">
+        <h2 class="section-title reveal-on-scroll">{{faq.heading}}</h2>
+
+        <div class="faq-list reveal-stagger">
+          {{#each faq.items}}
+          <details class="faq-item reveal-on-scroll">
+            <summary class="faq-question">
+              <span>{{question}}</span>
+              <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </summary>
+            <div class="faq-answer prose">{{answer}}</div>
+          </details>
+          {{/each}}
+        </div>
+      </div>
+    </section>
+    {{/if}}
+
+    <!-- ================================================================
+         CONTACT
+         ================================================================ -->
+    {{#if contact.enabled}}
+    <section id="{{contact.anchor}}" class="section contact-section">
+      <div class="container">
+        <div class="section-head reveal-on-scroll">
+          <h2>{{contact.heading}}</h2>
+          <div class="section-intro prose">{{contact.subtitle}}</div>
+        </div>
+
+        <div class="contact-options reveal-stagger">
+          <div class="contact-option card reveal-on-scroll">
+            <span class="contact-option-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+            <h3 class="contact-option-title">{{contact.call_title}}</h3>
+            <p class="contact-option-text">{{contact.call_text}}</p>
+            <a href="{{contact.phone_href}}" class="btn btn-primary">{{contact.phone}}</a>
+          </div>
+
+          <div class="contact-option card reveal-on-scroll">
+            <span class="contact-option-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+            <h3 class="contact-option-title">{{contact.booking_title}}</h3>
+            <p class="contact-option-text">{{contact.booking_text}}</p>
+            <a href="{{contact.booking_url}}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">{{contact.booking_label}}</a>
+          </div>
+
+          {{#if form.enabled}}
+          <div class="contact-option card reveal-on-scroll">
+            <span class="contact-option-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span>
+            <h3 class="contact-option-title">{{contact.form_title}}</h3>
+            <p class="contact-option-text">{{contact.form_text}}</p>
+            <a href="#{{form.anchor}}" class="btn btn-primary">{{contact.form_link_label}}</a>
+          </div>
           {{/if}}
         </div>
       </div>
-      {{/each}}
-    </div>
-  </section>
+    </section>
+    {{/if}}
+    <!-- ================================================================
+         FORM (formulaire de contact)
+         ================================================================ -->
+    {{#if form.enabled}}
+    <section id="{{form.anchor}}" class="section form-section">
+      <div class="container form-layout">
+        <aside class="form-aside reveal-on-scroll reveal-from-left">
+          <h2 class="form-aside-title">{{form.heading}}</h2>
+          <div class="form-aside-intro prose">{{form.subtitle}}</div>
 
-  <!-- ================================================================
-       FAQ
-       ================================================================ -->
-  <section id="faq" class="section">
-    <div class="container">
-      <h2 class="text-3xl font-bold text-center mb-12">{{faq.heading}}</h2>
+          {{#if form.steps}}
+          <ol class="form-steps reveal-stagger">
+            {{#each form.steps}}
+            <li class="form-step reveal-on-scroll">
+              <span class="form-step-title">{{title}}</span>
+              <span class="form-step-text">{{text}}</span>
+            </li>
+            {{/each}}
+          </ol>
+          {{/if}}
 
-      <div class="max-w-screen-lg mx-auto">
-        {{#each faq.items}}
-        <div class="accordion-item">
-          <button class="accordion-header" aria-expanded="false">
-            <span>{{question}}</span>
-            <svg class="accordion-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <div class="accordion-content">
-            <div class="py-4 text-light leading-relaxed">{{answer}}</div>
+          {{#if form.privacy_note}}
+          <div class="form-privacy prose">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div>{{form.privacy_note}}</div>
           </div>
-        </div>
-        {{/each}}
-      </div>
-    </div>
-  </section>
+          {{/if}}
+        </aside>
 
-  <!-- ================================================================
-       CONTACT
-       ================================================================ -->
-  <section id="contact" class="section bg-light">
-    <div class="container">
-      <h2 class="text-3xl font-bold text-center mb-4">{{contact.heading}}</h2>
-      <p class="text-light text-center max-w-prose mx-auto mb-12 leading-relaxed">{{contact.subtitle}}</p>
+        <form id="contact-form" class="contact-form card reveal-on-scroll reveal-from-right" novalidate
+              data-sending="{{form.form_sending}}"
+              data-success="{{form.form_success}}"
+              data-error="{{form.form_error}}"
+              data-network-error="{{form.form_network_error}}"
+              data-subject-required="{{form.form_subject_required}}"
+              data-subject-limit="{{form.form_subject_limit}}"
+              data-required="{{form.form_required_error}}"
+              data-email-invalid="{{form.form_email_error}}"
+        >
+          <!-- Honeypot -->
+          <div class="form-group hidden">
+            <label for="bot_field" class="form-label">Ne pas remplir</label>
+            <input type="text" name="bot_field" id="bot_field" class="input" tabindex="-1" autocomplete="off">
+          </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-        <!-- Contact form -->
-        <div>
-          <form id="contact-form" novalidate
-                data-sending="{{contact.form_sending}}"
-                data-success="{{contact.form_success}}"
-                data-error="{{contact.form_error}}"
-                data-network-error="{{contact.form_network_error}}"
-          >
-            <!-- Honeypot -->
-            <div class="form-group hidden">
-              <label for="bot_field" class="form-label">Ne pas remplir</label>
-              <input type="text" name="bot_field" id="bot_field" class="input" tabindex="-1" autocomplete="off">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contact-name" class="form-label">{{form.form_name_label}} <span class="form-required">*</span></label>
+              <input type="text" id="contact-name" name="name" class="input" required autocomplete="name" placeholder="{{form.form_name_placeholder}}" aria-describedby="contact-name-error">
+              <p id="contact-name-error" class="form-error"></p>
             </div>
 
             <div class="form-group">
-              <label for="contact-name" class="form-label">{{contact.form_name_label}} <span class="form-required">*</span></label>
-              <input type="text" id="contact-name" name="name" class="input" required autocomplete="name" placeholder="{{contact.form_name_placeholder}}">
+              <label for="contact-email" class="form-label">{{form.form_email_label}} <span class="form-required">*</span></label>
+              <input type="email" id="contact-email" name="email" class="input" required autocomplete="email" placeholder="{{form.form_email_placeholder}}" aria-describedby="contact-email-error">
+              <p id="contact-email-error" class="form-error"></p>
             </div>
+          </div>
 
+          <div class="form-row">
             <div class="form-group">
-              <label for="contact-email" class="form-label">{{contact.form_email_label}} <span class="form-required">*</span></label>
-              <input type="email" id="contact-email" name="email" class="input" required autocomplete="email" placeholder="{{contact.form_email_placeholder}}">
+              <label for="contact-phone" class="form-label">{{form.form_phone_label}} <span class="form-optional">(facultatif)</span></label>
+              <input type="tel" id="contact-phone" name="phone" class="input" autocomplete="tel" placeholder="{{form.form_phone_placeholder}}">
             </div>
-
+            {{#if form.referral_sources}}
             <div class="form-group">
-              <label for="contact-phone" class="form-label">{{contact.form_phone_label}} <span class="form-optional">(facultatif)</span></label>
-              <input type="tel" id="contact-phone" name="phone" class="input" autocomplete="tel" placeholder="{{contact.form_phone_placeholder}}">
-            </div>
-
-            <div class="form-group">
-              <label for="contact-subject" class="form-label">{{contact.form_subject_label}} <span class="form-required">*</span></label>
-              <select id="contact-subject" name="subject" class="select" required>
-                <option value="">{{contact.form_subject_placeholder}}</option>
-                {{#each contact.form_subjects}}
-                <option value="{{title}}">{{title}}</option>
-                {{/each}}
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="contact-referral" class="form-label">{{contact.form_referral_label}} <span class="form-optional">(facultatif)</span></label>
+              <label for="contact-referral" class="form-label">{{form.form_referral_label}} <span class="form-optional">(facultatif)</span></label>
               <select id="contact-referral" name="referral" class="select">
-                <option value="">{{contact.form_referral_placeholder}}</option>
-                {{#each contact.referral_sources}}
+                <option value="">{{form.form_referral_placeholder}}</option>
+                {{#each form.referral_sources}}
                 <option value="{{title}}">{{title}}</option>
                 {{/each}}
               </select>
             </div>
+            {{/if}}
+          </div>
 
-            <div class="form-group">
-              <label for="contact-message" class="form-label">{{contact.form_message_label}} <span class="form-required">*</span></label>
-              <textarea id="contact-message" name="message" class="textarea" required rows="5" placeholder="{{contact.form_message_placeholder}}"></textarea>
+          <!-- Subject multi-select: the toggle opens the listbox, the selected subjects show as chips below -->
+          <div class="form-group">
+            <label id="subject-label" class="form-label">{{form.form_subject_label}} <span class="form-required">*</span></label>
+            <div id="subject-select">
+              <button type="button" id="subject-toggle" class="input"
+                      role="combobox"
+                      aria-haspopup="listbox"
+                      aria-controls="subject-listbox"
+                      aria-expanded="false"
+                      aria-required="true"
+                      aria-labelledby="subject-label subject-placeholder"
+                      aria-describedby="subject-error">
+                <span id="subject-placeholder">{{form.form_subject_placeholder}}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <ul id="subject-listbox" role="listbox" aria-multiselectable="true" hidden>
+                {{#each form.form_subjects}}
+                <li role="option" id="subject-option-{{@index}}" data-value="{{title}}" aria-selected="false">{{title}}</li>
+                {{/each}}
+              </ul>
             </div>
+            <div id="subject-chips"></div>
+            <div id="subject-inputs"></div>
+            <p id="subject-error" class="form-error" role="alert"></p>
+            <p id="subject-status" class="sr-only" role="status"></p>
+          </div>
 
-            <!-- Turnstile -->
-            <div class="cf-turnstile mb-4" data-sitekey="{{turnstile_sitekey}}"></div>
+          <div class="form-group">
+            <label for="contact-message" class="form-label">{{form.form_message_label}} <span class="form-required">*</span></label>
+            <textarea id="contact-message" name="message" class="textarea" required rows="4" maxlength="3000" placeholder="{{form.form_message_placeholder}}" aria-describedby="contact-message-error contact-message-count"></textarea>
+            <div class="form-hint-row">
+              <p id="contact-message-error" class="form-error"></p>
+              <span id="contact-message-count" class="char-count">0 / 3000</span>
+            </div>
+          </div>
 
-            <button type="submit" class="btn btn-primary w-full">{{contact.form_submit}}</button>
+          <div class="form-submit-row">
+            {{#if turnstile_sitekey}}
+            <div class="cf-turnstile" data-sitekey="{{turnstile_sitekey}}"></div>
+            {{/if}}
+            <button type="submit" class="btn btn-primary btn-lg form-submit">
+              <span class="btn-label">{{form.form_submit}}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+    {{/if}}
 
-            <div id="form-status" class="mt-4 hidden"></div>
-          </form>
+    <!-- ================================================================
+         RESOURCES
+         ================================================================ -->
+    {{#if resources.enabled}}
+    <section id="{{resources.anchor}}" class="section resources-section">
+      <div class="container">
+        <div class="section-head reveal-on-scroll">
+          <h2>{{resources.heading}}</h2>
+          {{#if resources.intro}}
+          <div class="section-intro prose">{{resources.intro}}</div>
+          {{/if}}
         </div>
 
-        <!-- Contact info -->
-        <div class="flex flex-col gap-8">
-          <div>
-            <h3 class="text-xl font-semibold mb-6">{{contact.info_heading}}</h3>
-
-            <div class="flex items-start gap-4 mb-6">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary" style="flex-shrink: 0; margin-top: 2px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              <div>
-                <p class="font-medium">{{contact.phone_label}}</p>
-                <a href="tel:{{contact.phone}}" class="text-primary">{{contact.phone}}</a>
-              </div>
+        <div class="resources-grid reveal-stagger">
+          {{#each resources.items}}
+          <article class="resource-card card reveal-on-scroll">
+            {{#if image}}
+            <a href="{{url}}" target="_blank" rel="noopener noreferrer" class="resource-card-media" tabindex="-1" aria-hidden="true">
+              <img src="{{image}}" alt="{{image_alt}}" loading="lazy">
+            </a>
+            {{/if}}
+            <div class="resource-card-body">
+              <h3 class="resource-card-title">
+                <a href="{{url}}" target="_blank" rel="noopener noreferrer">{{title}}</a>
+              </h3>
+              {{#if description}}
+              <div class="resource-card-text prose">{{description}}</div>
+              {{/if}}
             </div>
-
-            <div class="flex items-start gap-4 mb-6">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary" style="flex-shrink: 0; margin-top: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <div>
-                <p class="font-medium">{{contact.address_label}}</p>
-                <a href="https://www.google.com/maps/search/?api=1&query={{contact.address}}" target="_blank" rel="noopener" class="text-primary">{{contact.address}}</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-xl shadow p-6">
-            <h3 class="text-lg font-semibold mb-4 text-primary">{{contact.consultation_heading}}</h3>
-            <p class="text-light leading-relaxed">{{contact.consultation_text}}</p>
-          </div>
+          </article>
+          {{/each}}
         </div>
       </div>
-    </div>
-  </section>
-
+    </section>
+    {{/if}}
+  </main>
   <!-- ================================================================
        FOOTER
        ================================================================ -->
-  <footer class="bg-dark text-white py-12">
+  <footer class="site-footer">
     <div class="container">
       <!-- Top row: business info + navigation -->
-      <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
-        <div class="text-center md:text-left">
-          <p class="font-semibold text-lg">{{footer.business_name}}</p>
-          <p class="text-sm" style="color: rgba(255,255,255,0.6);">{{footer.credentials}}</p>
+      <div class="footer-top">
+        <div class="footer-brand">
+          <p class="footer-name">{{footer.business_name}}</p>
+          <p class="footer-credentials">{{footer.credentials}}</p>
         </div>
-        <nav class="flex flex-wrap justify-center gap-6">
-          <a href="#about" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.about}}</a>
-          <a href="#services" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.services}}</a>
-          <a href="#education" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.education}}</a>
-          <a href="#faq" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.faq}}</a>
-          <a href="#contact" class="text-sm transition" style="color: rgba(255,255,255,0.7);">{{nav.contact}}</a>
+        <nav class="footer-nav" aria-label="Navigation de pied de page">
+          {{#each nav_items}}
+          <a href="{{href}}" class="footer-link">{{label}}</a>
+          {{/each}}
         </nav>
       </div>
 
-      <!-- Divider -->
-      <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: var(--space-6);"></div>
+      <div class="footer-divider" aria-hidden="true"></div>
 
       <!-- Bottom row: legal links + copyright -->
-      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex flex-wrap justify-center gap-4">
+      <div class="footer-bottom">
+        <div class="footer-legal">
           {{#if footer.privacy_link}}
-          <a href="{{footer.privacy_link}}" class="text-xs transition" style="color: rgba(255,255,255,0.5);">{{footer.privacy_label}}</a>
+          <a href="{{footer.privacy_link}}" class="footer-legal-link"{{#if footer.privacy_external}} target="_blank" rel="noopener noreferrer"{{/if}}>{{footer.privacy_label}}</a>
           {{/if}}
           {{#if footer.legal_link}}
-          <a href="{{footer.legal_link}}" class="text-xs transition" style="color: rgba(255,255,255,0.5);">{{footer.legal_label}}</a>
+          <a href="{{footer.legal_link}}" class="footer-legal-link"{{#if footer.legal_external}} target="_blank" rel="noopener noreferrer"{{/if}}>{{footer.legal_label}}</a>
           {{/if}}
-          <a href="/admin/" class="text-xs transition" style="color: rgba(255,255,255,0.3);">{{footer.admin_link_label}}</a>
+          <a href="/admin/" class="footer-admin-link">{{footer.admin_link_label}}</a>
         </div>
-        <p class="text-xs" style="color: rgba(255,255,255,0.4);">© {{currentYear}} {{footer.business_name}}. {{footer.copyright}}</p>
+        <p class="footer-copy">© {{currentYear}} {{footer.business_name}}. {{footer.copyright}}</p>
       </div>
     </div>
   </footer>
 
-  <!-- Form result modal (reuses popup modal structure) -->
-  <div class="modal-backdrop hidden" id="form-modal" role="dialog" aria-modal="true">
-    <div class="modal" style="text-align: center;">
-      <div id="form-modal-icon" class="form-modal-icon"></div>
-      <p id="form-modal-message" class="text-light mb-6 leading-relaxed text-center"></p>
-      <button id="form-modal-close" class="btn btn-primary w-full">{{contact.form_close}}</button>
-    </div>
-  </div>
+  <!-- Form result modal -->
+  <dialog id="form-modal" class="modal" aria-labelledby="form-modal-message">
+    <p id="form-modal-message" class="modal-text"></p>
+    <button id="form-modal-close" class="btn btn-primary w-full" type="button">{{form.form_close}}</button>
+  </dialog>
 
   <!-- Scripts -->
+  {{#if turnstile_sitekey}}
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-  <script src="script.js"></script>
+  {{/if}}
+  <script src="/script.js"></script>
 </body>
 </html>

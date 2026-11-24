@@ -15,6 +15,7 @@ script.js               ← Interactivity (menu, accordion, popup, form, scroll 
 admin/                  ← Custom admin panel with GitHub OAuth
 functions/              ← Cloudflare Pages Functions (OAuth, admin API, contact form)
 lib/admin-auth.mjs      ← Shared admin auth/session/GitHub API helpers
+lib/render.mjs          ← Shared content preparation and template engine
 ```
 
 ### Why this stack?
@@ -23,6 +24,8 @@ lib/admin-auth.mjs      ← Shared admin auth/session/GitHub API helpers
 - **Content in JSON** — clean separation from layout, editable via admin or directly
 - **Build step** — content is baked into static HTML at build time for perfect SEO
 - **Utility-first CSS** — reusable classes, consistent spacing/typography via CSS custom properties
+- **Fonts** — three Google Fonts files only: Fraunces roman for headings and names, Fraunces italic for all italic text (`em`), and Nunito Sans for everything else. `template.html`, `template-legal.html`, and `admin/index.html` load the same URL. Do not add a font, a weight outside the loaded ranges, or `font-style: italic` on Nunito Sans.
+- **Motion** — add `reveal-on-scroll` (and `reveal-from-left`/`reveal-from-right`) to fade a block in; a `reveal-stagger` parent delays its first six children. Hover effects in the Motion block of `styles.css` use the `translate`/`scale` properties, so they do not conflict with the reveal `transform`. Movement runs only under `prefers-reduced-motion: no-preference`. The hero drift and the reading progress bar use CSS scroll-driven animations and are absent in browsers without support. `script.js` marks the nav link of the current section with `.is-current`.
 - **Cloudflare Pages** — free hosting, unlimited bandwidth, global CDN, serverless functions
 
 ## Content Management
@@ -46,16 +49,40 @@ All content lives in `content/settings.json` with these sections:
 
 | Section | What's editable |
 |---------|----------------|
-| `seo` | Page title, meta description, OG image, favicon |
-| `popup` | Enable/disable + title + message + image |
-| `header` | Logo, site name, CTA button |
-| `hero` | Headline, subtitle, background image, CTAs |
-| `services` | Section heading + list of service cards |
-| `about` | Title, bio (markdown), photo, core values |
-| `education` | Section heading + educational content items |
-| `faq` | Section heading + Q&A pairs |
-| `contact` | Heading, subtitle, phone, address, form subject options |
-| `footer` | Business name, credentials, privacy link |
+| `seo` | Page title, meta description, OG image and alt text, favicon, Apple touch icon |
+| `popup` | Visibility, title, message, image, alt text, dismiss label |
+| `header` | Logo, alt text, site name, primary button text |
+| `nav` | Navigation labels for services, about, FAQ, contact, form, and resources |
+| `hero` | Headline, subtitle, background image, portrait, alt text, button text, secondary link |
+| `highlights` | Visibility, item titles and descriptions |
+| `services` | Visibility, heading, service titles, short descriptions, images, alt text |
+| `about` | Visibility, title, biography, photo, alt text |
+| `faq` | Visibility, heading, questions and answers |
+| `contact` | Visibility, heading, subtitle, phone, address, and the three contact options (phone, online booking URL and label, form link) with titles and texts |
+| `form` | Visibility, heading, subtitle, privacy note (Markdown), three steps, field labels, placeholders, validation messages, subject options, referral sources |
+| `resources` | Visibility, heading, introduction, item titles, descriptions, URLs, images, alt text |
+| `footer` | Business name, credentials, copyright, legal links and labels, admin link label |
+| `privacy_page`, `legal_page` | Page title, update date, Markdown body |
+| `colors` | Palette taken from the logo: primary teal, button orange, text, background, and border colors. `bg_dark` (deep teal) is the footer color |
+
+Each toggleable section uses `enabled`. The header, hero, and footer always appear.
+The main sections follow the table order from `hero` through `footer`.
+The enabled sections alternate between a light tone (cream) and a teal tone, so two light sections never touch.
+`styles.css` sets the tones by position with `:nth-child(… of .section)`, so hiding a section in the admin moves the tones automatically.
+Header and footer navigation includes only enabled sections with non-empty navigation labels.
+Each section has an `anchor` field that the admin can edit under "Adresse de la section". The defaults are French: `#accueil`, `#points-forts`, `#services`, `#a-propos`, `#faq`, `#contact`, `#ecrivez-moi`, `#ressources`.
+`prepareContent` in `lib/render.mjs` changes each value into a slug (lowercase, no accents, hyphens). It uses the default from `DEFAULT_ANCHORS` when the value is empty, already used by another section, or equal to an id in `RESERVED_IDS` (the other ids in `template.html`).
+The anchors do not update links typed in content, such as the hero secondary button link or the `/#ecrivez-moi` links in the legal pages. `node lib/render.test.mjs` checks the reserved list against the template and checks that the page ids stay unique.
+
+`highlights.items` replaces `about.values`. `resources` replaces `education`, and resource links open in a new tab.
+Form fields, subject options, and referral sources now belong to `form`, not `contact`.
+The header button, primary hero button, and contact booking button use `contact.booking_url`.
+These links open in a new tab with `rel="noopener noreferrer"`. The site no longer embeds the booking widget.
+
+Content images have matching `*_alt` fields. The build warns when an image path has no alt text.
+`prepareContent()` in `lib/render.mjs` prepares both builds and previews.
+It sanitizes Markdown, derives navigation, and serializes `LocalBusiness` JSON-LD with the logo and portrait.
+The template engine escapes other values as HTML.
 
 ## Local Development
 
@@ -90,7 +117,7 @@ The site will be available at `http://localhost:8788` with full Cloudflare Pages
 ```bash
 node build.js
 # Generates: index.html, politique-de-confidentialite.html,
-# mentions-legales.html, sitemap.xml, robots.txt
+# mentions-legales.html, sitemap.xml, robots.txt, _redirects
 ```
 
 ## Deployment (Cloudflare Pages)
@@ -170,6 +197,14 @@ Enable [Cloudflare Email Routing](https://developers.cloudflare.com/email-routin
 
 Deploy `workers/email-sender` and bind it to the Pages project as `EMAIL_WORKER`. The email Worker owns the `SEND_EMAIL` binding. Local development can omit `EMAIL_WORKER`; `/api/contact` logs the MIME message instead of sending mail.
 
+The form is separate from the contact details. On wide screens a panel with the steps and the privacy note shows beside the form.
+The subject dropdown shows the number of selected subjects. The selected subjects show below it as removable chips.
+The referral source is an optional native select. Required fields show French validation messages when the visitor leaves them.
+`POST /api/contact` accepts `subjects: string[]` with 1 to 10 non-empty items, each at most 200 characters. `message` has a limit of 3000 characters, the same as the textarea.
+It no longer accepts the single `subject` field. The email includes the subjects in both its text and HTML parts.
+The email subject uses `Nouveau message de <name> - <subjects>` and has a 200-character limit.
+The `Reply-To` header uses the validated visitor email address, so replies go to the visitor.
+
 ## Bot Protection
 
 The contact form has three layers:
@@ -185,7 +220,10 @@ The contact form has three layers:
 │   ├── index.html          # Admin panel (login + editor UI)
 │   └── admin.js            # Admin UI logic (same-origin admin API calls)
 ├── assets/
-│   └── images/             # Site images (uploaded via admin or manually)
+│   └── images/             # Site images and icons
+│       ├── favicon.ico
+│       ├── favicon-192.png
+│       └── apple-touch-icon.png
 ├── content/
 │   └── settings.json       # All editable content
 ├── functions/
@@ -203,17 +241,20 @@ The contact form has three layers:
 │       └── preview.js      # Authenticated server-side preview rendering
 ├── lib/
 │   ├── admin-auth.mjs      # Shared admin auth/session/GitHub helpers
-│   └── render.mjs          # Shared template engine (build + preview)
+│   ├── render.mjs          # Shared content preparation and template engine
+│   └── render.test.mjs     # Renderer checks: node lib/render.test.mjs
 ├── docs/
 │   ├── admin-auth.md       # Admin security model and maintenance rules
 │   └── deployment.md       # Cloudflare deployment, env, and worker setup
 ├── _headers                # Cloudflare Pages security headers
+├── _redirects              # Generated redirect from /favicon.ico to seo.favicon
 ├── .gitignore
-├── build.js                # Build script: content + template → index.html
+├── build.js                # Generates static pages, metadata, and _redirects
 ├── package.json
 ├── script.js               # Client-side interactivity
 ├── styles.css              # Utility-first CSS framework
-└── template.html           # HTML template with {{placeholders}}
+├── template.html           # Home page template with {{placeholders}}
+└── template-legal.html     # Shared legal page template
 ```
 
 ## License

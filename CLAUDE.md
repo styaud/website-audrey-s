@@ -4,11 +4,12 @@ See [README.md](README.md) for architecture, file structure, and deployment inst
 
 ## Commands
 
-- `npm run build` - generate `index.html`, `politique-de-confidentialite.html`, `mentions-legales.html`, `sitemap.xml`, and `robots.txt`
+- `npm run build` - runs `node build.js` and generates the gitignored static output files.
 - `npm run dev` - build, then start `wrangler pages dev` on port `8788`
 - `node --check <file>` - quick JavaScript syntax check for changed `.js` or `.mjs` files
+- `node lib/render.test.mjs` - run the renderer checks for sanitization, navigation, and content preparation.
 
-There is no automated test suite in this repo. Use `npm run build`, syntax checks for changed scripts, and targeted local Wrangler/browser checks when behavior changes.
+For behavior changes, run the renderer checks, `npm run build`, JavaScript syntax checks, and local Wrangler/browser checks.
 
 ## Conventions
 
@@ -16,9 +17,11 @@ There is no automated test suite in this repo. Use `npm run build`, syntax check
 - **CSS order** - reset -> variables -> components -> utilities -> responsive -> page-level. Utilities must come after components so they win. No `!important`. No ID selectors for styling.
 - **French accents** - user-facing French text must keep proper diacritics such as é, è, ê, à, ç, ô, î, and û. Content is French; code and comments are English.
 - **Privacy** - the contact email must never appear in tracked files or git history. It lives only in `.dev.vars` and Cloudflare secrets.
-- **Generated files** - `index.html`, `politique-de-confidentialite.html`, `mentions-legales.html`, `sitemap.xml`, and `robots.txt` are gitignored build output. Never edit them directly.
+- **Generated files** - `index.html`, `politique-de-confidentialite.html`, `mentions-legales.html`, `sitemap.xml`, `robots.txt`, and `_redirects` are gitignored build output. Never edit them directly.
 - **Markdown** - rendering logic lives in `lib/render.mjs` only and is shared by `build.js` and `functions/api/preview.js`. Do not duplicate markdown rendering.
-- **Images** - raster uploads are compressed to WebP by the admin UI. SVG and ICO uploads are allowed, but server validation in `lib/admin-auth.mjs` must continue to reject unsafe names, traversal, invalid signatures, and active SVG content.
+- **Images** - the admin UI compresses normal raster uploads to WebP. It preserves SVG and ICO uploads when validation passes.
+- **SEO icons** - favicon uploads preserve PNG or ICO. Apple touch icon uploads preserve PNG and require dimensions of 180 × 180 pixels.
+- **Upload validation** - keep server validation in `lib/admin-auth.mjs` for unsafe names, traversal, invalid signatures, and active SVG content.
 
 ## Admin Access Rules
 

@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { render, processMarkdown } from "./lib/render.mjs";
+import { render, prepareContent } from "./lib/render.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const SITE_URL = "https://audreyhauteurdenfant.com";
@@ -52,7 +52,7 @@ if (!existsSync(join(ROOT, "template.html"))) {
   console.error("Error: template.html not found."); process.exit(1);
 }
 
-const settings = processMarkdown(JSON.parse(read("content/settings.json")));
+const settings = prepareContent(JSON.parse(read("content/settings.json")));
 settings.turnstile_sitekey = process.env.TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
 const template = read("template.html");
 const legalTemplate = read("template-legal.html");
@@ -72,4 +72,5 @@ if (settings.legal_page) {
 
 write("sitemap.xml", generateSitemap());
 write("robots.txt", `User-agent: *\nAllow: /\nDisallow: /admin/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+write("_redirects", settings.seo.favicon && settings.seo.favicon !== "/favicon.ico" ? `/favicon.ico ${settings.seo.favicon.replace(/\s/g, encodeURIComponent)} 302\n` : "");
 console.log("Build complete.");

@@ -1,8 +1,8 @@
 import { requireAdmin, htmlResponse } from "../../lib/admin-auth.mjs";
-import { render, processMarkdown } from "../../lib/render.mjs";
+import { render, prepareContent } from "../../lib/render.mjs";
 
-// Renders a full preview page server-side for authenticated admins.
-// A <base href="/"> is injected so paths resolve to the site root.
+// Render the page for an authenticated admin.
+// The base URL resolves assets from the site root.
 export async function onRequestPost(context) {
   const auth = await requireAdmin(context, { csrf: true });
   if (!auth.ok) {
@@ -19,7 +19,8 @@ export async function onRequestPost(context) {
     const templateRes = await context.env.ASSETS.fetch(new URL("/template.html", context.request.url));
     const template = await templateRes.text();
 
-    const data = processMarkdown(JSON.parse(JSON.stringify(content)));
+    const data = prepareContent(content);
+    data.turnstile_sitekey = "";
     let html = render(template, data);
 
     html = html.replace("<head>", '<head><base href="/">');

@@ -36,15 +36,27 @@ The browser talks only to same-origin admin APIs:
 All mutating admin endpoints and preview require:
 
 - A valid sealed admin session.
-- A fresh GitHub write/admin permission check for mutating requests.
 - Same-origin `Origin`.
 - Safe `Sec-Fetch-Site`.
 - `Content-Type: application/json`.
 - `X-CSRF-Token` matching the sealed session.
 
-Permission checks are cached briefly in the sealed session for non-mutating requests. Mutating requests check GitHub permissions live and fail closed on denial, timeout, rate limit, or malformed GitHub response.
+Content and image writes force a live GitHub permission check. Reads and previews can reuse a permission check for five minutes. Each required GitHub check fails closed on denial, timeout, rate limit, or malformed responses.
 
-The admin editor loads EasyMDE from a pinned CDN URL with Subresource Integrity. Do not change it back to a floating version such as `@2`, and do not add unpinned scripts to `/admin/`; third-party admin JavaScript can act as the signed-in admin.
+The admin editor loads EasyMDE 2.21.0 and Font Awesome 6.5.2 from pinned CDN URLs with Subresource Integrity. Do not use floating versions such as `@2` or add unpinned scripts to `/admin/`. Third-party admin JavaScript can act as the signed-in admin.
+
+### Preview And Content Security Policy
+
+The editor posts draft content to `/api/preview` with same-origin credentials and `X-CSRF-Token`. The route uses `requireAdmin(context, { csrf: true })` and the request checks above. It renders HTML through `prepareContent()` and `render()` in `lib/render.mjs`, which the build also uses. The shared renderer escapes Markdown input and sanitizes the HTML output.
+
+The editor assigns the returned HTML to an iframe through `srcdoc`. The iframe uses `sandbox="allow-scripts"` without `allow-same-origin`. It does not load `/api/preview` as an iframe URL. Preview omits the Turnstile widget and script. Before it assigns `srcdoc`, the editor replaces pending image and icon paths with local data URLs.
+
+The `/admin/*` rule in `_headers` removes the public Content Security Policy (CSP) before it sets the admin policy:
+
+- `frame-src` allows `'self'` and `https://challenges.cloudflare.com`.
+- `script-src` allows `'self'`, jsDelivr, and Turnstile.
+- `img-src` allows `'self'`, `data:`, `https:`, and `blob:` for images and local previews.
+- The policy keeps `object-src 'none'`, `form-action 'self'`, and `frame-ancestors 'none'`.
 
 ## Upload Policy
 
@@ -60,6 +72,32 @@ Allowed extensions:
 - `.ico`
 
 The server rejects traversal, slashes, backslashes, empty names, oversized payloads, invalid file signatures, and unsafe SVG markup. SVG uploads are allowed, but scripts, event handlers, external references, `foreignObject`, and similar active content are rejected.
+
+The admin UI converts raster uploads to WebP with a maximum dimension of 1920 pixels and quality `0.82`. It preserves SVG and ICO files. SEO icon fields are exceptions:
+
+- `seo.favicon` accepts PNG or ICO and preserves the original format.
+- `seo.apple_touch_icon` accepts only a 180 × 180 PNG and preserves the original format.
+- Upload PNG icons through the SEO view. A PNG upload through the gallery becomes WebP.
+
+These field-specific restrictions run in the browser. The image API validates the file name and payload, not the target content field.
+
+### Gallery And Publication
+
+The image gallery lists repository images and pending uploads. It shows image paths, a copy action, usage labels, and an `À publier` label for pending uploads.
+
+New images stay in browser memory until the user confirms `Publier`. Preview uses their local data URLs before upload. Publication uploads every pending image first, then writes `content/settings.json`. Each image upload and the content write use separate GitHub requests. If a later request fails, earlier uploads remain in the repository.
+
+Publication does not delete unused images. The gallery marks an image `Inutilisée` only when all these conditions apply:
+
+- The current draft does not reference its path.
+- The published content snapshot does not reference its path.
+- Its path is not `assets/images/favicon.ico`, which the admin page uses as its fixed icon.
+
+The editor refreshes the published content snapshot when it loads content and after successful publication. The gallery disables removal for all other images. Remove image references and publish the content before deletion.
+
+The gallery requires confirmation for removal. Removal of a pending image only removes it from the upload queue. Deletion of a repository image calls `DELETE /api/admin/image` immediately, without another publication.
+
+These reference and fixed-icon protections apply in the gallery UI only. The delete API checks authorization, CSRF, the image name, and the supplied SHA. It does not check content references or protect the fixed admin icon.
 
 ## Environment Variables
 

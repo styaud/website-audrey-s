@@ -1,23 +1,26 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr-CA">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{page_title}} — {{header.site_name}}</title>
+  <title>{{page_title}} — {{header.site_name_plain}}</title>
   <meta name="robots" content="noindex, nofollow">
   {{#if seo.favicon}}
-  <link rel="icon" href="{{seo.favicon}}">
+  <link rel="icon" href="{{seo.favicon}}" type="{{seo.favicon_type}}">
   {{/if}}
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    .legal-page { max-width: 720px; margin: 0 auto; padding: var(--space-8) var(--space-6); }
-    .legal-page h1 { font-size: var(--text-3xl); font-weight: 700; margin-bottom: var(--space-2); }
-    .legal-page { color: var(--color-text-light); line-height: 1.7; }
-    .legal-page h2 { font-size: var(--text-xl); color: var(--color-text); }
-    .legal-back { display: inline-block; margin-bottom: var(--space-6); color: var(--color-primary); font-size: var(--text-sm); }
-    .legal-updated { font-size: var(--text-sm); color: var(--color-text-light); margin-bottom: var(--space-8); }
-  </style>
+  {{#if seo.apple_touch_icon}}
+  <link rel="apple-touch-icon" sizes="180x180" href="{{seo.apple_touch_icon}}">
+  {{/if}}
 
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,600,100;1,9..144,400..600,100&family=Nunito+Sans:opsz,wght@6..12,400..700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/styles.css">
+
+  <!-- Color overrides from admin settings -->
   {{#if colors.primary}}
   <style>
     :root {
@@ -37,11 +40,79 @@
   {{/if}}
 </head>
 <body>
-  <div class="legal-page">
-    <a href="/" class="legal-back">← Retour au site</a>
-    <h1>{{page_title}}</h1>
-    <p class="legal-updated">{{page_updated}}</p>
-    <div>{{page_body}}</div>
-  </div>
+
+  <!-- ================================================================
+       HEADER / NAV
+       ================================================================ -->
+  <header class="site-nav site-nav-solid fixed top-0 w-full">
+    <div class="container nav-inner">
+      <a href="/" class="site-logo">
+        {{#if header.logo}}
+        <img src="{{header.logo}}" alt="{{header.logo_alt}}" class="site-logo-img">
+        {{/if}}
+        <span class="site-logo-text">{{header.site_name}}</span>
+      </a>
+
+      <!-- Hamburger (mobile) -->
+      <button class="hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="primary-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <!-- Navigation -->
+      <nav class="nav-menu" id="primary-nav" aria-label="Navigation principale">
+        {{#each nav_items}}
+        <a href="/{{href}}" class="nav-link">{{label}}</a>
+        {{/each}}
+        <a href="{{contact.booking_url}}" class="btn btn-primary nav-cta" target="_blank" rel="noopener noreferrer">{{header.cta_text}}</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="legal-page">
+      <a href="/" class="legal-back">← Retour au site</a>
+      <h1>{{page_title}}</h1>
+      <p class="legal-updated">{{page_updated}}</p>
+      <div class="legal-body prose">{{page_body}}</div>
+    </div>
+  </main>
+
+  <!-- ================================================================
+       FOOTER
+       ================================================================ -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <p class="footer-name">{{footer.business_name}}</p>
+          <p class="footer-credentials">{{footer.credentials}}</p>
+        </div>
+        <nav class="footer-nav" aria-label="Navigation de pied de page">
+          {{#each nav_items}}
+          <a href="/{{href}}" class="footer-link">{{label}}</a>
+          {{/each}}
+        </nav>
+      </div>
+
+      <div class="footer-divider" aria-hidden="true"></div>
+
+      <div class="footer-bottom">
+        <div class="footer-legal">
+          {{#if footer.privacy_link}}
+          <a href="{{footer.privacy_link}}" class="footer-legal-link"{{#if footer.privacy_external}} target="_blank" rel="noopener noreferrer"{{/if}}>{{footer.privacy_label}}</a>
+          {{/if}}
+          {{#if footer.legal_link}}
+          <a href="{{footer.legal_link}}" class="footer-legal-link"{{#if footer.legal_external}} target="_blank" rel="noopener noreferrer"{{/if}}>{{footer.legal_label}}</a>
+          {{/if}}
+          <a href="/admin/" class="footer-admin-link">{{footer.admin_link_label}}</a>
+        </div>
+        <p class="footer-copy">© {{currentYear}} {{footer.business_name}}. {{footer.copyright}}</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>
