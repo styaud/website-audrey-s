@@ -25,7 +25,7 @@ lib/render.mjs          ← Shared content preparation and template engine
 - **Build step** — content is baked into static HTML at build time for perfect SEO
 - **Utility-first CSS** — reusable classes, consistent spacing/typography via CSS custom properties
 - **Fonts** — three Google Fonts files only: Fraunces roman for headings and names, Fraunces italic for all italic text (`em`), and Nunito Sans for everything else. `template.html`, `template-legal.html`, and `admin/index.html` load the same URL. Do not add a font, a weight outside the loaded ranges, or `font-style: italic` on Nunito Sans.
-- **Motion** — add `reveal-on-scroll` (and `reveal-from-left`/`reveal-from-right`) to fade a block in; a `reveal-stagger` parent delays its first six children. Hover effects in the Motion block of `styles.css` use the `translate`/`scale` properties, so they do not conflict with the reveal `transform`. Movement runs only under `prefers-reduced-motion: no-preference`. The hero drift and the reading progress bar use CSS scroll-driven animations and are absent in browsers without support. `script.js` marks the nav link of the current section with `.is-current`.
+- **Motion** — add `reveal-on-scroll` (and `reveal-from-left`/`reveal-from-right`) to fade a block in; a `reveal-stagger` parent delays its first six children. Hover effects go only on elements that respond to a click: links, buttons, FAQ questions, and the contact and resource cards. A stretched link (`::after`, `inset: 0`) makes the whole card clickable, so the card lift is honest. Static images and blocks never react to the pointer. They can move with the scroll: each timeline dot lights up as its row reaches the middle of the screen. Hover effects use the `translate`/`scale` properties, so they do not conflict with the reveal `transform`. Movement runs only under `prefers-reduced-motion: no-preference`. The hero drift, the reading progress bar, and the timeline dots use CSS scroll-driven animations and are static in browsers without support. `script.js` marks the nav link of the current section with `.is-current`.
 - **Cloudflare Pages** — free hosting, unlimited bandwidth, global CDN, serverless functions
 
 ## Content Management
@@ -51,19 +51,22 @@ All content lives in `content/settings.json` with these sections:
 |---------|----------------|
 | `seo` | Page title, meta description, OG image and alt text, favicon, Apple touch icon |
 | `popup` | Visibility, title, message, image, alt text, dismiss label |
-| `header` | Logo, alt text, site name, nav button text. The nav button links to the contact section, or to the form when contact is hidden. It does not show when both are hidden |
-| `nav` | Navigation labels for services, about, FAQ, contact, form, and resources |
-| `hero` | Label above the title, headline, subtitle, background image, arch portrait, alt text, button text, secondary link, phone line label, badges under the buttons. The portrait card shows `footer.business_name` and `footer.credentials` |
-| `highlights` | Visibility, item titles and descriptions |
+| `header` | Logo, alt text, site name, nav button text, screen reader names of the menu button and the navigation. The nav button links to the contact section, or to the form when contact is hidden. It does not show when both are hidden |
+| `nav` | Navigation labels for services, about, FAQ, contact, form, and resources. `back_label` is the link at the top of the legal pages |
+| `hero` | Label above the title, headline, subtitle, background image, arch portrait, alt text, booking button text, badges, screen reader text of the scroll cue. The phone button beside the booking button uses `contact.phone`. The portrait card shows `footer.business_name` and `footer.credentials`. On desktop, a scroll cue at the bottom of the hero links to the first visible section |
+| `highlights` | Visibility, screen reader name of the band, item titles and descriptions |
 | `services` | Visibility, heading, service titles, short descriptions, images, alt text |
 | `about` | Visibility, title, biography, photo, alt text |
 | `faq` | Visibility, heading, questions and answers |
 | `contact` | Visibility, heading, subtitle, phone, address, and the three contact options (phone, online booking URL and label, form link) with titles and texts |
-| `form` | Visibility, heading, subtitle, privacy note (Markdown), three steps, field labels, placeholders, validation messages, subject options, referral sources |
+| `form` | Visibility, heading, subtitle, privacy note (Markdown), three steps, field labels, placeholders, optional-field mark, validation and server error messages, subject picker texts (`{n}` is the count, `{sujet}` the subject name), subject options, referral sources |
 | `resources` | Visibility, heading, introduction, item titles, descriptions, URLs, images, alt text |
-| `footer` | Business name, credentials, copyright, legal links and labels, admin link label |
+| `footer` | Business name, credentials, copyright, legal links and labels, admin link label, screen reader name of the footer navigation |
 | `privacy_page`, `legal_page` | Page title, update date, Markdown body |
 | `colors` | Palette taken from the logo: primary teal, button orange, text, background, and border colors. `bg_dark` (deep teal) is the footer color |
+| `email` | Notification email to Audrey: sender name, subject (`{nom}`, `{sujets}`), first line, receipt line (`{date}`). The field names come from the `form` labels |
+
+All visitor-facing text comes from `content/settings.json` and has a field in the admin, including screen reader labels. Code holds only symbols (`←`, `×`, `*`) and the hidden honeypot label.
 
 Each toggleable section uses `enabled`. The header, hero, and footer always appear.
 The main sections follow the table order from `hero` through `footer`.
@@ -72,7 +75,7 @@ The enabled sections alternate between a light tone (cream) and a teal tone, so 
 Header and footer navigation includes only enabled sections with non-empty navigation labels.
 Each section has an `anchor` field that the admin can edit under "Adresse de la section". The defaults are French: `#accueil`, `#points-forts`, `#services`, `#a-propos`, `#faq`, `#contact`, `#ecrivez-moi`, `#ressources`.
 `prepareContent` in `lib/render.mjs` changes each value into a slug (lowercase, no accents, hyphens). It uses the default from `DEFAULT_ANCHORS` when the value is empty, already used by another section, or equal to an id in `RESERVED_IDS` (the other ids in `template.html`).
-The anchors do not update links typed in content, such as the hero secondary button link or the `/#ecrivez-moi` links in the legal pages. `node lib/render.test.mjs` checks the reserved list against the template and checks that the page ids stay unique.
+The anchors do not update links typed in content, such as the `/#ecrivez-moi` links in the legal pages. `node lib/render.test.mjs` checks the reserved list against the template and checks that the page ids stay unique.
 
 `highlights.items` replaces `about.values`. `resources` replaces `education`, and resource links open in a new tab.
 Form fields, subject options, and referral sources now belong to `form`, not `contact`.
@@ -202,7 +205,9 @@ The subject dropdown shows the number of selected subjects. The selected subject
 The referral source is an optional native select. Required fields show French validation messages when the visitor leaves them.
 `POST /api/contact` accepts `subjects: string[]` with 1 to 10 non-empty items, each at most 200 characters. `message` has a limit of 3000 characters, the same as the textarea.
 It no longer accepts the single `subject` field. The email includes the subjects in both its text and HTML parts.
-The email subject uses `Nouveau message de <name> - <subjects>` and has a 200-character limit.
+An error response holds a message key (`error`, `emailInvalid`, `subjectRequired`, `captcha`), not a sentence. `script.js` shows the matching `form` message from the content.
+The function imports `content/settings.json` for the email text (`email` section and `form` labels). A content change takes effect at the next deployment.
+The email subject comes from `email.subject` and has a 200-character limit. The receipt time uses the `America/Toronto` time zone.
 The `Reply-To` header uses the validated visitor email address, so replies go to the visitor.
 
 ## Bot Protection

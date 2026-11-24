@@ -106,10 +106,8 @@ const SECTIONS = [
       { key: 'image_alt', label: 'Description de l’image de fond', type: 'text', plain: true, group: 'Images', hint: ALT_HINT },
       { key: 'portrait', label: 'Portrait', type: 'image', group: 'Images', hint: 'Portrait en arche (format vertical 3:4). Le nom et les titres du pied de page s’affichent sur le portrait.' },
       { key: 'portrait_alt', label: 'Description du portrait', type: 'text', plain: true, group: 'Images', hint: ALT_HINT },
-      { key: 'cta_text', label: 'Bouton principal — texte', type: 'text', group: 'Boutons', hint: 'Le bouton ouvre le lien de réservation défini dans Contact.' },
-      { key: 'cta2_text', label: 'Bouton secondaire — texte', type: 'text', group: 'Boutons', hint: 'Laissez vide pour masquer le bouton.' },
-      { key: 'cta2_link', label: 'Bouton secondaire — lien', type: 'text', plain: true, group: 'Boutons', hint: 'Adresse web ou ancre, par exemple #services.' },
-      { key: 'phone_label', label: 'Texte avant le téléphone', type: 'text', plain: true, group: 'Boutons', hint: 'Affiché sous les boutons avec le numéro défini dans Contact. Laissez vide pour masquer la ligne.' },
+      { key: 'cta_text', label: 'Bouton principal — texte', type: 'text', group: 'Boutons', hint: 'Le bouton ouvre le lien de réservation défini dans Contact. Le bouton à côté affiche le téléphone défini dans Contact.' },
+      { key: 'scroll_label', label: 'Flèche de défilement', type: 'text', plain: true, group: 'Lecteurs d’écran', hint: 'Texte lu par les lecteurs d’écran. Sur ordinateur, la flèche en bas de la bannière mène à la section suivante.' },
       anchorField('accueil'),
     ],
     lists: [
@@ -117,7 +115,11 @@ const SECTIONS = [
     ],
   },
   {
-    key: 'highlights', label: 'Points forts', toggleable: true, fields: [anchorField('points-forts')],
+    key: 'highlights', label: 'Points forts', toggleable: true,
+    fields: [
+      { key: 'label', label: 'Nom de la bande', type: 'text', plain: true, group: 'Lecteurs d’écran', hint: 'Texte lu par les lecteurs d’écran. La bande n’a pas de titre visible.' },
+      anchorField('points-forts'),
+    ],
     list: {
       key: 'items', label: 'Points forts',
       fields: [
@@ -130,7 +132,7 @@ const SECTIONS = [
     key: 'services', label: 'Services', toggleable: true,
     fields: [
       { key: 'heading', label: 'Titre de la section', type: 'text' },
-      anchorField('services', ' Si vous la changez, mettez aussi à jour le lien du bouton secondaire de la bannière.'),
+      anchorField('services'),
     ],
     list: {
       key: 'items', label: 'Services',
@@ -198,6 +200,7 @@ const SECTIONS = [
       { key: 'form_subject_placeholder', label: 'Sujets — texte indicatif', type: 'text', plain: true, group: 'Libellés' },
       { key: 'form_message_label', label: 'Message — libellé', type: 'text', plain: true, group: 'Libellés' },
       { key: 'form_message_placeholder', label: 'Message — texte indicatif', type: 'text', plain: true, group: 'Libellés' },
+      { key: 'form_optional', label: 'Mention des champs facultatifs', type: 'text', plain: true, group: 'Libellés', hint: 'Affichée après le libellé du téléphone et de la provenance.' },
       { key: 'form_submit', label: 'Bouton d’envoi', type: 'text', plain: true, group: 'Messages' },
       { key: 'form_sending', label: 'Envoi en cours', type: 'text', plain: true, group: 'Messages' },
       { key: 'form_success', label: 'Message de succès', type: 'textarea', plain: true, group: 'Messages' },
@@ -207,9 +210,14 @@ const SECTIONS = [
       { key: 'form_subject_limit', label: 'Limite de sujets', type: 'text', plain: true, group: 'Messages' },
       { key: 'form_required_error', label: 'Champ obligatoire vide', type: 'text', plain: true, group: 'Messages' },
       { key: 'form_email_error', label: 'Courriel invalide', type: 'text', plain: true, group: 'Messages' },
+      { key: 'form_captcha_error', label: 'Vérification anti-robot échouée', type: 'text', plain: true, group: 'Messages' },
       { key: 'form_close', label: 'Bouton de fermeture', type: 'text', plain: true, group: 'Messages' },
       { key: 'form_referral_label', label: 'Provenance — libellé', type: 'text', plain: true, group: 'Provenance' },
       { key: 'form_referral_placeholder', label: 'Provenance — texte indicatif', type: 'text', plain: true, group: 'Provenance' },
+      { key: 'form_subject_count_one', label: 'Un sujet choisi', type: 'text', plain: true, group: 'Choix des sujets', hint: 'Affiché dans la liste des sujets. {n} devient le nombre de sujets.' },
+      { key: 'form_subject_count_other', label: 'Plusieurs sujets choisis', type: 'text', plain: true, group: 'Choix des sujets', hint: '{n} devient le nombre de sujets.' },
+      { key: 'form_subject_none', label: 'Aucun sujet choisi', type: 'text', plain: true, group: 'Choix des sujets', hint: 'Texte lu par les lecteurs d’écran.' },
+      { key: 'form_subject_remove', label: 'Bouton pour retirer un sujet', type: 'text', plain: true, group: 'Choix des sujets', hint: 'Texte lu par les lecteurs d’écran. {sujet} devient le nom du sujet.' },
       anchorField('ecrivez-moi', ' Si vous la changez, mettez aussi à jour les liens « /#ecrivez-moi » des pages légales.'),
     ],
     lists: [
@@ -247,6 +255,7 @@ const SECTIONS = [
       { key: 'legal_label', label: 'Libellé des mentions légales', type: 'text', plain: true },
       { key: 'copyright', label: 'Mention du droit d’auteur', type: 'text', plain: true },
       { key: 'admin_link_label', label: 'Libellé du lien d’administration', type: 'text', plain: true },
+      { key: 'nav_label', label: 'Nom des liens du pied de page', type: 'text', plain: true, hint: 'Texte lu par les lecteurs d’écran.' },
     ],
   },
   { divider: true, label: 'Pages secondaires' },
@@ -274,6 +283,8 @@ const SECTIONS = [
       { key: 'logo_alt', label: 'Description du logo', type: 'text', plain: true, hint: ALT_HINT },
       { key: 'site_name', label: 'Nom du site', type: 'text', markdown: true },
       { key: 'cta_text', label: 'Texte du bouton', type: 'text', hint: 'Le bouton mène à la section Contact, où le visiteur choisit comment vous joindre. Si la section Contact est masquée, il mène au formulaire.' },
+      { key: 'menu_label', label: 'Bouton du menu (mobile)', type: 'text', plain: true, hint: 'Texte lu par les lecteurs d’écran.' },
+      { key: 'nav_label', label: 'Nom de la navigation', type: 'text', plain: true, hint: 'Texte lu par les lecteurs d’écran.' },
     ],
   },
   {
@@ -285,6 +296,7 @@ const SECTIONS = [
       { key: 'contact', label: 'Contact', type: 'text', plain: true },
       { key: 'form', label: 'Formulaire', type: 'text', plain: true },
       { key: 'resources', label: 'Ressources', type: 'text', plain: true },
+      { key: 'back_label', label: 'Retour au site', type: 'text', plain: true, hint: 'Lien en haut de la politique de confidentialité et des mentions légales.' },
     ],
   },
   {
@@ -295,6 +307,15 @@ const SECTIONS = [
       { key: 'image', label: 'Image', type: 'image' },
       { key: 'image_alt', label: 'Description de l’image', type: 'text', plain: true, hint: ALT_HINT },
       { key: 'dismiss_label', label: 'Texte du bouton de fermeture', type: 'text' },
+    ],
+  },
+  {
+    key: 'email', label: 'Courriel de notification',
+    fields: [
+      { key: 'from_name', label: 'Nom de l’expéditeur', type: 'text', plain: true, hint: 'Vous recevez un courriel à chaque message du formulaire. Les noms des champs viennent de la section Formulaire.' },
+      { key: 'subject', label: 'Objet', type: 'text', plain: true, hint: '{nom} devient le nom du visiteur. {sujets} devient la liste des sujets.' },
+      { key: 'heading', label: 'Première ligne', type: 'text', plain: true },
+      { key: 'received', label: 'Ligne de réception', type: 'text', plain: true, hint: '{date} devient la date et l’heure de réception.' },
     ],
   },
   {

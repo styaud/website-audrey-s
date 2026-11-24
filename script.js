@@ -78,16 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitBtn = contactForm.querySelector('button[type="submit"]');
     const submitLabel = submitBtn.querySelector('.btn-label');
     const submitBtnOriginalText = submitLabel.textContent;
-    const msgs = {
-      sending: contactForm.dataset.sending || 'Envoi en cours...',
-      success: contactForm.dataset.success || 'Message envoyé.',
-      error: contactForm.dataset.error || 'Une erreur est survenue.',
-      network: contactForm.dataset.networkError || 'Erreur de connexion.',
-      subjectRequired: contactForm.dataset.subjectRequired || 'Veuillez choisir au moins un sujet.',
-      subjectLimit: contactForm.dataset.subjectLimit || 'Veuillez choisir au plus 10 sujets.',
-      required: contactForm.dataset.required || 'Ce champ est requis.',
-      emailInvalid: contactForm.dataset.emailInvalid || 'Adresse courriel invalide.',
-    };
+    // Every message comes from the content (data-* attributes on the form).
+    // The server answers with a key of this object; other values show msgs.error.
+    const msgs = { ...contactForm.dataset };
+    const fill = (text, values) => text.replace(/\{(\w+)\}/g, (match, key) => values[key] ?? match);
 
     // Inline validation: French messages under each required field, shown after the first visit.
     const requiredFields = Array.from(contactForm.querySelectorAll('input[required], textarea[required]'));
@@ -147,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         remove.type = 'button';
         remove.className = 'subject-chip-remove';
         remove.textContent = '×';
-        remove.setAttribute('aria-label', `Retirer le sujet ${subject}`);
+        remove.setAttribute('aria-label', fill(msgs.subjectRemove, { sujet: subject }));
         remove.addEventListener('click', () => {
           selectedSubjects.splice(index, 1);
           renderSubjects();
@@ -165,10 +159,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       setSubjectError('');
       const count = selectedSubjects.length;
-      const countText = `${count} sujet${count > 1 ? 's' : ''} sélectionné${count > 1 ? 's' : ''}`;
+      const countText = fill(count === 1 ? msgs.subjectCountOne : msgs.subjectCountOther, { n: count });
       subjectPlaceholder.textContent = count === 0 ? subjectPlaceholderText : countText;
       subjectToggle.classList.toggle('has-value', count > 0);
-      subjectStatus.textContent = count === 0 ? 'Aucun sujet sélectionné.' : `${countText}.`;
+      subjectStatus.textContent = count === 0 ? msgs.subjectNone : countText;
     }
 
     function setActiveOption(index) {
@@ -342,10 +336,11 @@ document.addEventListener('DOMContentLoaded', () => {
           resetForm();
           showFormModal(msgs.success);
         } else {
-          showFormModal(typeof result?.error === 'string' && result.error ? result.error : msgs.error);
+          const code = typeof result?.error === 'string' ? result.error : '';
+          showFormModal(Object.hasOwn(msgs, code) && msgs[code] ? msgs[code] : msgs.error);
         }
       } catch {
-        showFormModal(msgs.network);
+        showFormModal(msgs.networkError);
       } finally {
         sending = false;
         submitBtn.disabled = false;
@@ -360,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!reducedMotion.matches && 'IntersectionObserver' in window && revealElements.length) {
     // Keep .reveal-pending until the fade ends: the end state needs its transition.
-    // Then remove it, so cards get their own hover transitions back.
+    // Then remove it, so the element gets its own transitions back (for example, button hover).
     const settle = (event) => {
       if (event.target !== event.currentTarget || event.propertyName !== 'opacity') return;
       event.currentTarget.classList.remove('reveal-pending');

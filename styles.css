@@ -337,11 +337,6 @@ main > .section:nth-child(even of .section) :is(.card, #subject-listbox) {
   border-radius: var(--rounded-xl);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  transition: box-shadow var(--transition-slow), translate var(--transition-slow);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-lg);
 }
 
 /* --- Rich text (prepared Markdown output) --- */
@@ -1187,9 +1182,9 @@ dialog:not([open]) {
   margin-top: var(--space-8);
 }
 
-/* Full-width buttons on phones, natural width from 640px */
+/* Phones: full-width buttons. From 640px: natural width, side by side. */
 .hero-actions .btn {
-  flex: 1 1 auto;
+  flex: 1 1 100%;
   gap: var(--space-2);
 }
 
@@ -1201,18 +1196,6 @@ dialog:not([open]) {
   .hero-actions .btn {
     flex: 0 0 auto;
   }
-}
-
-.hero-phone {
-  margin-top: var(--space-4);
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.hero-phone a {
-  color: var(--color-white);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .hero-badges {
@@ -1237,13 +1220,15 @@ dialog:not([open]) {
   color: var(--color-primary-light);
 }
 
-/* Arch portrait, like the house in the logo, with an offset outline behind it */
+/* Arch portrait, like the house in the logo, with an offset outline behind it.
+   The margin keeps room for the outline, so the outline ends at the edge of the column. */
 .hero-portrait {
   --arch: 50% 50% var(--rounded-xl) var(--rounded-xl) / 37.5% 37.5% var(--rounded-xl) var(--rounded-xl);
+  --outline-offset: 1.25rem;
   position: relative;
   justify-self: center;
   width: clamp(15rem, 70vw, 22rem);
-  margin: 0 0 var(--space-6);
+  margin: 0 var(--outline-offset) var(--outline-offset) 0;
 }
 
 .hero-portrait::before {
@@ -1251,7 +1236,7 @@ dialog:not([open]) {
   position: absolute;
   inset: 0;
   z-index: -1;
-  translate: 1.25rem 1.25rem;
+  translate: var(--outline-offset) var(--outline-offset);
   border: 2px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--arch);
 }
@@ -1298,14 +1283,62 @@ dialog:not([open]) {
     gap: var(--space-16);
   }
 
+  /* The text column sets the row height. The arch takes the same height
+     (contain: size stops the photo from making the row taller), less the
+     outline offset. So the top of the photo lines up with the label, and the
+     bottom of the outline lines up with the badges. */
   .hero-portrait {
     justify-self: end;
-    width: min(100%, 26rem);
-    margin: 0 var(--space-5) 0 0;
+    align-self: stretch;
+    contain: size;
+    width: auto;
+    max-width: calc(100% - var(--outline-offset));
+    aspect-ratio: 3 / 4;
+  }
+
+  .hero-portrait img {
+    height: 100%;
   }
 
   .hero-portrait-card {
     left: -2.5rem;
+  }
+
+  /* Room under the content for the scroll cue */
+  .hero {
+    padding-bottom: calc(var(--space-8) * 2 + 3rem);
+  }
+}
+
+/* Scroll cue at the bottom center of the hero. Desktop only: there the hero
+   fills the screen. On phones the hero is taller than the screen, so the cue
+   would not show without a scroll. */
+.hero-scroll {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .hero-scroll {
+    position: absolute;
+    left: 50%;
+    bottom: var(--space-8);
+    z-index: 2;
+    translate: -50% 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-radius: var(--rounded-full);
+    color: var(--color-white);
+    transition: background-color var(--transition), border-color var(--transition);
+  }
+
+  .hero-scroll:hover,
+  .hero-scroll:focus-visible {
+    border-color: var(--color-white);
+    background-color: rgba(255, 255, 255, 0.12);
   }
 }
 
@@ -1525,12 +1558,20 @@ dialog:not([open]) {
   gap: var(--space-6);
 }
 
+/* The whole card is clickable: the button link covers the card */
 .contact-option {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   padding: var(--space-8) var(--space-6);
+}
+
+.contact-option .btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 
 .contact-option-icon {
@@ -1759,13 +1800,15 @@ main > .section:nth-child(even of .section) .form-aside {
   gap: var(--space-6);
 }
 
+/* The whole card is clickable: the title link covers the card */
 .resource-card {
+  position: relative;
   display: flex;
   flex-direction: column;
 }
 
 .resource-card-media {
-  display: block;
+  overflow: hidden;
 }
 
 .resource-card-media img {
@@ -1786,7 +1829,13 @@ main > .section:nth-child(even of .section) .form-aside {
   line-height: 1.35;
 }
 
-.resource-card-title a:hover {
+.resource-card-title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.resource-card:hover .resource-card-title a {
   color: var(--color-primary);
   text-decoration: underline;
 }
@@ -1990,6 +2039,9 @@ main > .section:nth-child(even of .section) .form-aside {
 .reveal-stagger > .reveal-on-scroll:nth-child(6) { --reveal-delay: 320ms; }
 
 /* --- Motion: small hover, scroll, and load effects ---
+   Hover effects go only on elements that respond to a click (links, buttons,
+   FAQ questions, contact and resource cards). Static images and blocks never
+   react to the pointer. They can move with the scroll (timeline dots).
    Hover and current states work without motion. Movement runs only when
    the visitor did not ask for reduced motion. Hover movement uses the
    translate/scale properties, so it never conflicts with the reveal transform. */
@@ -2020,15 +2072,28 @@ main > .section:nth-child(even of .section) .form-aside {
   scale: 1 1;
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.contact-option:is(:hover, :focus-within) .btn-primary {
+  background-color: var(--color-accent-dark);
   box-shadow: 0 10px 20px -10px color-mix(in srgb, var(--color-accent) 80%, transparent);
+}
+
+/* Clickable cards: the card shows the hover state of its link */
+.contact-option,
+.resource-card {
+  transition: box-shadow var(--transition-slow), translate var(--transition-slow);
+}
+
+.contact-option:is(:hover, :focus-within),
+.resource-card:is(:hover, :focus-within) {
+  box-shadow: var(--shadow-lg);
 }
 
 .contact-option-icon {
   transition: background-color var(--transition-slow), color var(--transition-slow), scale var(--transition-slow), rotate var(--transition-slow);
 }
 
-.contact-option:hover .contact-option-icon {
+.contact-option:is(:hover, :focus-within) .contact-option-icon {
   background-color: var(--color-primary);
   color: var(--color-white);
 }
@@ -2048,35 +2113,34 @@ main > .section:nth-child(even of .section) .form-aside {
     scale: 0.98;
   }
 
-  .contact-option:hover,
-  .resource-card:hover {
+  /* The card lifts, not its button. A moved or scaled button would shrink
+     the link area that covers the card, and the click would not land. */
+  .contact-option .btn:is(:hover, :active) {
+    translate: none;
+    scale: none;
+  }
+
+  .contact-option:is(:hover, :focus-within),
+  .resource-card:is(:hover, :focus-within) {
     translate: 0 -4px;
   }
 
-  .contact-option:hover .contact-option-icon {
+  .contact-option:is(:hover, :focus-within) .contact-option-icon {
     scale: 1.1;
     rotate: -8deg;
   }
 
-  /* Timeline: the dot grows and the photo comes forward */
-  .timeline-item::before,
-  .timeline-media,
-  .about-photo,
-  .faq-question > span {
-    transition: scale var(--transition-slow), box-shadow var(--transition-slow), translate var(--transition-slow);
+  .resource-card-media img {
+    transition: scale var(--transition-slow);
   }
 
-  .timeline-item:hover::before {
-    scale: 1.4;
-  }
-
-  .timeline-item:hover .timeline-media {
+  .resource-card:hover .resource-card-media img {
     scale: 1.04;
-    box-shadow: var(--shadow-lg);
   }
 
-  .about-media:hover .about-photo {
-    scale: 1.02;
+  /* FAQ: the question text moves a little, because the whole row opens the answer */
+  .faq-question > span {
+    transition: translate var(--transition-slow);
   }
 
   .faq-question:hover > span {
@@ -2100,7 +2164,16 @@ main > .section:nth-child(even of .section) .form-aside {
     50% { translate: 0 -8px; }
   }
 
-  /* Scroll-driven effects where supported (no JS): hero photo drift and reading progress bar */
+  /* Scroll cue: the chevron moves down and back, slowly */
+  .hero-scroll svg {
+    animation: scroll-cue 2.4s ease-in-out infinite;
+  }
+
+  @keyframes scroll-cue {
+    50% { translate: 0 4px; }
+  }
+
+  /* Scroll-driven effects where supported (no JS): hero photo drift, reading progress bar, timeline dots */
   @supports (animation-timeline: scroll()) {
     .hero-bg {
       animation: hero-settle 1.8s ease-out both, hero-drift linear both;
@@ -2125,6 +2198,35 @@ main > .section:nth-child(even of .section) .form-aside {
 
     .site-nav.scrolled::after {
       opacity: 1;
+    }
+
+    /* Timeline: each dot lights up with a pulse as its row moves to the middle of the screen */
+    .timeline-item {
+      view-timeline: --timeline-row block;
+    }
+
+    .timeline-item::before {
+      animation: timeline-dot linear both;
+      animation-timeline: --timeline-row;
+      animation-range: contain 0% contain 50%;
+    }
+
+    @keyframes timeline-dot {
+      from {
+        background-color: var(--color-border);
+        scale: 0.7;
+      }
+
+      70% {
+        background-color: var(--color-accent);
+        scale: 1.5;
+        box-shadow: 0 0 0 4px var(--section-bg, var(--color-bg-light)), 0 0 0 8px color-mix(in srgb, var(--color-accent) 30%, transparent);
+      }
+
+      to {
+        background-color: var(--color-accent);
+        scale: 1;
+      }
     }
 
     @keyframes hero-drift {

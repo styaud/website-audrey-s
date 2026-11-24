@@ -54,14 +54,14 @@
       </a>
 
       <!-- Hamburger (mobile) -->
-      <button class="hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="primary-nav">
+      <button class="hamburger" type="button" aria-label="{{header.menu_label}}" aria-expanded="false" aria-controls="primary-nav">
         <span></span>
         <span></span>
         <span></span>
       </button>
 
       <!-- Navigation -->
-      <nav class="nav-menu" id="primary-nav" aria-label="Navigation principale">
+      <nav class="nav-menu" id="primary-nav" aria-label="{{header.nav_label}}">
         {{#each nav_items}}
         <a href="/{{href}}" class="nav-link">{{label}}</a>
         {{/each}}
@@ -74,7 +74,9 @@
 
   <main>
     <div class="legal-page">
-      <a href="/" class="legal-back">← Retour au site</a>
+      {{#if nav.back_label}}
+      <a href="/" class="legal-back"><span aria-hidden="true">←</span> {{nav.back_label}}</a>
+      {{/if}}
       <h1>{{page_title}}</h1>
       <p class="legal-updated">{{page_updated}}</p>
       <div class="legal-body prose">{{page_body}}</div>
@@ -91,7 +93,7 @@
           <p class="footer-name">{{footer.business_name}}</p>
           <p class="footer-credentials">{{footer.credentials}}</p>
         </div>
-        <nav class="footer-nav" aria-label="Navigation de pied de page">
+        <nav class="footer-nav" aria-label="{{footer.nav_label}}">
           {{#each nav_items}}
           <a href="/{{href}}" class="footer-link">{{label}}</a>
           {{/each}}

@@ -77,7 +77,9 @@ The Pages Function at `/api/contact` delegates email delivery to `workers/email-
 
 `POST /api/contact` accepts a JSON `subjects` array instead of the former `subject` field. It requires 1 to 10 nonempty strings, each at most 200 characters after sanitization. Both MIME parts list the selected subjects. The `message` field has a limit of 3000 characters after sanitization, the same as the textarea `maxlength`.
 
-The email subject uses `Nouveau message de <name> - <subjects>`, with subjects separated by commas. The function replaces carriage returns and line feeds with spaces and limits the subject to 200 Unicode code points.
+The email text comes from `content/settings.json`, which the function imports at build time: the `email` section (sender name, subject, first line, receipt line) and the `form` field labels. The subject template `email.subject` accepts `{nom}` and `{sujets}`, with subjects separated by commas. The function replaces carriage returns and line feeds with spaces and limits the subject to 200 Unicode code points. The receipt time uses the `America/Toronto` time zone.
+
+Error responses hold a message key (`error`, `emailInvalid`, `subjectRequired`, `captcha`). The browser shows the matching message from the `form` section of the content.
 
 The `Reply-To` header uses the validated visitor email address after carriage return and line feed removal. `CONTACT_EMAIL` remains the sender, and `CONTACT_DESTINATION` remains the recipient. The email Worker passes the raw MIME message unchanged to `EmailMessage`.
 

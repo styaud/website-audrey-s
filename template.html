@@ -90,14 +90,14 @@
       </a>
 
       <!-- Hamburger (mobile) -->
-      <button class="hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="primary-nav">
+      <button class="hamburger" type="button" aria-label="{{header.menu_label}}" aria-expanded="false" aria-controls="primary-nav">
         <span></span>
         <span></span>
         <span></span>
       </button>
 
       <!-- Navigation -->
-      <nav class="nav-menu" id="primary-nav" aria-label="Navigation principale">
+      <nav class="nav-menu" id="primary-nav" aria-label="{{header.nav_label}}">
         {{#each nav_items}}
         <a href="{{href}}" class="nav-link">{{label}}</a>
         {{/each}}
@@ -122,18 +122,19 @@
           {{/if}}
           <h1 class="hero-title">{{hero.title}}</h1>
           <p class="hero-subtitle">{{hero.subtitle}}</p>
+          <!-- The two buttons are the two ways to contact Audrey -->
           <div class="hero-actions">
             <a href="{{contact.booking_url}}" class="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
               {{hero.cta_text}}
             </a>
-            {{#if hero.cta2_text}}
-            <a href="{{hero.cta2_link}}" class="btn btn-light btn-lg"{{#if hero.cta2_external}} target="_blank" rel="noopener noreferrer"{{/if}}>{{hero.cta2_text}}</a>
+            {{#if contact.phone}}
+            <a href="{{contact.phone_href}}" class="btn btn-light btn-lg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              {{contact.phone}}
+            </a>
             {{/if}}
           </div>
-          {{#if hero.phone_label}}
-          <p class="hero-phone">{{hero.phone_label}} <a href="{{contact.phone_href}}">{{contact.phone}}</a></p>
-          {{/if}}
           {{#if hero.badges}}
           <ul class="hero-badges">
             {{#each hero.badges}}
@@ -151,13 +152,18 @@
           </figcaption>
         </figure>
       </div>
+      {{#if hero.next_anchor}}
+      <a href="#{{hero.next_anchor}}" class="hero-scroll" aria-label="{{hero.scroll_label}}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </a>
+      {{/if}}
     </section>
 
     <!-- ================================================================
          HIGHLIGHTS
          ================================================================ -->
     {{#if highlights.enabled}}
-    <section id="{{highlights.anchor}}" class="highlights-band" aria-label="Points forts">
+    <section id="{{highlights.anchor}}" class="highlights-band" aria-label="{{highlights.label}}">
       <div class="container highlights-grid reveal-stagger">
         {{#each highlights.items}}
         <div class="highlight-item reveal-on-scroll">
@@ -308,8 +314,13 @@
               data-success="{{form.form_success}}"
               data-error="{{form.form_error}}"
               data-network-error="{{form.form_network_error}}"
+              data-captcha="{{form.form_captcha_error}}"
               data-subject-required="{{form.form_subject_required}}"
               data-subject-limit="{{form.form_subject_limit}}"
+              data-subject-none="{{form.form_subject_none}}"
+              data-subject-count-one="{{form.form_subject_count_one}}"
+              data-subject-count-other="{{form.form_subject_count_other}}"
+              data-subject-remove="{{form.form_subject_remove}}"
               data-required="{{form.form_required_error}}"
               data-email-invalid="{{form.form_email_error}}"
         >
@@ -335,12 +346,12 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="contact-phone" class="form-label">{{form.form_phone_label}} <span class="form-optional">(facultatif)</span></label>
+              <label for="contact-phone" class="form-label">{{form.form_phone_label}} <span class="form-optional">{{form.form_optional}}</span></label>
               <input type="tel" id="contact-phone" name="phone" class="input" autocomplete="tel" placeholder="{{form.form_phone_placeholder}}">
             </div>
             {{#if form.referral_sources}}
             <div class="form-group">
-              <label for="contact-referral" class="form-label">{{form.form_referral_label}} <span class="form-optional">(facultatif)</span></label>
+              <label for="contact-referral" class="form-label">{{form.form_referral_label}} <span class="form-optional">{{form.form_optional}}</span></label>
               <select id="contact-referral" name="referral" class="select">
                 <option value="">{{form.form_referral_placeholder}}</option>
                 {{#each form.referral_sources}}
@@ -418,9 +429,9 @@
           {{#each resources.items}}
           <article class="resource-card card reveal-on-scroll">
             {{#if image}}
-            <a href="{{url}}" target="_blank" rel="noopener noreferrer" class="resource-card-media" tabindex="-1" aria-hidden="true">
+            <div class="resource-card-media">
               <img src="{{image}}" alt="{{image_alt}}" loading="lazy">
-            </a>
+            </div>
             {{/if}}
             <div class="resource-card-body">
               <h3 class="resource-card-title">
@@ -448,7 +459,7 @@
           <p class="footer-name">{{footer.business_name}}</p>
           <p class="footer-credentials">{{footer.credentials}}</p>
         </div>
-        <nav class="footer-nav" aria-label="Navigation de pied de page">
+        <nav class="footer-nav" aria-label="{{footer.nav_label}}">
           {{#each nav_items}}
           <a href="{{href}}" class="footer-link">{{label}}</a>
           {{/each}}

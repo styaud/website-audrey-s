@@ -8,7 +8,16 @@
  *   CONTACT_EMAIL     – Verified sender email address
  *   CONTACT_DESTINATION – Recipient email address
  *   EMAIL_WORKER      – Service binding to workers/email-sender in production
+ *
+ * Error responses carry a message key (`error`, `emailInvalid`, `subjectRequired`,
+ * `captcha`). The browser shows the matching form message from the content.
+ * The notification email takes its text from the same content file.
  */
+
+import settings from "../../content/settings.json";
+
+const mail = settings.email || {};
+const form = settings.form || {};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -20,6 +29,18 @@ function sanitize(str) {
   return str.replace(/<[^>]*>/g, "").trim();
 }
 
+/** Replace {key} placeholders with values. Unknown keys stay as they are. */
+function fill(text, values) {
+  return String(text || "").replace(/\{(\w+)\}/g, (match, key) => values[key] ?? match);
+}
+
+/** RFC 2047 encoded words, each below 75 characters, including four-byte UTF-8. */
+function encodeHeaderText(text) {
+  return (text.match(/[\s\S]{1,10}/gu) || [])
+    .map((part) => `=?UTF-8?B?${btoa(String.fromCharCode(...new TextEncoder().encode(part)))}?=`)
+    .join("\r\n ");
+}
+
 /** Very basic email-format check. */
 function isValidEmail(email) {
   return /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email);
@@ -28,10 +49,7 @@ function isValidEmail(email) {
 /** Build a raw MIME message string (no external libraries needed). */
 function createMimeMessage({ from, to, replyTo, subject, body }) {
   const boundary = "----=_Part_" + Date.now().toString(36);
-  // Keep each RFC 2047 word below 75 characters, including four-byte UTF-8.
-  const encodedSubject = subject.match(/[\s\S]{1,10}/gu)
-    .map((part) => `=?UTF-8?B?${btoa(String.fromCharCode(...new TextEncoder().encode(part)))}?=`)
-    .join("\r\n ");
+  const encodedSubject = encodeHeaderText(subject);
 
   const headers = [
     `From: ${from}`,
@@ -83,8 +101,8 @@ function corsHeaders() {
 }
 
 /** Convenience: JSON error response. */
-function errorResponse(message, status = 400) {
-  return new Response(JSON.stringify({ success: false, error: message }), {
+function errorResponse(code, status = 400) {
+  return new Response(JSON.stringify({ success: false, error: code }), {
     status,
     headers: { "Content-Type": "application/json", ...corsHeaders() },
   });
@@ -112,14 +130,14 @@ export async function onRequestPost(context) {
     try {
       data = await context.request.json();
     } catch {
-      return errorResponse("Le corps de la requete est invalide.");
+      return errorResponse("error");
     }
 
     // 2. Honeypot check -----------------------------------------------------
     if (data.bot_field) {
       // Silently accept to avoid tipping off bots, but do nothing.
       return new Response(
-        JSON.stringify({ success: true, message: "Message envoye avec succes." }),
+        JSON.stringify({ success: true }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders() } }
       );
     }
@@ -134,19 +152,15 @@ export async function onRequestPost(context) {
     const turnstileToken = sanitize(data["cf-turnstile-response"] || data.turnstileToken || "");
 
     // 4. Validate required fields -------------------------------------------
-    if (!name) return errorResponse("Le champ nom est requis.");
-    if (!email) return errorResponse("Le champ email est requis.");
-    if (!isValidEmail(email)) return errorResponse("L'adresse email est invalide.");
+    if (!name || !email || !message || message.length > 3000) return errorResponse("error");
+    if (!isValidEmail(email)) return errorResponse("emailInvalid");
     if (subjects.length < 1 || subjects.length > 10 || subjects.some((subject) => !subject || subject.length > 200)) {
-      return errorResponse("Veuillez choisir au moins un sujet.");
+      return errorResponse("subjectRequired");
     }
-    if (!message) return errorResponse("Le champ message est requis.");
-    // Same limit as the textarea maxlength in template.html.
-    if (message.length > 3000) return errorResponse("Le message ne doit pas dépasser 3000 caractères.");
 
     // 5. Verify Turnstile token ---------------------------------------------
     if (!turnstileToken) {
-      return errorResponse("La verification Turnstile est requise.", 403);
+      return errorResponse("captcha", 403);
     }
 
     const turnstileRes = await fetch(
@@ -165,34 +179,36 @@ export async function onRequestPost(context) {
     const turnstileData = await turnstileRes.json();
 
     if (!turnstileData.success) {
-      return errorResponse("La verification Turnstile a echoue. Veuillez reessayer.", 403);
+      return errorResponse("captcha", 403);
     }
 
     // 6. Build email body ---------------------------------------------------
-    const timestamp = new Date().toLocaleString("fr-FR", {
-      timeZone: "Europe/Paris",
+    // Audrey works in Québec: the receipt time uses that time zone.
+    const timestamp = new Date().toLocaleString("fr-CA", {
+      timeZone: "America/Toronto",
       dateStyle: "full",
       timeStyle: "short",
     });
 
     const formattedBody = [
-      `Nouveau message via le formulaire de contact`,
+      mail.heading,
       `----------------------------------------------`,
       ``,
-      `  Nom : ${name}`,
-      `  Email : ${email}`,
-      phone ? `  Telephone : ${phone}` : null,
-      `  Sujets :`,
+      `  ${form.form_name_label} : ${name}`,
+      `  ${form.form_email_label} : ${email}`,
+      phone ? `  ${form.form_phone_label} : ${phone}` : null,
+      `  ${form.form_subject_label} :`,
       ...subjects.map((subject) => `  - ${subject}`),
-      referral ? `  Source : ${referral}` : null,
+      referral ? `  ${form.form_referral_label}` : null,
+      referral ? `  - ${referral}` : null,
       ``,
       `----------------------------------------------`,
-      `Message :`,
+      `${form.form_message_label} :`,
       ``,
       `  ${message}`,
       ``,
       `----------------------------------------------`,
-      `Recu le ${timestamp}`,
+      fill(mail.received, { date: timestamp }),
     ]
       .filter(Boolean)
       .join("\n");
@@ -201,15 +217,16 @@ export async function onRequestPost(context) {
     const fromEmail = context.env.CONTACT_EMAIL;
     const toEmail = context.env.CONTACT_DESTINATION;
     if (!fromEmail || !toEmail) {
-      return errorResponse("La configuration email du serveur est manquante.", 500);
+      return errorResponse("error", 500);
     }
 
-    const subjectCharacters = Array.from(`Nouveau message de ${name} - ${subjects.join(", ")}`.replace(/[\r\n]/g, " "));
+    const subjectCharacters = Array.from(fill(mail.subject, { nom: name, sujets: subjects.join(", ") }).replace(/[\r\n]/g, " "));
     const subject = subjectCharacters.length > 200
       ? subjectCharacters.slice(0, 199).join("") + "…"
       : subjectCharacters.join("");
+    const fromName = String(mail.from_name || "").replace(/[\r\n]/g, " ").trim();
     const mimeMessage = createMimeMessage({
-      from: `Formulaire de contact <${fromEmail}>`,
+      from: fromName ? `${encodeHeaderText(fromName)} <${fromEmail}>` : fromEmail,
       to: toEmail,
       replyTo: email,
       subject,
@@ -241,6 +258,6 @@ export async function onRequestPost(context) {
     );
   } catch (err) {
     console.error("Contact form error:", err);
-    return errorResponse("Une erreur interne est survenue. Veuillez reessayer plus tard.", 500);
+    return errorResponse("error", 500);
   }
 }
