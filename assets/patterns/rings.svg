@@ -1,12 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
-  <!-- Rings like a tree trunk or a ripple, used as a CSS mask: only the strokes matter -->
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640">
+  <!-- Small groups of rings like a tree trunk or a ripple, used as a repeated CSS mask:
+       only the strokes matter. Each group stays inside the tile, so the tile repeats without a seam. -->
   <g fill="none" stroke="#000" stroke-width="1.5">
-    <ellipse cx="400" cy="400" rx="44" ry="38" transform="rotate(-12 400 400)"/>
-    <ellipse cx="402" cy="398" rx="92" ry="82" transform="rotate(-8 400 400)"/>
-    <ellipse cx="404" cy="402" rx="142" ry="128" transform="rotate(-14 400 400)"/>
-    <ellipse cx="398" cy="404" rx="194" ry="178" transform="rotate(-6 400 400)"/>
-    <ellipse cx="402" cy="400" rx="248" ry="230" transform="rotate(-11 400 400)"/>
-    <ellipse cx="406" cy="396" rx="302" ry="284" transform="rotate(-4 400 400)"/>
-    <ellipse cx="400" cy="402" rx="356" ry="338" transform="rotate(-9 400 400)"/>
+    <g transform="rotate(-10 170 180)">
+      <ellipse cx="170" cy="180" rx="18" ry="15"/>
+      <ellipse cx="171" cy="179" rx="42" ry="37"/>
+      <ellipse cx="169" cy="181" rx="70" ry="62"/>
+      <ellipse cx="172" cy="180" rx="102" ry="92"/>
+    </g>
+    <g transform="rotate(8 465 455)">
+      <ellipse cx="465" cy="455" rx="14" ry="12"/>
+      <ellipse cx="466" cy="454" rx="36" ry="32"/>
+      <ellipse cx="464" cy="456" rx="62" ry="56"/>
+      <ellipse cx="467" cy="455" rx="92" ry="84"/>
+      <ellipse cx="465" cy="453" rx="124" ry="114"/>
+    </g>
+    <g transform="rotate(-4 520 115)">
+      <ellipse cx="520" cy="115" rx="12" ry="10"/>
+      <ellipse cx="521" cy="114" rx="30" ry="26"/>
+      <ellipse cx="519" cy="116" rx="50" ry="45"/>
+    </g>
+    <g transform="rotate(14 125 510)">
+      <ellipse cx="125" cy="510" rx="10" ry="9"/>
+      <ellipse cx="126" cy="509" rx="26" ry="23"/>
+      <ellipse cx="124" cy="511" rx="44" ry="40"/>
+    </g>
   </g>
 </svg>

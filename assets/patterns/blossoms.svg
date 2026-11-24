@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="440" viewBox="0 0 440 440">
+  <!-- Small blossoms and loose petals, like the flowers of the logo tree, used as a repeated CSS mask:
+       only the shape matters. Each shape stays inside the tile, so the tile repeats without a seam. -->
+  <defs>
+    <g id="b" fill="none" stroke="#000" stroke-width="1.8">
+      <ellipse cy="-8" rx="5" ry="7.5"/>
+      <ellipse cy="-8" rx="5" ry="7.5" transform="rotate(72)"/>
+      <ellipse cy="-8" rx="5" ry="7.5" transform="rotate(144)"/>
+      <ellipse cy="-8" rx="5" ry="7.5" transform="rotate(216)"/>
+      <ellipse cy="-8" rx="5" ry="7.5" transform="rotate(288)"/>
+      <circle r="2.5" fill="#000" stroke="none"/>
+    </g>
+    <ellipse id="p" rx="3.5" ry="6"/>
+  </defs>
+  <use href="#b" transform="translate(70 80) rotate(10)"/>
+  <use href="#b" transform="translate(300 60) rotate(-20) scale(.75)"/>
+  <use href="#b" transform="translate(190 210) rotate(30) scale(1.15)"/>
+  <use href="#b" transform="translate(380 260) rotate(-8) scale(.85)"/>
+  <use href="#b" transform="translate(80 340) rotate(22) scale(.9)"/>
+  <use href="#b" transform="translate(280 390) rotate(-30) scale(.7)"/>
+  <use href="#p" transform="translate(180 60) rotate(40)"/>
+  <use href="#p" transform="translate(400 150) rotate(-25) scale(.8)"/>
+  <use href="#p" transform="translate(60 210) rotate(70) scale(.9)"/>
+  <use href="#p" transform="translate(300 300) rotate(15) scale(.75)"/>
+  <use href="#p" transform="translate(170 400) rotate(-50)"/>
+  <circle cx="240" cy="130" r="2.5"/>
+  <circle cx="120" cy="150" r="2"/>
+  <circle cx="350" cy="350" r="2"/>
+  <circle cx="30" cy="420" r="2.5"/>
+</svg>

@@ -257,9 +257,18 @@ main > .section:nth-child(even of .section) :is(.card, #subject-listbox) {
 
 /* --- Section textures ---
    Three quiet layers under the content, never over it:
-   - Light sections: leaves like the logo tree, only near the edges.
-   - Teal sections: rings like a tree trunk or a ripple, from one corner.
+   - A shape pattern that repeats over the full band. Three patterns turn
+     in order: leaves like the logo tree (the highlights band, then every
+     third section), groups of rings like a tree trunk or a ripple, and
+     small blossoms with loose petals. The highlights band comes first in the order, so two
+     touching bands never show the same pattern.
+   - A tone color: light sections use the primary color, teal sections white.
+     The patterns turn by three and the tones by two, so the six sections
+     get six different pairs.
    - All bands: a fine paper grain.
+   No pattern uses straight lines, so no shape looks like a line of text.
+   A radial fade keeps the patterns at 35% in the middle of the band, where
+   the text is, and at full strength near the edges.
    The shapes are masks, so they take the palette colors from the admin.
    Each band sets --texture-* variables, and one ::before rule reads them.
    (Chromium does not style ::before after :nth-child(… of …), but the
@@ -278,8 +287,8 @@ main > .section:nth-child(even of .section) :is(.card, #subject-listbox) {
   overflow: clip;
   --texture-color: var(--color-primary);
   --texture-opacity: 0.09;
-  /* The leaf tile, cut by a radial fade so the middle of the band stays clean */
-  --texture-image: url("/assets/patterns/leaves.svg"), radial-gradient(ellipse at center, transparent 40%, #000 95%);
+  --texture-fade: radial-gradient(ellipse at center, rgb(0 0 0 / 0.35) 30%, #000 85%);
+  --texture-image: url("/assets/patterns/leaves.svg"), var(--texture-fade);
   --texture-size: 480px, 100% 100%;
   --texture-repeat: repeat, no-repeat;
   --texture-position: 0 0, center;
@@ -302,17 +311,28 @@ main > .section:nth-child(even of .section) :is(.card, #subject-listbox) {
 main > .section:nth-child(even of .section) {
   --texture-color: var(--color-white);
   --texture-opacity: 0.1;
-  --texture-image: url("/assets/patterns/rings.svg");
-  /* Drawn at the largest size and scaled down, so the rings stay sharp.
-     The ring center is on the top right corner, which is the scale origin. */
-  --texture-size: 1160px;
-  --texture-repeat: no-repeat;
-  --texture-position: right -580px top -580px;
-  --texture-inset: 0;
-  --texture-translate: 0;
-  --texture-scale: 0.776;
-  --texture-animation: rings-grow;
   --grain-opacity: 0.3;
+}
+
+main > .section:nth-child(3n + 1 of .section) {
+  --texture-image: url("/assets/patterns/rings.svg"), var(--texture-fade);
+  --texture-size: 640px, 100% 100%;
+  /* The layer is 116% of the band and grows from 87% to 100% of that size,
+     so it covers the band at each step. Drawn at full size, so it stays sharp. */
+  --texture-inset: -8%;
+  --texture-translate: 0;
+  --texture-scale: 0.935;
+  --texture-animation: rings-grow;
+}
+
+main > .section:nth-child(3n + 2 of .section) {
+  --texture-image: url("/assets/patterns/blossoms.svg"), var(--texture-fade);
+  --texture-size: 440px, 100% 100%;
+  /* The petals fall slowly to the left: the layer extends up and right by the
+     fall distance (60px, 120px), and at rest it sits at the middle of the fall */
+  --texture-inset: -120px -60px 0 0;
+  --texture-translate: -30px 60px;
+  --texture-animation: petals-fall;
 }
 
 .section::before,
@@ -322,7 +342,6 @@ main > .section:nth-child(even of .section) {
   inset: var(--texture-inset);
   translate: var(--texture-translate);
   scale: var(--texture-scale);
-  transform-origin: top right;
   z-index: -1;
   pointer-events: none;
   background-color: var(--texture-color);
@@ -2508,7 +2527,7 @@ main > .section:nth-child(even of .section) .form-aside {
     }
 
     /* Section textures move while the band crosses the screen:
-       the leaves drift up slowly, the rings grow like a ripple. */
+       the leaves drift up, the petals fall, and the rings grow like a ripple. */
     .section::before,
     .highlights-band::before {
       animation: var(--texture-animation) linear both;
@@ -2520,10 +2539,14 @@ main > .section:nth-child(even of .section) .form-aside {
       to { translate: 60px -180px; }
     }
 
-    /* 760px to 1160px, as a scale of the 1160px drawing */
     @keyframes rings-grow {
-      from { scale: 0.655; }
+      from { scale: 0.87; }
       to { scale: 1; }
+    }
+
+    @keyframes petals-fall {
+      from { translate: 0 0; }
+      to { translate: -60px 120px; }
     }
 
     @keyframes hero-drift {

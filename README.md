@@ -71,7 +71,7 @@ Each toggleable section uses `enabled`. The header, hero, and footer always appe
 The main sections follow the table order from `hero` through `footer`.
 The enabled sections alternate between a light tone (cream) and a teal tone, so two light sections never touch.
 `styles.css` sets the tones by position with `:nth-child(… of .section)`, so hiding a section in the admin moves the tones automatically.
-Each tone also has a quiet texture under the content: leaves from the logo tree near the edges of light sections, rings from one corner of teal sections, and a fine paper grain on every band. The shapes are CSS masks in `assets/patterns/`, so they take the palette colors. When the visitor did not ask for reduced motion and the browser supports scroll-driven animations, the leaves drift and the rings grow while the section crosses the screen. These animations change only `translate` and `scale`, so the compositor runs them without a repaint. Each band uses `overflow: clip` to cut the texture layer at its edges.
+Each band also has a quiet texture over its full area. Three patterns turn in order: leaves from the logo tree, groups of rings like a tree trunk or a ripple, and small blossoms with loose petals. The highlights band starts the order with the leaves, so two touching bands never show the same pattern. The patterns turn by three and the tones by two, so the six sections get six different pattern and tone pairs. A radial fade keeps each pattern at 35% in the middle of the band, where the text is. No pattern uses straight lines that look like lines of text. A fine paper grain covers every band. The shapes are CSS masks in `assets/patterns/`, so they take the palette colors. When the visitor did not ask for reduced motion and the browser supports scroll-driven animations, the leaves drift up, the petals fall, and the rings grow while the section crosses the screen. These animations change only `translate` and `scale`, so the compositor runs them without a repaint. Each band uses `overflow: clip` to cut the texture layer at its edges.
 Header and footer navigation includes only enabled sections with a non-empty `nav_label`.
 Each section from `highlights` through `resources` stores this label beside its `anchor` under "Adresse de la section".
 An empty or missing label hides the link. The hero has no menu label.
@@ -251,7 +251,7 @@ The contact form has three layers:
 │   ├── index.html          # Admin panel (login + editor UI)
 │   └── admin.js            # Admin UI logic (same-origin admin API calls)
 ├── assets/
-│   ├── patterns/           # Section texture masks (leaves, rings, grain); not in the image library
+│   ├── patterns/           # Section texture masks (leaves, rings, blossoms, grain); not in the image library
 │   └── images/             # Site images and icons
 │       ├── favicon.ico
 │       ├── favicon-192.png
