@@ -20,6 +20,14 @@ The `/admin/` editor is protected by GitHub OAuth and Cloudflare Pages Functions
 
 Admin session cookies are AES-GCM encrypted with a key derived from `ADMIN_SESSION_SECRET` using HKDF-SHA256. Sessions contain the GitHub login, GitHub token, CSRF token, permission check timestamp, issue time, and expiry.
 
+### Temporary Local Login
+
+This section and the code it describes are temporary. Revert the commit "TEMP: local admin login" to remove them.
+
+The production OAuth app returns only to the production domain, so GitHub OAuth does not work on `localhost`. On `localhost` and `127.0.0.1`, when `.dev.vars` sets `ADMIN_DEV_GITHUB_TOKEN`, `/api/auth/github` skips the OAuth redirect. It reads the GitHub user and checks repository write permission with that token, then creates the normal sealed session. Other hosts ignore the variable. Do not set it in Cloudflare.
+
+Publication from the local admin writes to `main` on GitHub, the same as the production admin.
+
 ## Admin APIs
 
 The browser talks only to same-origin admin APIs:
