@@ -99,16 +99,21 @@ const SECTIONS = [
   {
     key: 'hero', label: 'Bannière principale',
     fields: [
+      { key: 'eyebrow', label: 'Étiquette au-dessus du titre', type: 'text', plain: true, group: 'Contenu', hint: 'Courte phrase qui dit à qui s’adresse le site. Laissez vide pour la masquer.' },
       { key: 'title', label: 'Titre', type: 'text', markdown: true, group: 'Contenu' },
       { key: 'subtitle', label: 'Sous-titre', type: 'text', markdown: true, group: 'Contenu' },
       { key: 'image', label: 'Image de fond', type: 'image', group: 'Images', hint: 'Image large en arrière-plan de la bannière.' },
       { key: 'image_alt', label: 'Description de l’image de fond', type: 'text', plain: true, group: 'Images', hint: ALT_HINT },
-      { key: 'portrait', label: 'Portrait', type: 'image', group: 'Images', hint: 'Portrait rond affiché dans la bannière. Choisissez une image carrée.' },
+      { key: 'portrait', label: 'Portrait', type: 'image', group: 'Images', hint: 'Portrait en arche (format vertical 3:4). Le nom et les titres du pied de page s’affichent sur le portrait.' },
       { key: 'portrait_alt', label: 'Description du portrait', type: 'text', plain: true, group: 'Images', hint: ALT_HINT },
       { key: 'cta_text', label: 'Bouton principal — texte', type: 'text', group: 'Boutons', hint: 'Le bouton ouvre le lien de réservation défini dans Contact.' },
       { key: 'cta2_text', label: 'Bouton secondaire — texte', type: 'text', group: 'Boutons', hint: 'Laissez vide pour masquer le bouton.' },
       { key: 'cta2_link', label: 'Bouton secondaire — lien', type: 'text', plain: true, group: 'Boutons', hint: 'Adresse web ou ancre, par exemple #services.' },
+      { key: 'phone_label', label: 'Texte avant le téléphone', type: 'text', plain: true, group: 'Boutons', hint: 'Affiché sous les boutons avec le numéro défini dans Contact. Laissez vide pour masquer la ligne.' },
       anchorField('accueil'),
+    ],
+    lists: [
+      { key: 'badges', label: 'Repères sous les boutons', fields: [{ key: 'title', label: 'Texte', type: 'text', plain: true }] },
     ],
   },
   {
@@ -268,7 +273,7 @@ const SECTIONS = [
       { key: 'logo', label: 'Logo', type: 'image' },
       { key: 'logo_alt', label: 'Description du logo', type: 'text', plain: true, hint: ALT_HINT },
       { key: 'site_name', label: 'Nom du site', type: 'text', markdown: true },
-      { key: 'cta_text', label: 'Texte du bouton', type: 'text', hint: 'Le bouton ouvre le lien de réservation défini dans Contact.' },
+      { key: 'cta_text', label: 'Texte du bouton', type: 'text', hint: 'Le bouton mène à la section Contact, où le visiteur choisit comment vous joindre. Si la section Contact est masquée, il mène au formulaire.' },
     ],
   },
   {

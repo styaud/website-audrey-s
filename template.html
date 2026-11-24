@@ -101,7 +101,9 @@
         {{#each nav_items}}
         <a href="{{href}}" class="nav-link">{{label}}</a>
         {{/each}}
-        <a href="{{contact.booking_url}}" class="btn btn-primary nav-cta" target="_blank" rel="noopener noreferrer">{{header.cta_text}}</a>
+        {{#if header.cta_anchor}}
+        <a href="#{{header.cta_anchor}}" class="btn btn-primary nav-cta">{{header.cta_text}}</a>
+        {{/if}}
       </nav>
     </div>
   </header>
@@ -115,19 +117,39 @@
 
       <div class="container hero-grid">
         <div class="hero-copy reveal-on-scroll reveal-from-left">
+          {{#if hero.eyebrow}}
+          <p class="hero-eyebrow">{{hero.eyebrow}}</p>
+          {{/if}}
           <h1 class="hero-title">{{hero.title}}</h1>
           <p class="hero-subtitle">{{hero.subtitle}}</p>
           <div class="hero-actions">
-            <a href="{{contact.booking_url}}" class="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">{{hero.cta_text}}</a>
+            <a href="{{contact.booking_url}}" class="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              {{hero.cta_text}}
+            </a>
             {{#if hero.cta2_text}}
-            <a href="{{hero.cta2_link}}" class="btn btn-outline-light btn-lg"{{#if hero.cta2_external}} target="_blank" rel="noopener noreferrer"{{/if}}>{{hero.cta2_text}}</a>
+            <a href="{{hero.cta2_link}}" class="btn btn-light btn-lg"{{#if hero.cta2_external}} target="_blank" rel="noopener noreferrer"{{/if}}>{{hero.cta2_text}}</a>
             {{/if}}
           </div>
+          {{#if hero.phone_label}}
+          <p class="hero-phone">{{hero.phone_label}} <a href="{{contact.phone_href}}">{{contact.phone}}</a></p>
+          {{/if}}
+          {{#if hero.badges}}
+          <ul class="hero-badges">
+            {{#each hero.badges}}
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>{{title}}</li>
+            {{/each}}
+          </ul>
+          {{/if}}
         </div>
 
-        <div class="hero-portrait reveal-on-scroll reveal-from-right">
+        <figure class="hero-portrait reveal-on-scroll reveal-from-right">
           <img src="{{hero.portrait}}" alt="{{hero.portrait_alt}}" width="410" height="547">
-        </div>
+          <figcaption class="hero-portrait-card">
+            <span class="hero-portrait-name">{{footer.business_name}}</span>
+            <span class="hero-portrait-role">{{footer.credentials}}</span>
+          </figcaption>
+        </figure>
       </div>
     </section>
 

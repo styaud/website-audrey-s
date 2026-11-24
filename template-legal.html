@@ -65,7 +65,9 @@
         {{#each nav_items}}
         <a href="/{{href}}" class="nav-link">{{label}}</a>
         {{/each}}
-        <a href="{{contact.booking_url}}" class="btn btn-primary nav-cta" target="_blank" rel="noopener noreferrer">{{header.cta_text}}</a>
+        {{#if header.cta_anchor}}
+        <a href="/#{{header.cta_anchor}}" class="btn btn-primary nav-cta">{{header.cta_text}}</a>
+        {{/if}}
       </nav>
     </div>
   </header>

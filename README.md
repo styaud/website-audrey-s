@@ -51,9 +51,9 @@ All content lives in `content/settings.json` with these sections:
 |---------|----------------|
 | `seo` | Page title, meta description, OG image and alt text, favicon, Apple touch icon |
 | `popup` | Visibility, title, message, image, alt text, dismiss label |
-| `header` | Logo, alt text, site name, primary button text |
+| `header` | Logo, alt text, site name, nav button text. The nav button links to the contact section, or to the form when contact is hidden. It does not show when both are hidden |
 | `nav` | Navigation labels for services, about, FAQ, contact, form, and resources |
-| `hero` | Headline, subtitle, background image, portrait, alt text, button text, secondary link |
+| `hero` | Label above the title, headline, subtitle, background image, arch portrait, alt text, button text, secondary link, phone line label, badges under the buttons. The portrait card shows `footer.business_name` and `footer.credentials` |
 | `highlights` | Visibility, item titles and descriptions |
 | `services` | Visibility, heading, service titles, short descriptions, images, alt text |
 | `about` | Visibility, title, biography, photo, alt text |

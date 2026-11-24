@@ -22,7 +22,7 @@
     "logo": "/assets/images/logo-audrey-arri-re-plan-transparent.webp",
     "logo_alt": "Un adulte à hauteur d’un enfant devant un arbre multicolore, dans le contour d’une maison avec un soleil.",
     "site_name": "Audrey Stypulkowski *Infirmière clinicienne membre de l'OIIQ*",
-    "cta_text": "Prendre rendez-vous"
+    "cta_text": "Me contacter"
   },
   "nav": {
     "admin_label": "Navigation",
@@ -36,15 +36,28 @@
   "hero": {
     "admin_label": "Bannière",
     "anchor": "accueil",
-    "title": "Observer, soutenir, guider \n*Plus de 20 ans d'expérience au service des familles*",
-    "subtitle": "*Je vous accompagne dans votre parentalité*",
+    "eyebrow": "Infirmière clinicienne en parentalité et en adoption",
+    "title": "Observer, soutenir, guider",
+    "subtitle": "J'accompagne votre famille avant, pendant et après l'adoption, pour favoriser l'attachement et l'adaptation de chacun.",
     "image": "/assets/images/relation-parent-enfant.webp",
     "image_alt": "Quatre personnes de dos, les bras autour des épaules, dans un champ doré sous un ciel bleu.",
     "portrait": "/assets/images/photo-profil-fam-i.webp",
     "portrait_alt": "Audrey Stypulkowski, les cheveux courts et bouclés, avec des lunettes bordeaux et un pull rose.",
-    "cta_text": "Prendre rendez-vous",
-    "cta2_text": "Mes services",
-    "cta2_link": "#services"
+    "cta_text": "Prendre rendez-vous en ligne",
+    "cta2_text": "Découvrir mes services",
+    "cta2_link": "#services",
+    "phone_label": "Ou par téléphone :",
+    "badges": [
+      {
+        "title": "Plus de 20 ans d'expérience"
+      },
+      {
+        "title": "Membre de l'OIIQ"
+      },
+      {
+        "title": "Bureau à Rosemère"
+      }
+    ]
   },
   "highlights": {
     "admin_label": "Points forts",
