@@ -78,7 +78,8 @@
       flex-shrink: 0;
       position: sticky;
       top: 56px;
-      height: calc(100vh - 56px);
+      /* End above the fixed status bar (48px), so the last items stay visible and the sidebar scrolls. */
+      height: calc(100vh - 56px - 48px);
       background: var(--color-white);
       border-right: 1px solid var(--color-border);
       overflow-y: auto;
