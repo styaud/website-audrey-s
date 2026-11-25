@@ -353,10 +353,10 @@
         "image_alt": ""
       },
       {
-        "title": "Ressources en deuil — Fondation Monbourquette",
+        "title": "Ressources en deuil — Deuil jeunesse",
         "category": "Deuil",
-        "description": "Un répertoire gratuit pour trouver des organismes et des ressources de soutien au deuil dans votre région du Québec.",
-        "url": "https://www.fondationmonbourquette.com/repertoire-provincial",
+        "description": "Des organismes et des ressources de soutien au deuil dans votre région au Québec.",
+        "url": "https://deuil-jeunesse.com/",
         "image": "",
         "image_alt": ""
       },
@@ -365,6 +365,30 @@
         "category": "Écoute",
         "description": "Un service téléphonique gratuit et confidentiel pour obtenir du soutien psychosocial lors de difficultés familiales, d’inquiétudes ou d’un deuil.",
         "url": "https://www.quebec.ca/sante/trouver-une-ressource/info-social-811",
+        "image": "",
+        "image_alt": ""
+      },
+      {
+        "title": "Ressources en deuil — Le phare enfants et famille",
+        "category": "",
+        "description": "",
+        "url": "https://phare-lighthouse.com/",
+        "image": "",
+        "image_alt": ""
+      },
+      {
+        "title": "Ressources en deuil - Mon deuil.ca",
+        "category": "",
+        "description": "",
+        "url": "https://mondeuil.ca/",
+        "image": "",
+        "image_alt": ""
+      },
+      {
+        "title": "Adoption et attachement — Pétales Québec",
+        "category": "",
+        "description": "",
+        "url": "https://www.petalesquebec.org/fr/petales-qu-bec",
         "image": "",
         "image_alt": ""
       }
