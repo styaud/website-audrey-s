@@ -5,7 +5,7 @@
     "description": "Audrey Stypulkowski, Infirmière clinicienne en parentalité. \nObserver, soutenir, guider \nPlus de 20 ans d'expérience au service des familles",
     "og_image": "/assets/images/logo-audrey-arri-re-plan-transparent.webp",
     "og_image_alt": "Logo : un adulte à hauteur d’un enfant devant un arbre multicolore, dans le contour d’une maison avec un soleil.",
-    "favicon": "/assets/images/favicon.ico",
+    "favicon": "/assets/images/logo-audrey-7cde9251.png",
     "apple_touch_icon": "/assets/images/apple-touch-icon.png"
   },
   "popup": {
@@ -137,7 +137,7 @@
     "title": "À propos de moi",
     "body": "Je suis infirmière clinicienne, formée et diplômée des hôpitaux de Paris depuis 2005. Je débute ma carrière à l’hôpital Necker–Enfants malades, puis poursuis mon parcours à l’hôpital Sainte-Justine à Montréal en soins palliatifs pédiatriques.\nAu fil des années, j'ai enrichi ma pratique d’une vaste gamme de formations complémentaires : Techniques d’impact, NeuroGym Tonik, approche systémique, communication en situations difficiles, accompagnement du deuil, et bien d’autres.\n\nDepuis plus de 20 ans, j'accompagne les enfants, les adolescents et leurs familles. Je me distingue par mon écoute, ma présence authentique et mes solides compétences en relation d’aide. \n\nPassionnée par les neurosciences affectives et le développement de l’enfant.\n\nMon approche allie vulgarisation de concepts scientifiques, théorie de l’attachement et outils concrets, afin d’offrir des rencontres bienveillantes, structurées et adaptées à la réalité unique de chaque famille.\n\nJe suis également maman. L’adoption de mes jumeaux a profondément transformé ma vision de la parentalité et nourrit aujourd’hui ma compréhension sensible des défis que vivent les familles.\n\nSe mettre à hauteur d’enfants, c’est apprendre à être à l’écoute de leurs besoins, donner un sens à leur monde intérieur et offrir aux parents d’aujourd’hui la chance de faire grandir la société de demain.",
     "photo": "/assets/images/photo-profil-fam-i-33d9a779-410w.webp",
-    "photo_alt": "Deux adultes et deux enfants assis devant un mur de briques blanches, les mains des adultes réunies en forme de toit."
+    "photo_alt": ""
   },
   "faq": {
     "admin_label": "FAQ",
@@ -156,7 +156,7 @@
       },
       {
         "question": "Offrez-vous des consultations en ligne ?",
-        "answer": "Oui, j'offre uniquement les suivis par visioconférence sécurisée pour les personnes qui ne peuvent pas se déplacer ou qui résident à l'étranger. \nLes séances en ligne se déroulent avec la même rigueur et la même confidentialité que les rencontres en personne.\nNB: les deux premières séances se font obligatoirement en présentiel."
+        "answer": "Oui, j'offre uniquement les suivis par visioconférence sécurisée pour les personnes qui ne peuvent pas se déplacer. \nLes séances en ligne se déroulent avec la même rigueur et la même confidentialité que les rencontres en personne.\nNB: les deux premières séances se font idéalement en présentiel."
       },
       {
         "question": "Quelle est la différence entre une infirmière en parentalité, un travailleur social et un psychologue ?",
