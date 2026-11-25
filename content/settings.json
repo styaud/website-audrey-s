@@ -10,7 +10,7 @@
   },
   "popup": {
     "admin_label": "Fenêtre contextuelle",
-    "enabled": true,
+    "enabled": false,
     "title": "Avis important",
     "message": "Ce site est présentement en construction. \n\nVeuillez revenir plus tard pour voir le contenu du site web mis-à-jour. ",
     "image": "",
