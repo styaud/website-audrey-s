@@ -32,7 +32,7 @@
     "anchor": "accueil",
     "eyebrow": "Infirmière clinicienne en parentalité et en adoption",
     "title": "Observer, soutenir, guider",
-    "subtitle": "J'accompagne votre famille avant, pendant et après l'adoption, pour favoriser l'attachement et l'adaptation de chacun.",
+    "subtitle": "Je vous accompagne dans le quotidien de votre parentalité",
     "image": "/assets/images/relation-parent-enfant-1920w.webp",
     "image_alt": "Quatre personnes de dos, les bras autour des épaules, dans un champ doré sous un ciel bleu.",
     "portrait": "/assets/images/photo-profil-fam-i.webp",
@@ -64,7 +64,7 @@
       },
       {
         "title": "Approche humaine",
-        "description": "Une écoute attentive et sans jugement, où chaque personne est accueillie avec respect et bienveillance. Votre vécu et vos émotions sont au cœur de notre démarche."
+        "description": "Une écoute attentive et sans jugement, où chaque personne est accueillie avec respect et bienveillance. Votre vécu et vos émotions sont au cœur de mon approche."
       },
       {
         "title": "Disponibilité",
@@ -80,14 +80,14 @@
     "heading": "Mes services",
     "items": [
       {
-        "title": "Soutien dans le rôle et les habiletés parentales (coaching parental et famille élargie)",
+        "title": "Soutien dans le rôle et les habiletés parentales (coaching parental)",
         "description": "Des outils concrets pour renforcer votre confiance et vos habiletés de parent, avec la famille élargie au besoin.",
         "image": "/assets/images/natik-1123-home-5574909-1920-1920w.webp",
         "image_alt": "Deux adultes et deux enfants assis devant un mur de briques blanches, les mains des adultes réunies en forme de toit."
       },
       {
         "title": "Adoption",
-        "description": "Un accompagnement avant, pendant et après l’adoption pour favoriser l’attachement et l’adaptation de chacun.",
+        "description": "Un accompagnement avant, pendant et après l’adoption pour favoriser l’adaptation de chacun.",
         "image": "/assets/images/adoption-1-1920w.webp",
         "image_alt": "Des personnages et des maisons découpés dans du papier, disposés sur une table en bois."
       },
@@ -105,7 +105,7 @@
       },
       {
         "title": "Soutien dans les routines (sommeil, transitions, devoirs…)",
-        "description": "Des routines adaptées à votre famille pour des journées plus fluides : sommeil, transitions et devoirs.",
+        "description": "Des routines adaptées à votre famille pour des journées plus fluides",
         "image": "/assets/images/routine-famille.webp",
         "image_alt": "Une fillette à lunettes et une femme devant un cahier ouvert, les mains levées d’un air perplexe."
       },
@@ -123,7 +123,7 @@
       },
       {
         "title": "Conférences",
-        "description": "Des conférences sur la parentalité et le développement de l’enfant pour les écoles, organismes et milieux de travail.",
+        "description": "Des conférences sur la parentalité pour les écoles, organismes et milieux de travail.",
         "image": "/assets/images/conf-rence.webp",
         "image_alt": "Deux microphones sur un pupitre transparent, avec des feuilles et un stylo, devant un public flou."
       }
@@ -135,8 +135,8 @@
     "anchor": "a-propos",
     "nav_label": "À propos de moi",
     "title": "À propos de moi",
-    "body": "Je suis infirmière clinicienne, formée et diplômée des hôpitaux de Paris depuis 2005. Je débute ma carrière à l’hôpital Necker–Enfants malades, puis poursuis mon parcours à l’hôpital Sainte-Justine à Montréal en soins palliatifs pédiatriques.\nAu fil des années, j'ai enrichi ma pratique d’une vaste gamme de formations complémentaires : Techniques d’impact, NeuroGym Tonik, approche systémique, communication en situations difficiles, accompagnement du deuil, et bien d’autres.\n\nDepuis plus de 20 ans, j'accompagne les enfants, les adolescents et leurs familles. Je me distingue par mon écoute, ma présence authentique et mes solides compétences en relation d’aide. \n\nPassionnée par les neurosciences affectives et le développement de l’enfant.\n\nMon approche allie vulgarisation de concepts scientifiques, théorie de l’attachement et outils concrets, afin d’offrir des rencontres bienveillantes, structurées et adaptées à la réalité unique de chaque famille.\n\nJe suis également maman. L’adoption de mes jumeaux a profondément transformé ma vision de la parentalité et nourrit aujourd’hui ma compréhension sensible des défis que vivent les familles.\n\nSe mettre à hauteur d’enfants, c’est apprendre à être à l’écoute de leurs besoins, donner un sens à leur monde intérieur et donner aux parents d’aujourd’hui la chance de créer la société de demain.",
-    "photo": "/assets/images/natik-1123-home-5574909-1920-1920w.webp",
+    "body": "Je suis infirmière clinicienne, formée et diplômée des hôpitaux de Paris depuis 2005. Je débute ma carrière à l’hôpital Necker–Enfants malades, puis poursuis mon parcours à l’hôpital Sainte-Justine à Montréal en soins palliatifs pédiatriques.\nAu fil des années, j'ai enrichi ma pratique d’une vaste gamme de formations complémentaires : Techniques d’impact, NeuroGym Tonik, approche systémique, communication en situations difficiles, accompagnement du deuil, et bien d’autres.\n\nDepuis plus de 20 ans, j'accompagne les enfants, les adolescents et leurs familles. Je me distingue par mon écoute, ma présence authentique et mes solides compétences en relation d’aide. \n\nPassionnée par les neurosciences affectives et le développement de l’enfant.\n\nMon approche allie vulgarisation de concepts scientifiques, théorie de l’attachement et outils concrets, afin d’offrir des rencontres bienveillantes, structurées et adaptées à la réalité unique de chaque famille.\n\nJe suis également maman. L’adoption de mes jumeaux a profondément transformé ma vision de la parentalité et nourrit aujourd’hui ma compréhension sensible des défis que vivent les familles.\n\nSe mettre à hauteur d’enfants, c’est apprendre à être à l’écoute de leurs besoins, donner un sens à leur monde intérieur et offrir aux parents d’aujourd’hui la chance de faire grandir la société de demain.",
+    "photo": "/assets/images/photo-profil-fam-i-33d9a779-410w.webp",
     "photo_alt": "Deux adultes et deux enfants assis devant un mur de briques blanches, les mains des adultes réunies en forme de toit."
   },
   "faq": {
@@ -290,10 +290,26 @@
     "filter_label": "Filtrer les ressources par thème",
     "filter_all_label": "Toutes",
     "categories": [
-      { "title": "Parentalité", "icon": "sprout", "color": "" },
-      { "title": "Adoption", "icon": "house-heart", "color": "accent" },
-      { "title": "Écoute", "icon": "message-circle-heart", "color": "" },
-      { "title": "Deuil", "icon": "feather", "color": "" }
+      {
+        "title": "Parentalité",
+        "icon": "sprout",
+        "color": ""
+      },
+      {
+        "title": "Adoption",
+        "icon": "house-heart",
+        "color": "accent"
+      },
+      {
+        "title": "Écoute",
+        "icon": "message-circle-heart",
+        "color": ""
+      },
+      {
+        "title": "Deuil",
+        "icon": "feather",
+        "color": ""
+      }
     ],
     "items": [
       {
